@@ -1,0 +1,163 @@
+/* 🌐 Global Top Navbar Styles */
+.global-navbar {
+    width: 100%;
+    height: 70px;
+    background-color: #f1e3e3 ;
+    border-bottom: 1px solid #000000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    z-index: 1000; /* Sidebar aur main content ke upar float karne ke liye */
+    box-sizing: border-box;
+}
+
+/* Left Section Branded Area */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  
+}
+
+.header-left img {
+    height: 50px;
+    width: 50px;
+    margin-left: 30px;
+    margin-top: 10px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+}
+
+.header-left .brand-text {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e2229;
+    padding-left: 30px;
+}
+
+.header-left .brand-text .dot {
+    color: #e88d72; /* Image Matching Soft Coral Accent */
+}
+
+.header-left .page-context {
+    font-size: 13px;
+    color: #9496a1;
+    font-weight: 400;
+}
+
+/* Right Section Actions and Profile Area */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+/* Search engine layout on navbar */
+.global-search {
+    position: relative;
+    width: 240px;
+}
+
+.global-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9496a1;
+    font-size: 13px;
+}
+
+.global-search input {
+    width: 100%;
+    padding: 8px 12px 8px 35px;
+    border-radius: 15px;
+    border: 1px solid #eef0f5;
+    background-color: #f8f9fc;
+    outline: none;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.global-search input:focus {
+    border-color: #e88d72;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(232, 141, 114, 0.1);
+}
+
+/* Control Badges (Bell & Gear) */
+.action-badges {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    color: #2d3142;
+    font-size: 16px;
+}
+
+.badge-icon {
+    position: relative;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.badge-icon:hover {
+    color: #e88d72;
+}
+
+.notification-indicator {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 6px;
+    height: 6px;
+    background-color: #e88d72;
+    border-radius: 50%;
+    border: 1px solid #ffffff;
+}
+
+/* Identity User Box */
+.user-meta-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-left: 1px solid #eaeaea;
+    padding-left: 20px;
+}
+
+.header-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff3f0;
+}
+
+.identity-text h6 {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2d3142;
+    margin-right: 50px;
+    
+
+}
+
+.identity-text p {
+    font-size: 11px;
+    color: #9496a1;
+    margin: 0;
+}
+
+/* 📱 Responsive Mobile Adjustments */
+@media (max-width: 768px) {
+    .global-navbar {
+        padding: 0 15px;
+    }
+    .global-search, .page-context, .identity-text {
+        display: none; /* Mobile screen par extra text aur search bar ko wrap/hide kiya */
+    }
+    .user-meta-header {
+        border-left: none;
+        padding-left: 0;
+    }
+}

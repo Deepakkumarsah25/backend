@@ -1,0 +1,165 @@
+<head>
+    <link rel="stylesheet" href="/css/sidebar.css">
+</head>
+<!-- Sidebar toggle (mobile/tablet) -->
+<button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle Navigation">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<!-- Main Sidebar (Enhanced Professional) -->
+<aside class="educare-fixed-sidebar dark-theme" id="responsiveSidebar">
+  <div class="sidebar-brand-panel">
+    <h2 class="sidebar-master-title">Control Panel</h2>
+    <button class="sidebar-mobile-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+  </div>
+
+  <div class="sidebar-scrollable-content">
+    <div class="sidebar-menu-group">
+      <ul class="group-links-list">
+        <li>
+          <a href="#" class="sidebar-link-item active" data-category="category">
+            <span class="link-icon-marker"><i class="fa-solid fa-tachograph-digital"></i></span>
+            <span class="link-text">Dashboard</span>
+          </a>
+        </li>
+       
+        <li>
+          <a href="{% url 'plot_list' %}" class="sidebar-link-item">
+            <span class="link-icon-marker"><i class="fa-solid fa-house-flag"></i></span>
+            <span class="link-text">Plots</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="sidebar-link-item" id="coursesLink">
+            <span class="link-icon-marker"><i class="fas fa-file-alt"></i></span>
+            <span class="link-text">Pricelist</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="sidebar-link-item" data-category="ebook">
+            <span class="link-icon-marker"><i class="fas fa-book-open"></i></span>
+            <span class="link-text">Project</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="#" class="sidebar-link-item" data-category="test">
+            <span class="link-icon-marker"><i class="fas fa-chart-line"></i></span>
+            <span class="link-text">Models</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="sidebar-link-item" data-category="qp">
+            <span class="link-icon-marker"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+            <span class="link-text">Lottery</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="sidebar-link-item">
+            <span class="link-icon-marker"><i class="fa-solid fa-circle-user"></i></span>
+            <span class="link-text">Contact</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="{% url 'logout' %}" class="sidebar-link-item logout-item">
+            <span class="link-icon-marker"><i class="fa-solid fa-right-from-bracket"></i></span>
+            <span class="link-text">Logout</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Desktop collapse trigger (optional) -->
+  <div class="desktop-collapse-trigger" id="desktopCollapse">
+    <i class="fas fa-chevron-left"></i>
+  </div>
+</aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ✅ Sidebar Active Link Highlight
+    const sidebarLinks = document.querySelectorAll('.sidebar-link-item');
+    const currentUrl = window.location.pathname;
+    
+    sidebarLinks.forEach(link => {
+        const linkHref = link.getAttribute('href');
+        if (linkHref === currentUrl || (currentUrl === '/courses/' && linkHref === '/courses/')) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
+    
+    // Courses link click handler
+    const coursesLink = document.getElementById('coursesLink');
+    if (coursesLink) {
+        coursesLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            sidebarLinks.forEach(link => link.classList.remove('active'));
+            this.classList.add('active');
+        });
+    }
+    
+    // Mobile toggle functionality
+    const sidebar = document.getElementById('responsiveSidebar');
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const closeBtn = document.getElementById('sidebarClose');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    
+    function openSidebar() {
+        sidebar.classList.add('sidebar-open');
+        backdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        backdrop.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', openSidebar);
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeSidebar);
+    }
+    
+    if (backdrop) {
+        backdrop.addEventListener('click', closeSidebar);
+    }
+    
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
+            closeSidebar();
+        }
+    });
+    
+    // Desktop collapse functionality (optional)
+    const collapseTrigger = document.getElementById('desktopCollapse');
+    if (collapseTrigger) {
+        collapseTrigger.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            const icon = this.querySelector('i');
+            if (sidebar.classList.contains('collapsed')) {
+                icon.className = 'fas fa-chevron-right';
+                document.body.classList.add('sidebar-collapsed');
+            } else {
+                icon.className = 'fas fa-chevron-left';
+                document.body.classList.remove('sidebar-collapsed');
+            }
+        });
+    }
+});
+</script>
