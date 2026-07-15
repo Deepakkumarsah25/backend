@@ -35,35 +35,48 @@ export const dashboard = async (req, res) => {
 export const addBanner = async (req, res) => {
   try {
 
+    console.log(req.files);
+
     for (const file of req.files) {
 
-      const result =
-        await cloudinary.uploader.upload(
-          file.path
-        );
+      const result = await cloudinary.uploader.upload(
+        file.path
+      );
 
       await Banner.create({
         imageUrl: result.secure_url,
       });
     }
 
-    res.redirect("/dashboard");
+    res.redirect("/bainar");
 
   } catch (error) {
-
     console.log(error);
-
     res.status(500).send("Upload Failed");
   }
 };
 
 export const deleteBanner = async (req, res) => {
+  try {
 
-  await Banner.findByIdAndDelete(
-    req.params.id
-  );
+    await Banner.findByIdAndDelete(
+      req.params.id
+    );
 
-  res.redirect("/dashboard");
+    res.json({
+      success: true,
+      message: "Banner deleted"
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Delete failed"
+    });
+  }
 };
 
 export const createAdmin = async (req, res) => {

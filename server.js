@@ -10,7 +10,8 @@ import { fileURLToPath } from "url";
 
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
-
+import bainarliveupdate from './routes/sections/banners.js'
+import workerRoutes from "./routes/sections/worker.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -35,7 +36,8 @@ app.use(
 
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
-
+app.use("/", bainarliveupdate)
+app.use("/", workerRoutes);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))

@@ -27,7 +27,7 @@ router.post(
   addBanner
 );
 
-router.get(
+router.delete(
   "/banner/delete/:id",
   deleteBanner
 );
