@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Video Gallery Management</title>
+
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #eef0ff;
+            --live-red: #e11d48;
+            --off-gray: #94a3b8;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background: #f8fafc;
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 30px;
+        }
+
+        @media(max-width:1100px) {
+            .main-content {
+                margin-left: 0;
+                padding: 80px 15px 20px;
+            }
+        }
+
+        /* ============ Page Title ============ */
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 6px;
+        }
+
+        .page-title .icon-box {
+            width: 46px;
+            height: 46px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 12px;
+            font-size: 18px;
+        }
+
+        .page-title h2 {
+            font-size: 26px;
+            color: var(--ink);
+            font-weight: 800;
+            letter-spacing: -0.3px;
+        }
+
+        .page-title p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .page-header-wrap {
+            margin-bottom: 26px;
+        }
+
+        /* ============ Layout ============ */
+
+        .container-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 22px;
+            align-items: start;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, .07);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid var(--border);
+            background: #fafbff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header .head-icon {
+            color: var(--primary);
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .card-header h3 {
+            font-size: 16.5px;
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .card-body {
+            padding: 22px;
+        }
+
+        /* ============ Form ============ */
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--ink);
+            font-size: 13.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14.5px;
+            outline: none;
+            transition: .2s;
+            background: #fff;
+            color: var(--ink);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .14);
+        }
+
+        textarea.form-control {
+            resize: none;
+            height: 110px;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* Published checkbox styled as a toggle row */
+
+        .form-group label:has(input[type="checkbox"]) {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-light);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--ink);
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .form-group input[type="checkbox"] {
+            width: 2.3em;
+            height: 1.25em;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 26px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14.5px;
+            font-weight: 600;
+            transition: .2s;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, .28);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, .35);
+        }
+
+        /* ============ Preview Box ============ */
+
+        .preview-heading {
+            padding: 18px 22px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--ink);
+        }
+
+        .preview-heading i {
+            color: var(--live-red);
+        }
+
+        .preview-box {
+            margin: 14px 22px 22px;
+            text-align: center;
+        }
+
+        .preview-box img {
+            width: 100%;
+            max-width: 420px;
+            height: 260px;
+            border-radius: 14px;
+            border: 1.5px dashed #c7cdf7;
+            object-fit: cover;
+            background: repeating-linear-gradient(45deg, #eef0ff, #eef0ff 10px, #e6e9fd 10px, #e6e9fd 20px);
+            display: block;
+            margin: auto;
+        }
+
+        /* ============ Search ============ */
+
+        .search-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .search-wrap {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 11px 14px 11px 38px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: .2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .14);
+        }
+
+        /* ============ Table ============ */
+
+        .table-responsive {
+            overflow: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: transparent;
+        }
+
+        th {
+            padding: 0 14px 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            font-weight: 700;
+            text-align: left;
+            color: var(--muted);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            vertical-align: middle;
+            color: var(--ink);
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .thumb {
+            width: 120px;
+            height: 70px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .action-btn {
+            border: none;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 6px;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: .2s;
+        }
+
+        .edit-btn {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .edit-btn:hover {
+            background: #e0e4ff;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        @media(max-width:1100px) {
+
+            .container-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-wrap {
+                width: 100%;
+            }
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <%- include("common/sidebar") %>
+
+        <div class="main-content">
+
+            <div class="page-header-wrap">
+                <div class="page-title">
+                    <div class="icon-box">
+                        <i class="fa-solid fa-photo-film"></i>
+                    </div>
+                    <div>
+                        <h2>Video Gallery</h2>
+                    </div>
+                </div>
+                <p>Manage all YouTube videos.</p>
+            </div>
+
+            <div class="container-grid">
+
+                <!-- LEFT -->
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <i class="fa-solid fa-circle-plus head-icon"></i>
+                        <h3>Add / Edit Video</h3>
+                    </div>
+
+                    <div class="card-body">
+
+<form id="videoForm">
+    <input type="hidden" id="videoId">
+
+    <div class="form-group">
+        <label>Title</label>
+        <input
+            type="text"
+            id="title"
+            class="form-control"
+            required
+        >
+    </div>
+
+    <div class="form-group">
+        <label>Description</label>
+        <textarea
+            id="description"
+            class="form-control"
+            rows="4"
+        ></textarea>
+    </div>
+
+    <div class="form-group">
+        <label>YouTube URL</label>
+        <input
+            type="url"
+            id="youtubeUrl"
+            class="form-control"
+            placeholder="https://youtu.be/xxxx"
+            required
+        >
+    </div>
+
+    <div class="form-group">
+        <label>Category</label>
+
+        <select
+            id="category"
+            class="form-control"
+        >
+            <option>Events</option>
+            <option>Speech</option>
+            <option>Campaign</option>
+            <option>Interview</option>
+            <option>Live</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Duration</label>
+
+        <input
+            type="text"
+            id="duration"
+            class="form-control"
+            placeholder="12:45"
+        >
+    </div>
+
+    <div class="form-group">
+        <label>
+
+            <input
+                type="checkbox"
+                id="isPublished"
+                checked
+            >
+
+            Published
+
+        </label>
+    </div>
+
+    <button
+        type="submit"
+        class="btn btn-primary"
+    >
+        Save Video
+    </button>
+
+</form>
+
+
+                    </div>
+
+                </div>
+
+                <!-- RIGHT -->
+
+                <div class="card">
+
+                    <div class="preview-heading">
+                        <i class="fa-brands fa-youtube"></i>
+                        Thumbnail Preview
+                    </div>
+
+                    <div class="preview-box">
+                        <img
+                            id="thumbnailPreview"
+                            src="https://via.placeholder.com/480x270?text=Thumbnail"
+                        >
+                    </div>
+
+                    <div class="card-header">
+                        <i class="fa-solid fa-video head-icon"></i>
+                        <h3>All Videos</h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="search-box">
+
+                            <div class="search-wrap">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="searchInput" placeholder="Search video...">
+                            </div>
+
+                        </div>
+
+                        <div class="table-responsive">
+
+                            <table>
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>Thumbnail</th>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>YouTube ID</th>
+                                        <th>Action</th>
+
+                                    </tr>
+
+                                </thead>
+<tbody id="videoTable">
+
+<% videos.forEach(video => { %>
+
+<tr>
+
+    <td>
+        <img
+            class="thumb"
+            src="<%= video.thumbnail %>">
+    </td>
+
+    <td>
+        <%= video.title %>
+    </td>
+
+    <td>
+
+        <span class="badge">
+
+            <%= video.category %>
+
+        </span>
+
+    </td>
+
+    <td>
+
+        <%= video.youtubeId %>
+
+    </td>
+
+    <td>
+
+        <button
+            class="action-btn edit-btn"
+            onclick='editVideo(<%- JSON.stringify(video) %>)'>
+
+            <i class="fa fa-pen"></i>
+
+        </button>
+
+        <button
+            class="action-btn delete-btn"
+            onclick="deleteVideo('<%= video._id %>')">
+
+            <i class="fa fa-trash"></i>
+
+        </button>
+
+    </td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <script>
+            /* ==========================================
+               Thumbnail Preview
+            ========================================== */
+/* ==========================================
+   Extract YouTube Video ID
+========================================== */
+
+function extractVideoId(url) {
+
+    if (!url) return "";
+
+    const regExp =
+        /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|live\/|shorts\/)([^#&?]*).*/;
+
+    const match = url.match(regExp);
+
+    return match && match[2].length === 11
+        ? match[2]
+        : "";
+
+}
+
+
+/* ==========================================
+   Thumbnail Preview
+========================================== */
+
+const youtubeInput =
+    document.getElementById("youtubeUrl");
+
+const thumbnailPreview =
+    document.getElementById("thumbnailPreview");
+
+youtubeInput.addEventListener("input", () => {
+
+    const videoId =
+        extractVideoId(youtubeInput.value.trim());
+
+    if (!videoId) {
+
+        thumbnailPreview.src =
+            "https://via.placeholder.com/480x270?text=Thumbnail";
+
+        return;
+    }
+
+    thumbnailPreview.src =
+        `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
+});
+
+
+/* ==========================================
+   Reset Form
+========================================== */
+
+const form =
+    document.getElementById("videoForm");
+
+form.addEventListener("reset", () => {
+
+    setTimeout(() => {
+
+        thumbnailPreview.src =
+            "https://via.placeholder.com/480x270?text=Thumbnail";
+
+        document.getElementById("videoId").value = "";
+
+        document.querySelector(".btn-primary").innerHTML =
+            "Save Video";
+
+        document.querySelector(".card-header h3").innerHTML =
+            "Add / Edit Video";
+
+    }, 100);
+
+});
+
+
+/* ==========================================
+   Edit Video
+========================================== */
+
+function editVideo(video) {
+
+    document.getElementById("videoId").value =
+        video._id;
+
+    document.getElementById("title").value =
+        video.title;
+
+    document.getElementById("description").value =
+        video.description;
+
+    document.getElementById("category").value =
+        video.category;
+
+    document.getElementById("duration").value =
+        video.duration || "";
+
+    document.getElementById("isPublished").checked =
+        video.isPublished;
+
+    // Recreate URL from stored videoId
+    document.getElementById("youtubeUrl").value =
+        `https://youtu.be/${video.videoId}`;
+
+    thumbnailPreview.src =
+        video.thumbnail;
+
+    document.querySelector(".btn-primary").innerHTML =
+        "Update Video";
+
+    document.querySelector(".card-header h3").innerHTML =
+        "Edit Video";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* ==========================================
+   Delete
+========================================== */
+
+function deleteVideo(id) {
+
+    if (!confirm("Delete this video?"))
+        return;
+
+    fetch(`/api/videos/${id}`, {
+        method: "DELETE"
+    })
+        .then(res => res.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(err => {
+            console.log(err);
+            alert("Something went wrong.");
+        });
+
+}
+
+
+/* ==========================================
+   Search
+========================================== */
+
+const searchInput =
+    document.getElementById("searchInput");
+
+searchInput.addEventListener("keyup", function () {
+
+    const value =
+        this.value.toLowerCase();
+
+    document.querySelectorAll("#videoTable tr")
+        .forEach(row => {
+
+            row.style.display =
+                row.innerText.toLowerCase().includes(value)
+                    ? ""
+                    : "none";
+
+        });
+
+});
+
+
+/* ==========================================
+   Submit
+========================================== */
+
+form.addEventListener("submit", async function (e) {
+
+    e.preventDefault();
+
+    const id =
+        document.getElementById("videoId").value;
+
+    const body = {
+
+        title:
+            document.getElementById("title").value,
+
+        description:
+            document.getElementById("description").value,
+
+        youtubeUrl:
+            document.getElementById("youtubeUrl").value,
+
+        category:
+            document.getElementById("category").value,
+
+        duration:
+            document.getElementById("duration").value,
+
+        isPublished:
+            document.getElementById("isPublished").checked
+
+    };
+
+    try {
+
+        let response;
+
+        if (id) {
+
+            response = await fetch(`/api/videos/${id}`, {
+
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(body)
+
+            });
+
+        } else {
+
+            response = await fetch("/api/videos", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(body)
+
+            });
+
+        }
+
+        const data =
+            await response.json();
+
+        alert(data.message);
+
+        if (data.success) {
+            location.reload();
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert("Server Error");
+
+    }
+
+});
+
+        </script>
+
+</body>
+
+</html>

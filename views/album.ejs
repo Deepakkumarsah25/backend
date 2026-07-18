@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Album Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #eef0ff;
+            --live-red: #e11d48;
+            --off-gray: #94a3b8;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            padding: 30px;
+            background: #f8fafc;
+            transition: .3s;
+        }
+
+        @media(max-width:992px) {
+            .main-content {
+                margin-left: 0;
+                padding: 80px 15px 20px;
+            }
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .page-title i {
+            width: 46px;
+            height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 12px;
+            font-size: 18px;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: -6px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, .07);
+            border: 1px solid var(--border);
+        }
+
+        .card-body {
+            padding: 26px;
+        }
+
+        .section-heading {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .section-heading i {
+            color: var(--primary);
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--ink);
+            font-size: 13.5px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            height: 48px;
+            border: 1.5px solid var(--border);
+            font-size: 14.5px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .14);
+        }
+
+        textarea.form-control {
+            height: 100px !important;
+            resize: none;
+        }
+
+        .form-check {
+            background: #bcd1ec;
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-check-input {
+            width: 2.4em;
+            height: 1.3em;
+            margin-top: 0;
+            cursor: pointer;
+        }
+
+        .form-check-input:checked {
+            background-color: #1c3f71;
+            border-color: #e11d48;
+        }
+
+        .form-check-label {
+            margin-left: 10px;
+            font-weight: 600;
+            color: #e11d48;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            font-weight: 600;
+            padding: 11px 32px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, .25);
+            transition: .2s;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-dark);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, .32);
+        }
+
+        #resetBtn {
+            border-radius: 10px;
+            padding: 11px 24px;
+            font-weight: 600;
+            border: 1.5px solid var(--border);
+            color: var(--muted);
+            background: #fff;
+        }
+
+        #resetBtn:hover {
+            background: #f8fafc;
+        }
+
+        .thumb-preview {
+            width: 100%;
+            height: 220px;
+            border-radius: 14px;
+            background: repeating-linear-gradient(45deg, #f1f2fe, #f1f2fe 10px, #eaeafd 10px, #eaeafd 20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 1.5px dashed #d3d5fb;
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .thumb-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .photo-row .form-control {
+            height: 42px;
+        }
+
+        .photo-row .btn-remove-photo {
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(225, 29, 72, .1);
+            color: var(--live-red);
+            flex-shrink: 0;
+        }
+
+        #addPhotoBtn {
+            border: 1.5px dashed var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13.5px;
+            padding: 8px 16px;
+        }
+
+        .badge-live, .badge-off {
+            font-weight: 600;
+            font-size: 12.5px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-live {
+            background: rgba(34, 197, 94, .12);
+            color: #16a34a;
+        }
+
+        .badge-off {
+            background: rgba(108, 117, 125, .12);
+            color: var(--off-gray);
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 14px;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--ink);
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafd;
+        }
+
+        .table img {
+            width: 90px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .1);
+        }
+
+        .action-btn {
+            margin-right: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <%- include('common/sidebar') %>
+
+        <div class="main-content">
+
+            <div class="container-fluid py-4">
+
+                <h2 class="page-title mb-1">
+                    <i class="fa-solid fa-images"></i>
+                    Album Management
+                </h2>
+
+                <p class="page-sub">Manage photo albums shown to VIP users</p>
+
+                <div class="row g-4">
+
+                    <div class="col-lg-6">
+
+                        <div class="card">
+
+                            <div class="card-body">
+
+                                <h5 class="section-heading">
+                                    <i class="fa-solid fa-circle-plus"></i>
+                                    Add / Edit Album
+                                </h5>
+
+                                <form id="albumForm">
+
+                                    <input type="hidden" id="albumId">
+
+                                    <div class="mb-3">
+                                        <label>Title</label>
+                                        <input type="text" class="form-control" id="title" required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Description</label>
+                                        <textarea class="form-control" id="description"></textarea>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label>Category</label>
+                                            <select class="form-select" id="category">
+                                                <option value="Events">Events</option>
+                                                <option value="Leaders">Leaders</option>
+                                                <option value="Founders">Founders</option>
+                                                <option value="Campaigns">Campaigns</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label>Location</label>
+                                            <input type="text" class="form-control" id="location">
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Date</label>
+                                        <input type="date" class="form-control" id="date">
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Cover Image URL</label>
+                                        <input type="text" class="form-control" id="cover"
+                                            placeholder="https://..." required>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label>Photos</label>
+
+                                        <div id="photosContainer"></div>
+
+                                        <button type="button" id="addPhotoBtn">
+                                            <i class="fa-solid fa-plus"></i>
+                                            Add Photo URL
+                                        </button>
+                                    </div>
+
+                                    <div class="form-check mb-4">
+                                        <input class="form-check-input" type="checkbox" id="isPublished" checked>
+                                        <label class="form-check-label" for="isPublished">
+                                            Published
+                                        </label>
+                                    </div>
+
+                                    <button class="btn btn-save" type="submit">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                        Save Album
+                                    </button>
+
+                                    <button type="reset" class="btn btn-secondary ms-2" id="resetBtn">
+                                        Reset
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-6">
+
+                        <div class="card">
+
+                            <div class="card-body">
+
+                                <h5 class="section-heading">
+                                    <i class="fa-solid fa-image" style="color:#4f46e5"></i>
+                                    Cover Preview
+                                </h5>
+
+                                <div class="thumb-preview">
+                                    <img id="previewImage" src="https://placehold.co/800x450?text=Cover+Image">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card mt-4">
+
+                    <div class="card-body">
+
+                        <h5 class="section-heading">
+                            <i class="fa-solid fa-layer-group"></i>
+                            All Albums
+                        </h5>
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+                                    <tr>
+                                        <th>Cover</th>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Photos</th>
+                                        <th>Status</th>
+                                        <th width="160">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="albumTable">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="/js/album_admin.js"></script>
+
+</body>
+
+</html>

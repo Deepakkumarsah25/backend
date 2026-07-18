@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Media Gallery Management</title>
+
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #eef0ff;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background: #f8fafc;
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 30px;
+        }
+
+        @media(max-width:1100px) {
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 15px 20px;
+            }
+
+        }
+
+        .page-title {
+
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 6px;
+
+        }
+
+        .icon-box {
+
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+
+            color: #fff;
+            font-size: 18px;
+
+        }
+
+        .page-title h2 {
+
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--ink);
+
+        }
+
+        .page-header-wrap {
+
+            margin-bottom: 26px;
+
+        }
+
+        .page-header-wrap p {
+
+            margin-top: 6px;
+            color: var(--muted);
+
+        }
+
+.container-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+        @media(max-width:1100px) {
+
+            .container-grid {
+
+                grid-template-columns: 1fr;
+
+            }
+
+        }
+
+        .card {
+
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+
+            border: 1px solid var(--border);
+
+            box-shadow: 0 8px 25px rgba(79, 70, 229, .08);
+
+        }
+
+        .card-header {
+
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 18px 22px;
+
+            border-bottom: 1px solid var(--border);
+
+            background: #fafbff;
+
+        }
+
+        .head-icon {
+
+            color: var(--primary);
+
+        }
+
+        .card-header h3 {
+
+            font-size: 16px;
+
+        }
+
+        .card-body {
+
+            padding: 22px;
+
+        }
+
+        .form-group {
+
+            margin-bottom: 18px;
+
+        }
+
+        .form-group label {
+
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--ink);
+
+        }
+
+        .form-control {
+
+            width: 100%;
+            padding: 11px 14px;
+
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+
+            outline: none;
+
+            transition: .2s;
+
+        }
+
+        .form-control:focus {
+
+            border-color: var(--primary);
+
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .15);
+
+        }
+
+        .btn {
+
+            border: none;
+            cursor: pointer;
+
+            border-radius: 10px;
+
+            padding: 12px 26px;
+
+            font-weight: 600;
+
+        }
+
+        .btn-primary {
+
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+
+            color: #fff;
+
+        }
+
+        .btn-primary:hover {
+
+            opacity: .95;
+
+        }
+
+        .preview-heading {
+
+            padding: 18px 22px 0;
+            font-weight: 700;
+
+        }
+
+        .preview-box {
+
+            padding: 18px 22px 22px;
+
+            text-align: center;
+
+        }
+
+        .preview-box img {
+
+            width: 100%;
+            max-width: 320px;
+            height: 220px;
+
+            border-radius: 14px;
+
+            object-fit: cover;
+
+            border: 2px dashed #cbd5e1;
+
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <%- include("common/sidebar") %>
+
+        <div class="main-content">
+
+            <div class="page-header-wrap">
+
+                <div class="page-title">
+
+                    <div class="icon-box">
+
+                        <i class="fa-solid fa-photo-film"></i>
+
+                    </div>
+
+                    <div>
+
+                        <h2>Media Gallery</h2>
+
+                        <p>
+                            Manage Newspapers, Press Releases & Infographics
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="container-grid">
+
+                <!-- LEFT -->
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <i class="fa-solid fa-circle-plus head-icon"></i>
+
+                        <h3>Add Media</h3>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <form action="/mediagallery/add" method="POST" enctype="multipart/form-data">
+
+                            <div class="form-group">
+
+                                <label>Category</label>
+
+                                <select name="category" class="form-control" required>
+
+                                    <option value="">Select Category</option>
+
+                                    <option value="newspaper">
+                                        Newspaper
+                                    </option>
+
+                                    <option value="pressrelease">
+                                        Press Release
+                                    </option>
+
+                                    <option value="infographics">
+                                        Infographics
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label>Title</label>
+
+                                <input type="text" name="title" class="form-control" required>
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label>Image</label>
+
+                                <input type="file" name="image" id="image" accept="image/*" class="form-control"
+                                    required>
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label>Date</label>
+
+                                <input type="date" name="date" class="form-control">
+
+                            </div>
+
+                            <div class="form-group">
+
+                                <label>
+
+                                    <input type="checkbox" name="isPublished" checked>
+
+                                    Published
+
+                                </label>
+
+                            </div>
+
+                            <button class="btn btn-primary">
+
+                                <i class="fa-solid fa-floppy-disk"></i>
+
+                                Save Media
+
+                            </button>
+
+                        </form>
+
+                    </div>
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <i class="fa-solid fa-images head-icon"></i>
+
+                            <h3>Media Gallery</h3>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div
+                                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:15px;flex-wrap:wrap;">
+
+                                <input type="text" id="searchInput" class="form-control" placeholder="Search title..."
+                                    style="max-width:280px;">
+
+                                <select id="categoryFilter" class="form-control" style="max-width:220px;">
+                                    <option value="">All Categories</option>
+                                    <option value="newspaper">Newspaper</option>
+                                    <option value="pressrelease">Press Release</option>
+                                    <option value="infographics">Infographics</option>
+                                </select>
+
+                            </div>
+
+                            <div style="overflow:auto;">
+
+                                <table style="width:100%;border-collapse:collapse;">
+
+                                    <thead>
+
+                                        <tr style="background:#f8fafc;">
+
+                                            <th style="padding:14px;">Preview</th>
+
+                                            <th style="padding:14px;">Title</th>
+
+                                            <th style="padding:14px;">Category</th>
+
+                                            <th style="padding:14px;">Date</th>
+
+                                            <th style="padding:14px;">Status</th>
+
+                                            <th style="padding:14px;">Action</th>
+
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody id="mediaTable">
+
+                                        <% media.forEach(item=>{ %>
+
+                                            <tr data-category="<%= item.category %>"
+                                                data-title="<%= item.title.toLowerCase() %>"
+                                                style="border-top:1px solid #edf2f7;">
+
+                                                <td style="padding:14px;">
+
+                                                    <img src="<%= item.image %>"
+                                                        style="width:90px;height:65px;border-radius:10px;object-fit:cover;cursor:pointer;"
+                                                        onclick="previewImage('<%= item.image %>')">
+
+                                                </td>
+
+                                                <td style="padding:14px;font-weight:600;">
+                                                    <%= item.title %>
+                                                </td>
+
+                                                <td style="padding:14px;">
+
+                                                    <% if(item.category==='newspaper' ){ %>
+
+                                                        <span
+                                                            style="background:#eef2ff;color:#4f46e5;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;">
+                                                            Newspaper
+                                                        </span>
+
+                                                        <% } %>
+
+                                                            <% if(item.category==='pressrelease' ){ %>
+
+                                                                <span
+                                                                    style="background:#ecfeff;color:#0891b2;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;">
+                                                                    Press Release
+                                                                </span>
+
+                                                                <% } %>
+
+                                                                    <% if(item.category==='infographics' ){ %>
+
+                                                                        <span
+                                                                            style="background:#ecfdf5;color:#059669;padding:6px 12px;border-radius:20px;font-size:13px;font-weight:600;">
+                                                                            Infographics
+                                                                        </span>
+
+                                                                        <% } %>
+
+                                                </td>
+
+                                                <td style="padding:14px;">
+                                                    <%= new Date(item.date).toLocaleDateString() %>
+                                                </td>
+
+                                                <td style="padding:14px;">
+
+                                                    <% if(item.isPublished){ %>
+
+                                                        <span style="color:#16a34a;font-weight:700;">
+                                                            Published
+                                                        </span>
+
+                                                        <% }else{ %>
+
+                                                            <span style="color:#dc2626;font-weight:700;">
+                                                                Draft
+                                                            </span>
+
+                                                            <% } %>
+
+                                                </td>
+
+                                                <td style="padding:14px;">
+
+                                                    <a href="/mediagallery/delete/<%= item._id %>"
+                                                        onclick="return confirm('Delete this media?')"
+                                                        style="background:#ef4444;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </a>
+
+                                                </td>
+
+                                            </tr>
+
+                                            <% }) %>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div id="previewModal" style="
+display:none;
+position:fixed;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.8);
+justify-content:center;
+align-items:center;
+z-index:9999;
+">
+
+                <img id="previewImg" style="
+max-width:85%;
+max-height:85%;
+border-radius:14px;
+">
+
+            </div>
+
+            <script>
+
+                const preview = document.getElementById("previewImg");
+
+                const modal = document.getElementById("previewModal");
+
+                function previewImage(src) {
+
+                    preview.src = src;
+
+                    modal.style.display = "flex";
+
+                }
+
+                modal.onclick = () => {
+
+                    modal.style.display = "none";
+
+                }
+
+                document.getElementById("image").addEventListener("change", function (e) {
+
+                    const file = e.target.files[0];
+
+                    if (!file) return;
+
+                    const reader = new FileReader();
+
+                    reader.onload = function (ev) {
+
+                        let img = document.querySelector(".preview-box img");
+
+                        if (!img) {
+
+                            const box = document.createElement("div");
+
+                            box.className = "preview-box";
+
+                            box.innerHTML = '<img>';
+
+                            document.querySelector(".card").appendChild(box);
+
+                            img = box.querySelector("img");
+
+                        }
+
+                        img.src = ev.target.result;
+
+                    }
+
+                    reader.readAsDataURL(file);
+
+                });
+
+                const search = document.getElementById("searchInput");
+
+                const filter = document.getElementById("categoryFilter");
+
+                function applyFilter() {
+
+                    const keyword = search.value.toLowerCase();
+
+                    const cat = filter.value;
+
+                    document.querySelectorAll("#mediaTable tr").forEach(row => {
+
+                        const title = row.dataset.title;
+
+                        const category = row.dataset.category;
+
+                        const show =
+
+                            title.includes(keyword)
+
+                            &&
+
+                            (cat === "" || category === cat);
+
+                        row.style.display = show ? "" : "none";
+
+                    });
+
+                }
+
+                search.addEventListener("keyup", applyFilter);
+
+                filter.addEventListener("change", applyFilter);
+
+            </script>
+
+</body>
+
+</html>

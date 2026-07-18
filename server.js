@@ -10,7 +10,12 @@ import { fileURLToPath } from "url";
 
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
+import vipLiveRoute from "./routes/vipLiveRoute.js";
+import videoRoutes from "./routes/videogalleryRoutes.js";
+import albumRoutes from "./routes/albumRoutes.js";
+import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
 
+import joinRoutes from "./routes/joinRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -35,12 +40,18 @@ app.use(
 
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
+app.use("/api", vipLiveRoute);
+app.use("/api", videoRoutes);
+app.use("/api",albumRoutes);
+app.use("/api/join", joinRoutes);
+app.use("/", mediaGalleryRoutes);
+app.use("/api", mediaGalleryRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(console.error);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server Running http://localhost:${PORT}`);
+app.listen(9191,"0.0.0.0",()=>{
+ console.log("🚀 Server Running http://localhost:9191");
 });

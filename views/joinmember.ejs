@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7fc;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+    h1 { color: #1565c0; margin-bottom: 20px; }
+    .main-content{
+    margin-left:270px;
+    padding:24px;
+}
+
+@media(max-width:1100px){
+    .main-content{
+        margin-left:0;
+        padding:80px 15px 20px;
+    }
+}
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .toolbar input, .toolbar select {
+      padding: 8px 10px;
+      border: 1px solid #d9e2ef;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .toolbar button {
+      padding: 8px 16px;
+      background: #1565c0;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eef1f6;
+      font-size: 14px;
+    }
+    th {
+      background: #eef5ff;
+      color: #1565c0;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge.Pending { background: #fff4e0; color: #b8860b; }
+    .badge.Approved { background: #e3f9e5; color: #1a7f37; }
+    .badge.Rejected { background: #fde2e2; color: #c0392b; }
+
+    .actions button {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-right: 6px;
+      color: #fff;
+    }
+    .btn-approve { background: #1a7f37; }
+    .btn-reject { background: #c0392b; }
+    .btn-view { background: #1565c0; }
+    .btn-delete { background: #6b7280; }
+
+    .pagination {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid #d9e2ef;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      width: 480px;
+      max-width: 90vw;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .modal-box h2 { margin-top: 0; color: #1565c0; }
+    .modal-box p { margin: 6px 0; font-size: 14px; }
+    .modal-box .close-btn {
+      float: right;
+      cursor: pointer;
+      font-weight: 700;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+    <%- include("common/sidebar") %>
+
+    <div class="main-content">
+
+  <h1><%= pageTitle %> (<%= total %> total)</h1>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Search name / mobile / email / member ID" />
+
+    <select id="typeFilter">
+      <option value="">All Types</option>
+      <option value="party">Party</option>
+      <option value="student">Student</option>
+      <option value="volunteer">Volunteer</option>
+    </select>
+
+    <select id="statusFilter">
+      <option value="">All Status</option>
+      <option value="Pending">Pending</option>
+      <option value="Approved">Approved</option>
+      <option value="Rejected">Rejected</option>
+    </select>
+
+    <button onclick="loadApplications(1)">Filter</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Mobile</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Member ID</th>
+        <th>Applied On</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- Server-rendered initial rows -->
+      <% applications.forEach(function(app) { %>
+        <tr data-id="<%= app._id %>">
+          <td><%= app.fullName %></td>
+          <td><%= app.mobile %></td>
+          <td><%= app.type %></td>
+          <td><span class="badge <%= app.status %>"><%= app.status %></span></td>
+          <td><%= app.memberId || "-" %></td>
+          <td><%= new Date(app.createdAt).toLocaleDateString("en-GB") %></td>
+          <td class="actions">
+            <button class="btn-view" onclick="viewApplication('<%= app._id %>')">View</button>
+            <% if (app.status === "Pending") { %>
+              <button class="btn-approve" onclick="updateStatus('<%= app._id %>', 'Approved')">Approve</button>
+              <button class="btn-reject" onclick="updateStatus('<%= app._id %>', 'Rejected')">Reject</button>
+            <% } %>
+            <button class="btn-delete" onclick="deleteApplication('<%= app._id %>')">Delete</button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <button id="prevBtn" onclick="changePage(-1)">Prev</button>
+    <span id="pageLabel">Page 1</span>
+    <button id="nextBtn" onclick="changePage(1)">Next</button>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal-box">
+      <span class="close-btn" onclick="closeModal()">✕</span>
+      <h2>Application Details</h2>
+      <div id="modalContent">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let totalPages = 1;
+
+    async function loadApplications(page = 1) {
+      currentPage = page;
+
+      const type = document.getElementById("typeFilter").value;
+      const status = document.getElementById("statusFilter").value;
+      const search = document.getElementById("searchInput").value;
+
+      const params = new URLSearchParams({
+        page,
+        limit: 20,
+        type,
+        status,
+        search,
+      });
+
+      try {
+        const res = await fetch(`/joinmember/data?${params.toString()}`);
+        const json = await res.json();
+
+        if (!json.success) {
+          alert(json.message || "Failed to load applications.");
+          return;
+        }
+
+        renderTable(json.data);
+        totalPages = json.pagination.totalPages;
+        document.getElementById("pageLabel").textContent =
+          `Page ${json.pagination.page} of ${json.pagination.totalPages || 1}`;
+        document.getElementById("prevBtn").disabled = json.pagination.page <= 1;
+        document.getElementById("nextBtn").disabled =
+          json.pagination.page >= json.pagination.totalPages;
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while loading applications.");
+      }
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No applications found.</td></tr>`;
+        return;
+      }
+
+      rows.forEach((app) => {
+        const tr = document.createElement("tr");
+
+        const actionButtons =
+          app.status === "Pending"
+            ? `<button class="btn-approve" onclick="updateStatus('${app._id}', 'Approved')">Approve</button>
+               <button class="btn-reject" onclick="updateStatus('${app._id}', 'Rejected')">Reject</button>`
+            : "";
+
+        tr.innerHTML = `
+          <td>${app.fullName}</td>
+          <td>${app.mobile}</td>
+          <td>${app.type}</td>
+          <td><span class="badge ${app.status}">${app.status}</span></td>
+          <td>${app.memberId || "-"}</td>
+          <td>${new Date(app.createdAt).toLocaleDateString("en-GB")}</td>
+          <td class="actions">
+            <button class="btn-view" onclick="viewApplication('${app._id}')">View</button>
+            ${actionButtons}
+            <button class="btn-delete" onclick="deleteApplication('${app._id}')">Delete</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function changePage(delta) {
+      const next = currentPage + delta;
+      if (next < 1 || next > totalPages) return;
+      loadApplications(next);
+    }
+
+    async function viewApplication(id) {
+      const modal = document.getElementById("viewModal");
+      const content = document.getElementById("modalContent");
+      modal.classList.add("open");
+      content.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch(`/joinmember/${id}`);
+        const json = await res.json();
+
+        if (!json.success) {
+          content.innerHTML = "Failed to load application.";
+          return;
+        }
+
+        const a = json.data;
+
+        content.innerHTML = `
+          <p><strong>Name:</strong> ${a.fullName}</p>
+          <p><strong>Father's Name:</strong> ${a.fatherName}</p>
+          <p><strong>Mobile:</strong> ${a.mobile}</p>
+          <p><strong>Alt. Mobile:</strong> ${a.alternateMobile || "-"}</p>
+          <p><strong>WhatsApp:</strong> ${a.whatsappNumber || "-"}</p>
+          <p><strong>Email:</strong> ${a.email || "-"}</p>
+          <p><strong>Gender:</strong> ${a.gender}</p>
+          <p><strong>DOB:</strong> ${new Date(a.dob).toLocaleDateString("en-GB")}</p>
+          <p><strong>Address:</strong> ${a.address}</p>
+          <p><strong>State / District:</strong> ${a.state} / ${a.district}</p>
+          <p><strong>Assembly:</strong> ${a.assembly}</p>
+          <p><strong>PIN Code:</strong> ${a.pinCode || "-"}</p>
+          <p><strong>Occupation:</strong> ${a.occupation}</p>
+          ${a.type === "student" ? `
+            <p><strong>College:</strong> ${a.collegeName || "-"}</p>
+            <p><strong>Course:</strong> ${a.course || "-"}</p>
+          ` : ""}
+          ${a.type === "volunteer" ? `
+            <p><strong>Profession:</strong> ${a.profession || "-"}</p>
+            <p><strong>Area of Interest:</strong> ${a.areaOfInterest || "-"}</p>
+          ` : ""}
+          <p><strong>Status:</strong> <span class="badge ${a.status}">${a.status}</span></p>
+          <p><strong>Member ID:</strong> ${a.memberId || "-"}</p>
+          <p><strong>Remarks:</strong> ${a.remarks || "-"}</p>
+        `;
+      } catch (err) {
+        console.error(err);
+        content.innerHTML = "Something went wrong.";
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("viewModal").classList.remove("open");
+    }
+
+    async function updateStatus(id, status) {
+      const remarks = prompt(`Add remarks for ${status} (optional):`, "") || "";
+
+      if (!confirm(`Mark this application as ${status}?`)) return;
+
+      try {
+        const res = await fetch(`/joinmember/${id}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, remarks }),
+        });
+
+        const json = await res.json();
+
+        if (!json.success) {
+          alert(json.message || "Failed to update status.");
+          return;
+        }
+
+        loadApplications(currentPage);
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while updating status.");
+      }
+    }
+
+    async function deleteApplication(id) {
+      if (!confirm("Delete this application permanently?")) return;
+
+      try {
+        const res = await fetch(`/joinmember/${id}`, { method: "DELETE" });
+        const json = await res.json();
+
+        if (!json.success) {
+          alert(json.message || "Failed to delete application.");
+          return;
+        }
+
+        loadApplications(currentPage);
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while deleting.");
+      }
+    }
+  </script>
+  </div>
+
+</body>
+</html>
