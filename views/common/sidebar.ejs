@@ -73,6 +73,48 @@
 
        
         <li>
+          <a href="/bainar" class="sidebar-link-item">
+            <span class="link-icon-marker"><i class="fa-solid fa-house-flag"></i></span>
+            <span class="link-text">Live Updates Bainar </span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/member" class="sidebar-link-item" id="coursesLink">
+            <span class="link-icon-marker"><i class="fas fa-file-alt"></i></span>
+            <span class="link-text">Add Worker</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/workerlist" class="sidebar-link-item" data-category="ebook">
+            <span class="link-icon-marker"><i class="fas fa-book-open"></i></span>
+            <span class="link-text">Worker List</span>
+          </a>
+        </li>
+        
+        <li>
+          <a href="#" class="sidebar-link-item" data-category="test">
+            <span class="link-icon-marker"><i class="fas fa-chart-line"></i></span>
+            <span class="link-text">Models</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="sidebar-link-item" data-category="qp">
+            <span class="link-icon-marker"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+            <span class="link-text">Lottery</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="#" class="sidebar-link-item">
+            <span class="link-icon-marker"><i class="fa-solid fa-circle-user"></i></span>
+            <span class="link-text">Contact</span>
+          </a>
+        </li>
+        
+        <li>
           <a href="{% url 'logout' %}" class="sidebar-link-item logout-item">
             <span class="link-icon-marker"><i class="fa-solid fa-right-from-bracket"></i></span>
             <span class="link-text">Logout</span>
@@ -103,15 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Courses link click handler
-    const coursesLink = document.getElementById('coursesLink');
-    if (coursesLink) {
-        coursesLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            sidebarLinks.forEach(link => link.classList.remove('active'));
-            this.classList.add('active');
-        });
-    }
+   
     
     // Mobile toggle functionality
     const sidebar = document.getElementById('responsiveSidebar');

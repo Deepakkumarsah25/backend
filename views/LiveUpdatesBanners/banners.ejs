@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banner · Professional Management</title>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: #f2f6fc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ----- header placeholder (will be replaced by include) ----- */
+    .demo-header {
+      background: #0b1e33;
+      color: white;
+      padding: 0.9rem 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+    .demo-header h2 {
+      font-weight: 500;
+      font-size: 1.2rem;
+      letter-spacing: -0.2px;
+    }
+    .demo-header i {
+      font-size: 1.5rem;
+      color: #5b9aff;
+    }
+
+    /* ----- main container ----- */
+    .page-container {
+      max-width: 1440px;
+      margin: 2rem auto;
+      padding: 7rem;
+      flex: 1;
+    }
+
+    /* page title */
+    .page-title {
+      font-size: 1.9rem;
+      font-weight: 600;
+      color: #0b1e33;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      letter-spacing: -0.3px;
+    }
+    .page-title i {
+      color: #2563eb;
+      font-size: 2rem;
+    }
+
+    /* ----- upload card (clean, elevated) ----- */
+    .upload-card {
+      background: #ffffff;
+      border-radius: 32px;
+      padding: 2.2rem 2.5rem 2.5rem;
+      box-shadow: 0 16px 40px -10px rgba(0, 20, 40, 0.10);
+      margin-bottom: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      transition: box-shadow 0.2s;
+    }
+    .upload-card:hover {
+      box-shadow: 0 20px 48px -12px rgba(0, 30, 60, 0.16);
+    }
+
+    /* dropzone — refined, spacious */
+    .dropzone {
+      border: 2px dashed #cbd9eb;
+      border-radius: 28px;
+      padding: 2.8rem 1.8rem;
+      text-align: center;
+      background: #f9fcff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .dropzone:hover {
+      background: #f2f8ff;
+      border-color: #6b9aff;
+    }
+    .dropzone.drag {
+      border-color: #2563eb;
+      background: #e9f2ff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+    }
+    .dropzone .icon {
+      font-size: 3.6rem;
+      color: #2563eb;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+    .dropzone h3 {
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: #0b1e33;
+      margin-bottom: 0.2rem;
+    }
+    .dropzone span {
+      color: #5b6f87;
+      font-size: 0.95rem;
+      font-weight: 400;
+    }
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* file chips */
+    .file-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      margin-top: 1.4rem;
+      padding: 0.2rem 0;
+    }
+    .file-chip {
+      background: #eef4ff;
+      color: #1a3b6b;
+      padding: 0.4rem 1.2rem 0.4rem 1.4rem;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      border: 1px solid #d6e3ff;
+    }
+    .file-chip i {
+      color: #2563eb;
+      font-size: 0.9rem;
+    }
+
+    /* primary button */
+    .btn {
+      margin-top: 1.8rem;
+      border: none;
+      background: #2563eb;
+      color: white;
+      padding: 0.9rem 2.8rem;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+      box-shadow: 0 8px 20px -6px rgba(37, 99, 235, 0.30);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .btn i {
+      font-size: 1rem;
+    }
+    .btn:hover {
+      background: #1a4fc3;
+      transform: scale(0.98);
+      box-shadow: 0 10px 24px -8px rgba(37, 99, 235, 0.45);
+    }
+
+    /* gallery header */
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.8rem;
+      flex-wrap: wrap;
+    }
+    .gallery-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: #0b1e33;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .gallery-title i {
+      color: #2563eb;
+    }
+    .badge-count {
+      background: #e9eff8;
+      padding: 0.2rem 1rem;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #1a3b6b;
+    }
+
+    /* ----- GALLERY: horizontal scroll + card style (professional) ----- */
+    .gallery-wrapper {
+      overflow-x: auto;
+      padding: 0.4rem 0.2rem 0.8rem 0.2rem;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #b6cbe0 #eaf0f8;
+    }
+    .gallery-wrapper::-webkit-scrollbar {
+      height: 6px;
+    }
+    .gallery-wrapper::-webkit-scrollbar-track {
+      background: #eaf0f8;
+      border-radius: 20px;
+    }
+    .gallery-wrapper::-webkit-scrollbar-thumb {
+      background: #b6cbe0;
+      border-radius: 20px;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 1.8rem;
+      align-items: stretch;
+      min-width: max-content;
+      padding-bottom: 0.2rem;
+    }
+
+    /* banner card — horizontal friendly, fixed width */
+    .banner-card {
+      background: #ffffff;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 12px 28px -8px rgba(0, 20, 40, 0.08);
+      transition: all 0.25s ease;
+      border: 1px solid rgba(200, 215, 235, 0.25);
+      display: flex;
+      flex-direction: column;
+      width: 280px;
+      flex-shrink: 0;
+      backdrop-filter: blur(2px);
+    }
+    .banner-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow: 0 24px 44px -12px rgba(0, 30, 60, 0.18);
+      border-color: #b8cef0;
+    }
+
+    .banner-card img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      background: #eef2f7;
+      display: block;
+      border-bottom: 1px solid #eef2f7;
+    }
+
+    .card-footer {
+      padding: 0.9rem 1.2rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.6rem;
+      background: #fafdff;
+    }
+    .banner-id {
+      color: #4b637f;
+      font-size: 0.7rem;
+      font-weight: 500;
+      background: #f0f4fb;
+      padding: 0.2rem 0.9rem;
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      letter-spacing: 0.1px;
+    }
+    .banner-id i {
+      font-size: 0.7rem;
+      color: #6b8bb0;
+    }
+
+    .del {
+      background: #fee9e7;
+      color: #b81c1c;
+      text-decoration: none;
+      padding: 0.3rem 1.1rem;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      border: 1px solid transparent;
+      cursor: pointer;
+      border: none;
+    }
+    .del i {
+      font-size: 0.75rem;
+    }
+    .del:hover {
+      background: #fcd8d4;
+      color: #a11616;
+      border-color: #f5bdb8;
+    }
+
+    /* empty state inside horizontal container */
+    .empty {
+      background: white;
+      padding: 3rem 2.5rem;
+      border-radius: 40px;
+      text-align: center;
+      color: #5b6f87;
+      font-size: 1rem;
+      border: 1px dashed #d0ddee;
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .empty i {
+      font-size: 2.8rem;
+      color: #b8cee8;
+    }
+
+    /* responsive */
+    @media (max-width: 700px) {
+      .page-container {
+        padding: 0 1.2rem;
+      }
+      .upload-card {
+        padding: 1.5rem 1.2rem;
+      }
+      .dropzone {
+        padding: 2rem 1rem;
+      }
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .gallery {
+        gap: 1.2rem;
+      }
+      .banner-card {
+        width: 240px;
+      }
+      .page-title {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .banner-card {
+        width: 210px;
+      }
+      .banner-card img {
+        height: 140px;
+      }
+    }
+
+    /* utility */
+    .text-muted {
+      color: #6f88a0;
+    }
+
+    /* toast notification */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #0b1e33;
+      color: white;
+      padding: 0.9rem 1.8rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success { background: #0f7b3a; }
+    .toast.error { background: #b22234; }
+  </style>
+</head>
+<body>
+  <!-- header include (replaced by server) -->
+  <%- include("../common/header.ejs") %>
+
+  <div class="page-container">
+    <!-- title -->
+    <div class="page-title">
+      <i class="fas fa-images"></i> 
+      Live Updates Banner Management
+    </div>
+
+    <!-- upload card -->
+    <div class="upload-card">
+      <form action="/banner/add" method="POST" enctype="multipart/form-data" id="bannerForm">
+        <div class="dropzone" id="dropzone">
+          <span class="icon"><i class="fas fa-cloud-upload-alt"></i></span>
+          <h3>Drag & drop banner images</h3>
+          <span>or click to browse — multiple images supported</span>
+          <input type="file" name="banner" id="bannerInput" multiple required accept="image/*" />
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <button type="submit" class="btn">
+          <i class="fas fa-upload"></i> Upload Banner
+        </button>
+      </form>
+    </div>
+
+    <!-- gallery header -->
+    <div class="gallery-header">
+      <h2 class="gallery-title">
+        <i class="fas fa-th-large"></i> Uploaded Banners
+        <span class="badge-count" id="bannerCount"><%= (typeof banners !== 'undefined' && banners.length) ? banners.length : 0 %></span>
+      </h2>
+    </div>
+
+    <!-- horizontal scroll gallery -->
+    <div class="gallery-wrapper">
+      <div class="gallery" id="galleryContainer">
+        <% if (typeof banners !== 'undefined' && banners.length) { %>
+          <% banners.forEach(banner => { %>
+            <div class="banner-card" data-id="<%= banner._id %>">
+              <img src="<%= banner.imageUrl %>" alt="Banner" loading="lazy" />
+              <div class="card-footer">
+                <span class="banner-id"><i class="far fa-id-card"></i> ID: <%= banner._id %></span>
+                <button class="del delete-btn" data-id="<%= banner._id %>">
+                  <i class="fas fa-trash-alt"></i> Delete
+                </button>
+              </div>
+            </div>
+          <% }) %>
+        <% } else { %>
+          <div class="empty" id="emptyState">
+            <i class="fas fa-box-open"></i>
+            <span>No banners uploaded yet.</span>
+            <span style="font-size: 0.9rem; color: #8ba0b9;">Drop your images above to get started.</span>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+
+
+  <script>
+    (function() {
+      const dropzone = document.getElementById('dropzone');
+      const input = document.getElementById('bannerInput');
+      const fileList = document.getElementById('fileList');
+      const galleryContainer = document.getElementById('galleryContainer');
+      const bannerCount = document.getElementById('bannerCount');
+      const toast = document.getElementById('toast');
+
+      // ---------- toast ----------
+      let toastTimer;
+      function showToast(message, type = 'success') {
+        toast.textContent = message;
+        toast.className = 'toast ' + type;
+        // force reflow
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2800);
+      }
+
+      // ---------- render file chips ----------
+      function renderFiles(files) {
+        fileList.innerHTML = '';
+        if (!files || files.length === 0) return;
+        Array.from(files).forEach((file) => {
+          const chip = document.createElement('span');
+          chip.className = 'file-chip';
+          chip.innerHTML = `<i class="fas fa-image"></i> ${file.name}`;
+          fileList.appendChild(chip);
+        });
+      }
+
+      // ---------- update UI (badge + empty state) ----------
+      function updateUI() {
+        const cards = galleryContainer.querySelectorAll('.banner-card');
+        const count = cards.length;
+        if (bannerCount) bannerCount.textContent = count;
+
+        // remove existing empty
+        const existingEmpty = galleryContainer.querySelector('.empty');
+        if (existingEmpty) existingEmpty.remove();
+
+        if (count === 0) {
+          const emptyDiv = document.createElement('div');
+          emptyDiv.className = 'empty';
+          emptyDiv.id = 'emptyState';
+          emptyDiv.innerHTML = `
+            <i class="fas fa-box-open"></i>
+            <span>No banners uploaded yet.</span>
+            <span style="font-size: 0.9rem; color: #8ba0b9;">Drop your images above to get started.</span>
+          `;
+          galleryContainer.appendChild(emptyDiv);
+        }
+      }
+
+      // ---------- delete handler (AJAX) ----------
+      async function handleDelete(btn) {
+        const id = btn.getAttribute('data-id');
+        if (!id) return;
+
+        // disable button to prevent double click
+        btn.disabled = true;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+          const response = await fetch(`/banner/delete/${id}`, {
+            method: 'DELETE',
+            headers: { 
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            }
+          });
+
+          // Try to parse JSON response
+          let result;
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            result = await response.json();
+          } else {
+            // If server returns HTML or redirect, handle gracefully
+            const text = await response.text();
+            console.warn('Server returned non-JSON:', text);
+            // Check if it's a redirect or error
+            if (response.redirected) {
+              // If redirected, it means delete was successful but server sent redirect
+              // We'll consider it a success and remove the card
+              const card = btn.closest('.banner-card');
+              if (card) card.remove();
+              updateUI();
+              showToast('Banner deleted successfully', 'success');
+              return;
+            }
+            throw new Error('Unexpected server response');
+          }
+
+          if (result && result.success) {
+            // remove the card
+            const card = btn.closest('.banner-card');
+            if (card) card.remove();
+            updateUI();
+            showToast('Banner deleted successfully', 'success');
+          } else {
+            throw new Error(result?.message || 'Delete failed');
+          }
+        } catch (err) {
+          console.error('Delete error:', err);
+          // If error but card still exists, we should check if it was actually deleted
+          // Maybe the server returned 200 but with HTML (redirect)
+          const card = btn.closest('.banner-card');
+          if (card) {
+            // Try to see if card still exists in DOM - if it's there, keep it
+            // But if server already deleted it, we should remove
+            // We'll make a GET request to check if banner still exists
+            try {
+              const checkRes = await fetch(`/banner/check/${id}`, {
+                method: 'HEAD',
+                headers: { 'Accept': 'application/json' }
+              });
+              if (checkRes.status === 404) {
+                // Banner doesn't exist anymore, remove it
+                if (card) card.remove();
+                updateUI();
+                showToast('Banner deleted successfully', 'success');
+                return;
+              }
+            } catch (checkErr) {
+              // If we can't check, assume it's still there
+            }
+          }
+          showToast('Failed to delete banner: ' + err.message, 'error');
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }
+      }
+
+      // ---------- attach delete events (delegation) ----------
+      galleryContainer.addEventListener('click', function(e) {
+        const btn = e.target.closest('.delete-btn');
+        if (btn) {
+          e.preventDefault();
+          e.stopPropagation();
+          handleDelete(btn);
+        }
+      });
+
+      // ---------- file input change ----------
+      input.addEventListener('change', function(e) {
+        renderFiles(this.files);
+      });
+
+      // ---------- drag/drop ----------
+      ['dragenter', 'dragover'].forEach((ev) => {
+        dropzone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropzone.classList.add('drag');
+        });
+      });
+      ['dragleave', 'drop'].forEach((ev) => {
+        dropzone.addEventListener(ev, (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('drag');
+        });
+      });
+      dropzone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length) {
+          input.files = files;
+          renderFiles(files);
+        }
+      });
+
+      // ---------- on load ----------
+      window.addEventListener('load', function() {
+        updateUI();
+      });
+
+      console.log('Banner management UI (AJAX delete) ready.');
+    })();
+  </script>
+</body>
+</html>

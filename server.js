@@ -16,6 +16,8 @@ import albumRoutes from "./routes/albumRoutes.js";
 import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
 
 import joinRoutes from "./routes/joinRoutes.js";
+import bainarliveupdate from './routes/sections/banners.js'
+import workerRoutes from "./routes/sections/worker.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -47,6 +49,8 @@ app.use("/api/join", joinRoutes);
 app.use("/", mediaGalleryRoutes);
 app.use("/api", mediaGalleryRoutes);
 
+app.use("/", bainarliveupdate)
+app.use("/", workerRoutes);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
