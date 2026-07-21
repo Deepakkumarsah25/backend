@@ -9,15 +9,12 @@ import {
   deleteBanner,
 } from "../controllers/adminController.js";
 
-
 import {
   getAllJoinApplications,
   getJoinApplicationById,
-  updateJoinStatus,
   deleteJoinApplication,
   renderJoinAdminPage,
 } from "../controllers/joinController.js";
-
 
 import Video from "../models/videogallery.js";
 import Album from "../models/Album.js";
@@ -74,13 +71,11 @@ router.get("/album", async (req, res) => {
   }
 });
 
-
 /* Join Member */
 
 router.get("/joinmember", renderJoinAdminPage);
 router.get("/joinmember/data", getAllJoinApplications);
 router.get("/joinmember/:id", getJoinApplicationById);
-router.patch("/joinmember/:id/status", updateJoinStatus);
 router.delete("/joinmember/:id", deleteJoinApplication);
 
 /* Banner */

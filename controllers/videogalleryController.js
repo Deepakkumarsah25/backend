@@ -291,7 +291,7 @@ export const updateVideo = async (
      youtubeId =
 extractVideoId(youtubeUrl);
 
-      if (!videoId) {
+      if (!youtubeId) {
         return res.status(400).json({
           success: false,
           message:
@@ -299,7 +299,7 @@ extractVideoId(youtubeUrl);
         });
       }
 
-      thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      thumbnail = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
     }
 
     video.title =

@@ -102,6 +102,37 @@ export const getLive = async (req, res) => {
     });
   }
 };
+
+/* ===========================================
+   Get Single Live by ID
+=========================================== */
+
+export const getLiveById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const live = await VipLive.findById(id);
+
+    if (!live) {
+      return res.status(404).json({
+        success: false,
+        message: "Live stream not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: live,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
 /* ===========================================
    Update Live
 =========================================== */
