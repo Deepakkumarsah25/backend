@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Worker List</title>
+</head>
+<body>
+
+
+<h2>All Workers</h2>
+
+<table border="1" cellpadding="10">
+  <tr>
+    <th>Photo</th>
+    <th>Name</th>
+    <th>Phone</th>
+    <th>State</th>
+    <th>District</th>
+    <th>Village</th>
+    <th>Ward</th>
+  </tr>
+
+  <% workers.forEach(worker => { %>
+  <tr>
+    <td>
+      <% if(worker.photo){ %>
+        <img src="<%= worker.photo %>" width="60">
+      <% } %>
+    </td>
+
+    <td><%= worker.fullName %></td>
+    <td><%= worker.phone %></td>
+    <td><%= worker.state %></td>
+    <td><%= worker.district %></td>
+    <td><%= worker.village %></td>
+    <td><%= worker.wardNo %></td>
+  </tr>
+  <% }) %>
+
+</table>
+
+</body>
+</html>
