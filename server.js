@@ -10,6 +10,9 @@ import { fileURLToPath } from "url";
 
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
+
+import cmsRoutes from "./routes/cmsRoutes.js";
+
 import bainarliveupdate from './routes/sections/banners.js'
 import workerRoutes from "./routes/sections/worker.js";
 const app = express();
@@ -36,13 +39,15 @@ app.use(
 
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
+app.use("/cms", cmsRoutes);
+
 app.use("/", bainarliveupdate)
 app.use("/", workerRoutes);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(console.error);
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server Running http://localhost:${PORT}`);
+  
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server Running http://192.168.64.158:${PORT}`);
 });
