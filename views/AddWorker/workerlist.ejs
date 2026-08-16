@@ -1,42 +1,512 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Worker List</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Worker List · Vikassheel Insaan Party</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #f8f9fc;
+      min-height: 100vh;
+    }
+
+    /* ===== MAIN CONTENT AREA ===== */
+    .main-content {
+      margin-left: 280px;
+      margin-top: 70px;
+      padding: 30px 35px;
+      min-height: calc(100vh - 70px);
+      transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      background: #f8f9fc;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ===== TOP BAR ===== */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .top-bar h2 {
+      color: #1a1a2e;
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .top-bar h2 i {
+      background: linear-gradient(135deg, #2d1b3d 0%, #4a1a6b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .worker-count {
+      background: #f0ebf5;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d1b3d;
+    }
+
+    .add-btn {
+      background: linear-gradient(135deg, #2d1b3d 0%, #4a1a6b 100%);
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(74, 26, 107, 0.25);
+    }
+
+    .add-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(74, 26, 107, 0.35);
+    }
+
+    /* ===== TABLE WRAPPER ===== */
+    .table-wrapper {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: linear-gradient(135deg, #2d1b3d 0%, #4a1a6b 100%);
+      color: #fff;
+    }
+
+    thead th {
+      padding: 16px 18px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f0ebf5;
+      transition: all 0.3s ease;
+    }
+
+    tbody tr:hover {
+      background: #faf8fc;
+      transform: scale(1.002);
+    }
+
+    tbody td {
+      padding: 14px 18px;
+      font-size: 14px;
+      color: #1e2229;
+      vertical-align: middle;
+    }
+
+    /* ===== WORKER PHOTO ===== */
+    .worker-photo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #f0ebf5;
+      transition: all 0.3s ease;
+    }
+
+    .worker-photo:hover {
+      border-color: #4a1a6b;
+      transform: scale(1.05);
+    }
+
+    /* ===== STATUS BADGE ===== */
+    .status {
+      padding: 5px 14px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-block;
+      text-transform: capitalize;
+    }
+
+    .status.active {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .status.inactive {
+      background: #fee9e7;
+      color: #b81c1c;
+    }
+
+    .status.pending {
+      background: #fef3c7;
+      color: #b45309;
+    }
+
+    /* ===== LOCATION ===== */
+    .location {
+      font-size: 12px;
+      color: #7a7a8a;
+      line-height: 1.6;
+    }
+
+    .location i {
+      color: #4a1a6b;
+      margin-right: 3px;
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .delete-btn {
+      background: #fee9e7;
+      color: #b81c1c;
+      padding: 7px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background: #fcd8d4;
+      color: #a11616;
+      transform: scale(0.95);
+    }
+
+    .edit-btn {
+      background: #e8f0fe;
+      color: #1a56db;
+      padding: 7px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .edit-btn:hover {
+      background: #d4e2fc;
+      transform: scale(0.95);
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #7a7a8a;
+    }
+
+    .empty-state i {
+      font-size: 48px;
+      background: linear-gradient(135deg, #2d1b3d 0%, #4a1a6b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 15px;
+    }
+
+    .empty-state h3 {
+      color: #1a1a2e;
+      margin-bottom: 8px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0 !important;
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .top-bar h2 {
+        font-size: 20px;
+      }
+
+      .add-btn {
+        justify-content: center;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 1100px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 14px;
+      }
+
+      .top-bar h2 {
+        font-size: 18px;
+      }
+
+      .worker-count {
+        font-size: 12px;
+        padding: 3px 10px;
+      }
+
+      thead th {
+        font-size: 11px;
+        padding: 12px 14px;
+      }
+
+      tbody td {
+        font-size: 13px;
+        padding: 10px 14px;
+      }
+
+      .worker-photo {
+        width: 40px;
+        height: 40px;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .delete-btn, .edit-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+    }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1a1a2e;
+      color: white;
+      padding: 0.9rem 1.8rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success { background: #0f7b3a; }
+    .toast.error { background: #b22234; }
+  </style>
 </head>
 <body>
 
+  <!-- ===== HEADER ===== -->
+  <%- include("../common/header.ejs") %>
 
-<h2>All Workers</h2>
+  <!-- ===== SIDEBAR ===== -->
+  <%- include("../common/sidebar.ejs") %>
 
-<table border="1" cellpadding="10">
-  <tr>
-    <th>Photo</th>
-    <th>Name</th>
-    <th>Phone</th>
-    <th>State</th>
-    <th>District</th>
-    <th>Village</th>
-    <th>Ward</th>
-  </tr>
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+    <div class="container">
 
-  <% workers.forEach(worker => { %>
-  <tr>
-    <td>
-      <% if(worker.photo){ %>
-        <img src="<%= worker.photo %>" width="60">
-      <% } %>
-    </td>
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <h2>
+          <i class="fa-solid fa-users"></i>
+          Worker List
+          <span class="worker-count"><%= workers ? workers.length : 0 %></span>
+        </h2>
 
-    <td><%= worker.fullName %></td>
-    <td><%= worker.phone %></td>
-    <td><%= worker.state %></td>
-    <td><%= worker.district %></td>
-    <td><%= worker.village %></td>
-    <td><%= worker.wardNo %></td>
-  </tr>
-  <% }) %>
+        <a href="/member" class="add-btn">
+          <i class="fa-solid fa-plus"></i>
+          Add Worker
+        </a>
+      </div>
 
-</table>
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table>
+
+          <thead>
+            <tr>
+              <th>Photo</th>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>State</th>
+              <th>District</th>
+              <th>Village</th>
+              <th>Ward</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <% if (workers && workers.length > 0) { %>
+              <% workers.forEach(worker => { %>
+                <tr>
+                  <td>
+                    <% if(worker.photo) { %>
+                      <img src="<%= worker.photo %>" class="worker-photo" alt="<%= worker.fullName %>">
+                    <% } else { %>
+                      <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="worker-photo" alt="Default Avatar">
+                    <% } %>
+                  </td>
+
+                  <td>
+                    <strong><%= worker.fullName %></strong>
+                  </td>
+
+                  <td>
+                    <i class="fas fa-phone" style="color: #4a1a6b; font-size: 12px; margin-right: 5px;"></i>
+                    <%= worker.phone %>
+                  </td>
+
+                  <td><%= worker.state || 'N/A' %></td>
+                  <td><%= worker.district || 'N/A' %></td>
+                  <td><%= worker.village || 'N/A' %></td>
+                  <td><%= worker.wardNo || 'N/A' %></td>
+
+                  <td class="location">
+                    <i class="fas fa-map-marker-alt"></i> Lat: <%= worker.location?.lat || 0 %><br>
+                    <i class="fas fa-map-marker-alt"></i> Lng: <%= worker.location?.lng || 0 %>
+                  </td>
+
+                  <td>
+                    <span class="status <%= worker.status || 'active' %>">
+                      <%= worker.status || 'Active' %>
+                    </span>
+                  </td>
+
+                  <td>
+                    <div class="action-buttons">
+                      <!-- Edit Button -->
+                      <a href="/worker/edit/<%= worker._id %>" class="edit-btn" title="Edit Worker">
+                        <i class="fa-solid fa-pen"></i>
+                      </a>
+
+                      <!-- Delete Button -->
+                      <a href="/worker/delete/<%= worker._id %>" 
+                         class="delete-btn" 
+                         onclick="return confirm('Are you sure you want to delete this worker?')"
+                         title="Delete Worker">
+                        <i class="fa-solid fa-trash"></i>
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="10">
+                  <div class="empty-state">
+                    <i class="fa-solid fa-users-slash"></i>
+                    <h3>No Workers Found</h3>
+                    <p>Start by adding your first worker to the system.</p>
+                    <a href="/member" class="add-btn" style="display: inline-flex; margin-top: 15px;">
+                      <i class="fa-solid fa-plus"></i> Add Worker
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            <% } %>
+          </tbody>
+
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Show toast message if there's a query parameter
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const message = urlParams.get('message');
+      const type = urlParams.get('type') || 'success';
+
+      if (message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast ' + type;
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+
+        // Clean URL without reload
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    });
+  </script>
 
 </body>
 </html>

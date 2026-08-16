@@ -1,12 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Vikassheel Insaan Party</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-  <%- include("common/header.ejs")%>
-    <%- include("common/sidebar.ejs")%>
+
+    <!-- ==================== HEADER ==================== -->
+    <%- include('common/header.ejs') %>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <%- include('common/sidebar.ejs') %>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content">
+        <div class="dashboard-container">
+            
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Welcome back, Admin! Here's what's happening with your party today.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-primary">
+                        <i class="fas fa-plus"></i> New Entry
+                    </button>
+                    <button class="btn-secondary">
+                        <i class="fas fa-download"></i> Export
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">1,284</h3>
+                        <p class="stat-label">Total Member</p>
+                        <span class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> 12.5%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">46</h3>
+                        <p class="stat-label">Active Routes</p>
+                        <span class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> 8.3%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">32</h3>
+                        <p class="stat-label">Active Drivers</p>
+                        <span class="stat-trend neutral">
+                            <i class="fas fa-minus"></i> 0%
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-wrapper" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 class="stat-number">89</h3>
+                        <p class="stat-label">Live Updates</p>
+                        <span class="stat-trend positive">
+                            <i class="fas fa-arrow-up"></i> 23.7%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Activity Section -->
+            <div class="dashboard-grid">
+                <!-- Chart Card -->
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Worker Activity Overview</h3>
+                            <p class="card-subtitle">Last 7 days performance</p>
+                        </div>
+                        <div class="card-actions">
+                            <select class="filter-select">
+                                <option>This Week</option>
+                                <option>This Month</option>
+                                <option>This Year</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-placeholder">
+                            <div class="bar-chart">
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 65%;"></div>
+                                    <span class="bar-label">Mon</span>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 80%;"></div>
+                                    <span class="bar-label">Tue</span>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 45%;"></div>
+                                    <span class="bar-label">Wed</span>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 90%;"></div>
+                                    <span class="bar-label">Thu</span>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 70%;"></div>
+                                    <span class="bar-label">Fri</span>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 55%;"></div>
+                                    <span class="bar-label">Sat</span>
+                                </div>
+                                <div class="bar-item">
+                                    <div class="bar" style="height: 85%;"></div>
+                                    <span class="bar-label">Sun</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="card activity-card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Recent Activity</h3>
+                            <p class="card-subtitle">Latest updates from your party</p>
+                        </div>
+                        <a href="#" class="view-all-link">View All</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #e8f5e9; color: #2e7d32;">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-text"><strong>Rajesh Kumar</strong> joined as a new worker</p>
+                                    <span class="activity-time">2 minutes ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #e3f2fd; color: #1565c0;">
+                                    <i class="fas fa-route"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-text"><strong>Route #12</strong> was updated by Suresh</p>
+                                    <span class="activity-time">15 minutes ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #fff3e0; color: #e65100;">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-text"><strong>Driver Vijay</strong> completed his shift</p>
+                                    <span class="activity-time">1 hour ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #fce4ec; color: #c62828;">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-text"><strong>Alert:</strong> Worker attendance low today</p>
+                                    <span class="activity-time">2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon" style="background: #f3e5f5; color: #6a1b9a;">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p class="activity-text"><strong>Task #456</strong> marked as completed</p>
+                                    <span class="activity-time">3 hours ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions-section">
+                <h3 class="section-title">Quick Actions</h3>
+                <div class="quick-actions-grid">
+                    <a href="/member" class="quick-action-card">
+                        <div class="qa-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h4>Add Worker</h4>
+                        <p>Register new party worker</p>
+                    </a>
+                    <a href="/route" class="quick-action-card">
+                        <div class="qa-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <i class="fas fa-route"></i>
+                        </div>
+                        <h4>Manage Routes</h4>
+                        <p>Add or update routes</p>
+                    </a>
+                    <a href="/driver" class="quick-action-card">
+                        <div class="qa-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h4>Driver Management</h4>
+                        <p>Add or manage drivers</p>
+                    </a>
+                    <a href="/bainar" class="quick-action-card">
+                        <div class="qa-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <i class="fas fa-bullhorn"></i>
+                        </div>
+                        <h4>Live Updates</h4>
+                        <p>Post live party updates</p>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-open sidebar on desktop, but not on mobile
+            const sidebar = document.getElementById('responsiveSidebar');
+            const isMobile = window.innerWidth <= 992;
+            
+            if (!isMobile) {
+                // On desktop, sidebar is visible by default
+                document.body.classList.remove('sidebar-collapsed');
+            } else {
+                // On mobile, sidebar starts hidden
+                if (sidebar) {
+                    sidebar.classList.remove('sidebar-open');
+                }
+            }
+        });
+    </script>
 </body>
 </html>

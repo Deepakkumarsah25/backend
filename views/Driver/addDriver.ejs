@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Driver · Vikassheel Insaan Party</title>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #f8f9fc;
+      min-height: 100vh;
+    }
+
+    /* ===== MAIN CONTENT AREA ===== */
+    .main-content {
+      margin-left: 280px;
+      margin-top: 70px;
+      padding: 30px 35px;
+      min-height: calc(100vh - 70px);
+      transition: margin-left 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      background: #f8f9fc;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    /* ===== PAGE HEADER ===== */
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1a1a2e 0%, #4a1a6b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+
+    .page-title i {
+      color: #4a1a6b;
+      font-size: 28px;
+    }
+
+    .page-subtitle {
+      color: #7a7a8a;
+      font-size: 15px;
+      margin-left: 44px;
+    }
+
+    /* ===== BREADCRUMB ===== */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #7a7a8a;
+      margin-bottom: 20px;
+    }
+
+    .breadcrumb a {
+      color: #4a1a6b;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumb i {
+      font-size: 12px;
+    }
+
+    /* ===== FORM CARD ===== */
+    .form-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ===== FORM GROUP ===== */
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #1a1a2e;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-label i {
+      color: #4a1a6b;
+      margin-right: 8px;
+      width: 18px;
+    }
+
+    .form-label .required {
+      color: #dc3545;
+      margin-left: 4px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e8e8ef;
+      border-radius: 10px;
+      font-size: 15px;
+      color: #1a1a2e;
+      background: #fafcff;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: #4a1a6b;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(74, 26, 107, 0.1);
+    }
+
+    .form-control::placeholder {
+      color: #a8a8b8;
+    }
+
+    .form-control.error {
+      border-color: #dc3545;
+    }
+
+    .form-control.error:focus {
+      box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.1);
+    }
+
+    .form-control.success {
+      border-color: #15803d;
+    }
+
+    .form-control.success:focus {
+      box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.1);
+    }
+
+    .form-hint {
+      font-size: 12px;
+      color: #7a7a8a;
+      margin-top: 6px;
+    }
+
+    .form-hint i {
+      margin-right: 4px;
+    }
+
+    .form-error {
+      font-size: 12px;
+      color: #dc3545;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .form-error.show {
+      display: block;
+    }
+
+    /* ===== FORM ROW ===== */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    /* ===== BUTTONS ===== */
+    .form-actions {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #2d1b3d 0%, #4a1a6b 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(74, 26, 107, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(74, 26, 107, 0.35);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      padding: 12px 28px;
+      background: #f0ebf5;
+      color: #2d1b3d;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn-secondary:hover {
+      background: #e4dceb;
+      transform: translateY(-2px);
+    }
+
+    /* ===== SUCCESS/ERROR MESSAGES ===== */
+    .message-box {
+      padding: 14px 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid;
+    }
+
+    .message-box.show {
+      display: flex;
+    }
+
+    .message-box i {
+      font-size: 20px;
+    }
+
+    .message-box.success {
+      background: #dcfce7;
+      color: #15803d;
+      border-left-color: #15803d;
+    }
+
+    .message-box.error {
+      background: #fee9e7;
+      color: #b81c1c;
+      border-left-color: #b81c1c;
+    }
+
+    .message-box.info {
+      background: #dbeafe;
+      color: #1a56db;
+      border-left-color: #1a56db;
+    }
+
+    /* ===== LOADING SPINNER ===== */
+    .spinner {
+      display: none;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner.show {
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ===== DIVIDER ===== */
+    .form-divider {
+      border: none;
+      border-top: 1px solid #f0ebf5;
+      margin: 24px 0;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0 !important;
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .form-card {
+        padding: 1.8rem;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
+      .page-subtitle {
+        margin-left: 0;
+        font-size: 14px;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .breadcrumb {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-content {
+        padding: 14px;
+      }
+
+      .form-card {
+        padding: 1.2rem;
+      }
+
+      .page-title {
+        font-size: 20px;
+      }
+
+      .form-control {
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      .btn-primary,
+      .btn-secondary {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+    }
+
+    /* ===== TOAST NOTIFICATION ===== */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1a1a2e;
+      color: white;
+      padding: 0.9rem 1.8rem;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success { background: #0f7b3a; }
+    .toast.error { background: #b22234; }
+    .toast.info { background: #1a56db; }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <%- include("../common/header.ejs") %>
+
+  <!-- ===== SIDEBAR ===== -->
+  <%- include("../common/sidebar.ejs") %>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="/dashboard"><i class="fas fa-home"></i> Dashboard</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="/driverlist">Driver List</a>
+        <i class="fas fa-chevron-right"></i>
+        <span style="color: #1a1a2e; font-weight: 500;">Add Driver</span>
+      </div>
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <h1 class="page-title">
+          <i class="fas fa-car"></i>
+          Add New Driver
+        </h1>
+        <p class="page-subtitle">Register a new driver to manage routes and assignments</p>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div class="message-box success" id="successMessage">
+        <i class="fas fa-check-circle"></i>
+        <span id="successText">Driver added successfully!</span>
+      </div>
+
+      <div class="message-box error" id="errorMessage">
+        <i class="fas fa-exclamation-circle"></i>
+        <span id="errorText">Something went wrong. Please try again.</span>
+      </div>
+
+      <div class="message-box info" id="infoMessage">
+        <i class="fas fa-info-circle"></i>
+        <span id="infoText">Please fill in all required fields.</span>
+      </div>
+
+      <!-- Form Card -->
+      <div class="form-card">
+        <form action="/driver/add" method="POST" id="driverForm" novalidate>
+
+          <!-- Driver Name -->
+          <div class="form-group">
+            <label class="form-label" for="name">
+              <i class="fas fa-user"></i>
+              Driver Name
+              <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="name" 
+              id="name"
+              class="form-control" 
+              placeholder="Enter driver's full name"
+              required
+              autofocus
+              maxlength="50"
+            >
+            <div class="form-hint">
+              <i class="fas fa-info-circle"></i>
+              Enter the driver's full name (e.g., Rajesh Kumar)
+            </div>
+            <div class="form-error" id="nameError">
+              <i class="fas fa-exclamation-circle"></i>
+              Please enter driver name (minimum 2 characters)
+            </div>
+          </div>
+
+          <!-- Phone Number -->
+          <div class="form-group">
+            <label class="form-label" for="phone">
+              <i class="fas fa-phone"></i>
+              Phone Number
+              <span class="required">*</span>
+            </label>
+            <input 
+              type="tel" 
+              name="phone" 
+              id="phone"
+              class="form-control" 
+              placeholder="Enter 10-digit phone number"
+              required
+              pattern="[0-9]{10}"
+              maxlength="10"
+            >
+            <div class="form-hint">
+              <i class="fas fa-info-circle"></i>
+              Enter a valid 10-digit phone number (e.g., 9876543210)
+            </div>
+            <div class="form-error" id="phoneError">
+              <i class="fas fa-exclamation-circle"></i>
+              Please enter a valid 10-digit phone number
+            </div>
+          </div>
+
+          <!-- Vehicle Number -->
+          <div class="form-group">
+            <label class="form-label" for="vehicleNumber">
+              <i class="fas fa-truck"></i>
+              Vehicle Number
+              <span class="required">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="vehicleNumber" 
+              id="vehicleNumber"
+              class="form-control" 
+              placeholder="Enter vehicle registration number"
+              required
+              maxlength="20"
+            >
+            <div class="form-hint">
+              <i class="fas fa-info-circle"></i>
+              Enter the full vehicle registration number (e.g., UP32AB1234)
+            </div>
+            <div class="form-error" id="vehicleError">
+              <i class="fas fa-exclamation-circle"></i>
+              Please enter vehicle number (minimum 3 characters)
+            </div>
+          </div>
+
+          <hr class="form-divider">
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submitBtn">
+              <span id="btnText">
+                <i class="fas fa-plus"></i>
+                Add Driver
+              </span>
+              <span class="spinner" id="btnSpinner">
+                <i class="fas fa-spinner"></i>
+              </span>
+            </button>
+            
+            <a href="/driverlist" class="btn-secondary">
+              <i class="fas fa-arrow-left"></i>
+              Cancel & Return
+            </a>
+          </div>
+
+        </form>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // ===== DOM Elements =====
+      const form = document.getElementById('driverForm');
+      const nameInput = document.getElementById('name');
+      const phoneInput = document.getElementById('phone');
+      const vehicleInput = document.getElementById('vehicleNumber');
+      const submitBtn = document.getElementById('submitBtn');
+      const btnText = document.getElementById('btnText');
+      const btnSpinner = document.getElementById('btnSpinner');
+      const successMsg = document.getElementById('successMessage');
+      const errorMsg = document.getElementById('errorMessage');
+      const infoMsg = document.getElementById('infoMessage');
+      const toast = document.getElementById('toast');
+
+      // ===== Toast Functions =====
+      let toastTimer;
+
+      function showToast(message, type = 'success') {
+        toast.textContent = message;
+        toast.className = 'toast ' + type;
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      }
+
+      // ===== Message Functions =====
+      function hideAllMessages() {
+        successMsg.classList.remove('show');
+        errorMsg.classList.remove('show');
+        infoMsg.classList.remove('show');
+      }
+
+      function showSuccess(message) {
+        hideAllMessages();
+        successMsg.querySelector('#successText').textContent = message;
+        successMsg.classList.add('show');
+        setTimeout(() => {
+          successMsg.classList.remove('show');
+        }, 4000);
+      }
+
+      function showError(message) {
+        hideAllMessages();
+        errorMsg.querySelector('#errorText').textContent = message;
+        errorMsg.classList.add('show');
+        setTimeout(() => {
+          errorMsg.classList.remove('show');
+        }, 4000);
+      }
+
+      function showInfo(message) {
+        hideAllMessages();
+        infoMsg.querySelector('#infoText').textContent = message;
+        infoMsg.classList.add('show');
+        setTimeout(() => {
+          infoMsg.classList.remove('show');
+        }, 4000);
+      }
+
+      // ===== Validation Functions =====
+      function validateField(input, errorId, condition, errorMessage) {
+        const errorEl = document.getElementById(errorId);
+        if (!condition) {
+          input.classList.add('error');
+          input.classList.remove('success');
+          errorEl.classList.add('show');
+          return false;
+        } else {
+          input.classList.remove('error');
+          input.classList.add('success');
+          errorEl.classList.remove('show');
+          return true;
+        }
+      }
+
+      function validateName() {
+        const value = nameInput.value.trim();
+        return validateField(
+          nameInput, 
+          'nameError', 
+          value.length >= 2 && value.length <= 50,
+          'Please enter driver name (minimum 2 characters)'
+        );
+      }
+
+      function validatePhone() {
+        const value = phoneInput.value.trim();
+        const isValid = /^[0-9]{10}$/.test(value);
+        return validateField(
+          phoneInput, 
+          'phoneError', 
+          isValid,
+          'Please enter a valid 10-digit phone number'
+        );
+      }
+
+      function validateVehicle() {
+        const value = vehicleInput.value.trim();
+        return validateField(
+          vehicleInput, 
+          'vehicleError', 
+          value.length >= 3 && value.length <= 20,
+          'Please enter vehicle number (minimum 3 characters)'
+        );
+      }
+
+      // ===== Real-time Validation =====
+      nameInput.addEventListener('blur', validateName);
+      nameInput.addEventListener('input', function() {
+        if (this.classList.contains('error') || this.value.trim()) {
+          validateName();
+        }
+      });
+
+      phoneInput.addEventListener('blur', validatePhone);
+      phoneInput.addEventListener('input', function() {
+        // Only allow numbers
+        this.value = this.value.replace(/\D/g, '');
+        if (this.classList.contains('error') || this.value.length >= 10) {
+          validatePhone();
+        }
+      });
+
+      vehicleInput.addEventListener('blur', validateVehicle);
+      vehicleInput.addEventListener('input', function() {
+        // Convert to uppercase
+        this.value = this.value.toUpperCase();
+        if (this.classList.contains('error') || this.value.trim()) {
+          validateVehicle();
+        }
+      });
+
+      // ===== Form Submit =====
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Validate all fields
+        const isNameValid = validateName();
+        const isPhoneValid = validatePhone();
+        const isVehicleValid = validateVehicle();
+
+        if (!isNameValid || !isPhoneValid || !isVehicleValid) {
+          // Scroll to first error
+          const firstError = document.querySelector('.form-control.error');
+          if (firstError) {
+            firstError.focus();
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          showInfo('Please fix all errors before submitting');
+          return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        btnText.innerHTML = 'Adding Driver...';
+        btnSpinner.classList.add('show');
+
+        // Get form data
+        const formData = new FormData(form);
+        const formObject = {};
+        formData.forEach((value, key) => {
+          formObject[key] = value.trim();
+        });
+
+        // Submit via AJAX
+        fetch('/driver/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(formObject)
+        })
+        .then(response => {
+          // Check if response is JSON
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return response.json();
+          } else {
+            // If redirect (HTML response), treat as success
+            if (response.redirected) {
+              return { success: true, redirect: response.url };
+            }
+            throw new Error('Unexpected response from server');
+          }
+        })
+        .then(data => {
+          if (data && data.success) {
+            showSuccess(data.message || 'Driver added successfully!');
+            
+            // Reset form
+            form.reset();
+            
+            // Remove success classes
+            document.querySelectorAll('.form-control.success').forEach(el => {
+              el.classList.remove('success');
+            });
+            
+            // Auto redirect after 2 seconds
+            setTimeout(() => {
+              if (data.redirect) {
+                window.location.href = data.redirect;
+              } else {
+                window.location.href = '/driverlist';
+              }
+            }, 2000);
+          } else if (data && data.error) {
+            showError(data.error);
+          } else {
+            showError('Failed to add driver. Please try again.');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(error.message || 'Network error. Please try again.');
+        })
+        .finally(() => {
+          submitBtn.disabled = false;
+          btnText.innerHTML = '<i class="fas fa-plus"></i> Add Driver';
+          btnSpinner.classList.remove('show');
+        });
+      });
+
+      // ===== Auto-format phone input =====
+      phoneInput.addEventListener('input', function() {
+        this.value = this.value.replace(/\D/g, '');
+        if (this.value.length === 10) {
+          // Optional: Add formatting if needed
+        }
+      });
+
+      // ===== Keyboard shortcuts =====
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+Enter to submit
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          form.dispatchEvent(new Event('submit'));
+        }
+        // Escape to cancel
+        if (e.key === 'Escape') {
+          window.location.href = '/driverlist';
+        }
+      });
+
+      // ===== Check for URL Parameters =====
+      const urlParams = new URLSearchParams(window.location.search);
+      const msg = urlParams.get('message');
+      const type = urlParams.get('type') || 'success';
+
+      if (msg) {
+        if (type === 'success') {
+          showSuccess(msg);
+        } else if (type === 'error') {
+          showError(msg);
+        } else {
+          showInfo(msg);
+        }
+        // Clean URL without reload
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+
+      console.log('Driver management form ready with AJAX submit.');
+    });
+  </script>
+
+</body>
+</html>

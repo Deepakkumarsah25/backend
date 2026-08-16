@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Route Management</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial;
+padding:20px;
+background:#f5f6f8;
+}
+
+h2{
+margin-top:0;
+}
+
+.layout{
+display:flex;
+gap:20px;
+margin-bottom:30px;
+flex-wrap:wrap;
+}
+
+.route-form{
+background:#fff;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+flex:1 1 360px;
+min-width:320px;
+}
+
+.map-wrap{
+flex:1 1 420px;
+min-width:320px;
+background:#fff;
+border-radius:10px;
+box-shadow:0 2px 10px rgba(0,0,0,.1);
+padding:10px;
+}
+
+#map{
+width:100%;
+height:420px;
+border-radius:8px;
+z-index:1;
+}
+
+.route-info{
+margin-top:10px;
+padding:10px 12px;
+background:#eef4ff;
+border-radius:8px;
+font-size:14px;
+color:#1a1a1a;
+display:none;
+}
+
+.route-info.show{
+display:block;
+}
+
+.field{
+position:relative;
+margin-bottom:14px;
+}
+
+input{
+width:100%;
+padding:10px;
+border:1px solid #ddd;
+border-radius:6px;
+}
+
+.marker-tag{
+display:inline-block;
+width:10px;
+height:10px;
+border-radius:50%;
+margin-right:6px;
+vertical-align:middle;
+}
+
+.suggestions{
+position:absolute;
+top:100%;
+left:0;
+right:0;
+background:#fff;
+border:1px solid #ddd;
+border-top:none;
+max-height:200px;
+overflow-y:auto;
+z-index:1000;
+border-radius:0 0 6px 6px;
+box-shadow:0 4px 10px rgba(0,0,0,.08);
+}
+
+.suggestions div{
+padding:8px 10px;
+cursor:pointer;
+font-size:13px;
+border-bottom:1px solid #f0f0f0;
+}
+
+.suggestions div:hover{
+background:#f0f4ff;
+}
+
+.status-dot{
+font-size:12px;
+color:#0d6efd;
+margin-top:-8px;
+margin-bottom:10px;
+min-height:14px;
+}
+
+button{
+padding:10px 20px;
+background:#0d6efd;
+border:none;
+color:white;
+cursor:pointer;
+border-radius:6px;
+font-size:14px;
+}
+
+button:hover{
+background:#0b5ed7;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:#fff;
+}
+
+table th,
+table td{
+border:1px solid #ddd;
+padding:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Create Route</h2>
+
+<div class="layout">
+
+  <!-- FORM SIDE -->
+  <div class="route-form">
+
+    <form action="/route/add" method="POST" id="routeForm">
+
+      <div class="field">
+        <input type="text" name="routeName" placeholder="Route Name" required>
+        
+      </div>
+
+      <div class="field">
+
+<select name="driverId" required>
+
+<option value="">
+Select Driver
+</option>
+
+<% drivers.forEach(driver=>{ %>
+
+<option value="<%= driver._id %>">
+<%= driver.name %> -
+<%= driver.vehicleNumber %>
+</option>
+
+<% }) %>
+
+</select>
+
+</div>
+      <div class="field">
+        <input type="text" id="startLocation" name="startLocation" placeholder="Start Location" autocomplete="off" required>
+        <div class="suggestions" id="startSuggestions"></div>
+      </div>
+      <div class="status-dot" id="startStatus"></div>
+
+      <div class="field">
+        <input type="text" id="wayPoints" name="wayPoints" placeholder="Sehore, Ashta, Shajapur" autocomplete="off">
+        <div class="suggestions" id="wayPointSuggestions"></div>
+      </div>
+      <div class="status-dot" id="wayPointStatus">Comma se alag karke type karo, har jagah select karo</div>
+
+      <div class="field">
+        <input type="text" id="endLocation" name="endLocation" placeholder="End Location" autocomplete="off" required>
+        <div class="suggestions" id="endSuggestions"></div>
+      </div>
+      <div class="status-dot" id="endStatus"></div>
+
+      <!-- hidden fields jo backend ko coordinates bhejenge -->
+      <input type="hidden" name="startLat" id="startLat">
+      <input type="hidden" name="startLng" id="startLng">
+      <input type="hidden" name="endLat" id="endLat">
+      <input type="hidden" name="endLng" id="endLng">
+      <input type="hidden" name="wayPointsCoords" id="wayPointsCoords">
+      <input type="hidden" name="distanceKm" id="distanceKm">
+      <input type="hidden" name="durationMin" id="durationMin">
+
+      <button type="submit">Create Route</button>
+
+    </form>
+
+  </div>
+
+  <!-- MAP SIDE -->
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="route-info" id="routeInfo"></div>
+  </div>
+
+</div>
+
+<h2>All Routes</h2>
+
+<table>
+
+<tr>
+<th>Name</th>
+<th>Start</th>
+<th>Way Points</th>
+<th>End</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+<% routes.forEach(route => { %>
+
+<tr>
+<td><%= route.routeName %></td>
+<td><%= route.startLocation %></td>
+<td><%= route.wayPoints.join(" → ") %></td>
+<td><%= route.endLocation %></td>
+<td><%= route.status %></td>
+<td>
+  <a href="/route/send/<%= route._id %>"
+     style="background:#22c55e;color:white;padding:6px 10px;text-decoration:none;border-radius:4px;">
+     Send
+  </a>
+
+  <a
+href="/track/<%= route._id %>"
+target="_blank"
+style="
+background:#2563eb;
+color:white;
+padding:6px 10px;
+text-decoration:none;
+border-radius:4px;
+margin-left:5px;
+">
+
+Track
+
+</a>
+
+  <a href="/route/delete/<%= route._id %>"
+     style="background:#ef4444;color:white;padding:6px 10px;text-decoration:none;border-radius:4px;margin-left:5px;">
+     Delete
+  </a>
+</td>
+</tr>
+
+<% }) %>
+
+</table>
+
+
+<script>
+const API_KEY = "<%= geoApiKey %>";
+</script>
+<script>
+// ---------- MAP SETUP ----------
+const map = L.map('map').setView([23.2599, 77.4126], 6); // default: Madhya Pradesh
+
+let selectionMode = "start";
+
+map.on("click", async function(e){
+
+  const lat = e.latlng.lat;
+  const lng = e.latlng.lng;
+
+  const response = await fetch(
+    `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lng}&apiKey=${API_KEY}`
+  );
+
+  const data = await response.json();
+
+  if(!data.features || !data.features.length) return;
+
+  const placeName = data.features[0].properties.formatted;
+
+  if(selectionMode === "start"){
+
+    document.getElementById("startLocation").value = placeName;
+    document.getElementById("startLat").value = lat;
+    document.getElementById("startLng").value = lng;
+
+    startCoord = {
+      lat,
+      lon: lng,
+      name: placeName
+    };
+
+    if(startMarker) map.removeLayer(startMarker);
+
+    startMarker = L.marker([lat,lng],{
+      icon:pinkIcon
+    }).addTo(map);
+
+    selectionMode = "end";
+
+  }else{
+
+    document.getElementById("endLocation").value = placeName;
+    document.getElementById("endLat").value = lat;
+    document.getElementById("endLng").value = lng;
+
+    endCoord = {
+      lat,
+      lon: lng,
+      name: placeName
+    };
+
+    if(endMarker) map.removeLayer(endMarker);
+
+    endMarker = L.marker([lat,lng],{
+      icon:greenIcon
+    }).addTo(map);
+
+    drawRouteIfReady();
+
+    selectionMode = "start";
+  }
+
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+let startMarker = null;
+let endMarker = null;
+let wayMarkers = [];
+let routeLine = null;
+
+let startCoord = null;
+let endCoord = null;
+let wayCoords = []; // array of {lat, lon, name}
+
+const pinkIcon = L.divIcon({ className:'', html:'<div style="width:16px;height:16px;background:#ff2d95;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4);"></div>' });
+const greenIcon = L.divIcon({ className:'', html:'<div style="width:16px;height:16px;background:#22c55e;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4);"></div>' });
+const blueIcon = L.divIcon({ className:'', html:'<div style="width:14px;height:14px;background:#0d6efd;border:2px solid #fff;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.4);"></div>' });
+
+// ---------- GEOCODE SEARCH (Nominatim) ----------
+function debounce(fn, delay){
+  let t;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), delay);
+  };
+}
+
+async function geocode(query){
+
+ if(!query || query.length < 3) return [];
+
+ const response = await fetch(
+ `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&limit=5&apiKey=${API_KEY}`
+ );
+
+ const data = await response.json();
+
+ if(!data.features) return [];
+
+ return data.features.map(item => ({
+   lat: item.properties.lat,
+   lon: item.properties.lon,
+   name: item.properties.formatted
+ }));
+}
+
+function attachAutocomplete(inputId, suggestionBoxId, onSelect){
+  const input = document.getElementById(inputId);
+  const box = document.getElementById(suggestionBoxId);
+
+  const search = debounce(async () => {
+    const results = await geocode(input.value);
+    box.innerHTML = '';
+    if(!results.length) return;
+   results.forEach(r => {
+  const div = document.createElement('div');
+
+  div.textContent = r.name;
+
+  div.onclick = () => {
+    input.value = r.name;
+    box.innerHTML = '';
+
+    onSelect({
+      lat: r.lat,
+      lon: r.lon,
+      name: r.name
+    });
+  };
+
+  box.appendChild(div);
+});
+  }, 450);
+
+  input.addEventListener('input', search);
+  document.addEventListener('click', (e) => {
+    if(e.target !== input) box.innerHTML = '';
+  });
+}
+
+// ---------- START ----------
+attachAutocomplete('startLocation', 'startSuggestions', (place) => {
+  startCoord = place;
+  document.getElementById('startLat').value = place.lat;
+  document.getElementById('startLng').value = place.lon;
+  document.getElementById('startStatus').textContent = '✓ Start location set';
+
+  if(startMarker) map.removeLayer(startMarker);
+  startMarker = L.marker([place.lat, place.lon], { icon: pinkIcon }).addTo(map).bindPopup('Start: ' + place.name);
+  map.setView([place.lat, place.lon], 10);
+
+  drawRouteIfReady();
+});
+
+// ---------- END ----------
+attachAutocomplete('endLocation', 'endSuggestions', (place) => {
+  endCoord = place;
+  document.getElementById('endLat').value = place.lat;
+  document.getElementById('endLng').value = place.lon;
+  document.getElementById('endStatus').textContent = '✓ End location set';
+
+  if(endMarker) map.removeLayer(endMarker);
+  endMarker = L.marker([place.lat, place.lon], { icon: greenIcon }).addTo(map).bindPopup('End: ' + place.name);
+
+  drawRouteIfReady();
+});
+
+// ---------- WAYPOINTS ----------
+// Comma se separated text field — last (currently typed) segment ke liye suggestion dikhate hain
+attachAutocomplete('wayPoints', 'wayPointSuggestions', (place) => {
+  const input = document.getElementById('wayPoints');
+  const parts = input.value.split(',');
+  parts[parts.length - 1] = ' ' + place.name;
+  input.value = parts.map(p => p.trim()).join(', ') + ', ';
+
+  wayCoords.push(place);
+  document.getElementById('wayPointsCoords').value = JSON.stringify(wayCoords);
+
+  const marker = L.marker([place.lat, place.lon], { icon: blueIcon }).addTo(map).bindPopup('Waypoint: ' + place.name);
+  wayMarkers.push(marker);
+
+  drawRouteIfReady();
+});
+
+// waypoint text ke last comma-segment par hi search chale, poore string par nahi
+document.getElementById('wayPoints').addEventListener('input', function(){
+  // handled by attachAutocomplete already using full value; override geocode target below
+});
+// ---------- ROUTE DRAWING (OSRM Alternate Routes) ----------
+let routeLines = [];
+
+async function drawRouteIfReady() {
+
+  if (!startCoord || !endCoord) return;
+
+  const coordsList = [startCoord, ...wayCoords, endCoord];
+
+  const coordStr = coordsList
+    .map(c => `${c.lon},${c.lat}`)
+    .join(";");
+
+  const url =
+    `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson&alternatives=true&steps=true`;
+
+  try {
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.routes || !data.routes.length) {
+
+      document
+        .getElementById("routeInfo")
+        .classList.remove("show");
+
+      return;
+    }
+
+    // Purane routes hatao
+    routeLines.forEach(line => {
+      map.removeLayer(line);
+    });
+
+    routeLines = [];
+
+    const colors = [
+      "#0d6efd", // Blue
+      "#22c55e", // Green
+      "#f97316", // Orange
+      "#e11d48", // Pink
+      "#8b5cf6"  // Purple
+    ];
+
+    data.routes.forEach((route, index) => {
+
+      const latlngs =
+        route.geometry.coordinates.map(
+          c => [c[1], c[0]]
+        );
+
+      const polyline = L.polyline(
+        latlngs,
+        {
+          color: colors[index % colors.length],
+          weight: index === 0 ? 7 : 5,
+          opacity: index === 0 ? 1 : 0.7
+        }
+      ).addTo(map);
+
+      routeLines.push(polyline);
+
+    });
+
+    // Main route se map fit
+    map.fitBounds(
+      routeLines[0].getBounds(),
+      {
+        padding: [30, 30]
+      }
+    );
+
+    // Main route distance/time
+    const mainRoute = data.routes[0];
+
+    const distanceKm =
+      (mainRoute.distance / 1000).toFixed(1);
+
+    const durationMin =
+      Math.round(mainRoute.duration / 60);
+
+    document.getElementById(
+      "distanceKm"
+    ).value = distanceKm;
+
+    document.getElementById(
+      "durationMin"
+    ).value = durationMin;
+
+    const info =
+      document.getElementById("routeInfo");
+
+    info.classList.add("show");
+
+    info.innerHTML = `
+      <strong>Distance:</strong>
+      ${distanceKm} km
+
+      &nbsp;|&nbsp;
+
+      <strong>Est. Time:</strong>
+      ${durationMin} min
+
+      &nbsp;|&nbsp;
+
+      <strong>Routes Found:</strong>
+      ${data.routes.length}
+    `;
+
+  } catch (err) {
+
+    console.error(
+      "Routing error:",
+      err
+    );
+
+  }
+}
+</script>
+
+</body>
+</html>

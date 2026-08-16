@@ -9,16 +9,30 @@ export const addWorker = async (req, res) => {
       photoUrl = result.secure_url;
     }
 
-    await Worker.create({
-      fullName: req.body.fullName,
-      phone: req.body.phone,
-      state: req.body.state,
-      district: req.body.district,
-      village: req.body.village,
-      wardNo: req.body.wardNo,
-      address: req.body.address,
-      photo: photoUrl,
-    });
+ await Worker.create({
+
+  fullName: req.body.fullName,
+
+  phone: req.body.phone,
+ email: req.body.email,
+  state: req.body.state,
+
+  district: req.body.district,
+
+  village: req.body.village,
+
+  wardNo: req.body.wardNo,
+
+ 
+
+  photo: photoUrl,
+
+  location:{
+    lat:req.body.lat,
+    lng:req.body.lng
+  }
+
+});
 
     res.redirect("/workerlist");
 
@@ -39,9 +53,9 @@ export const getWorkers = async (req, res) => {
 
   res.render("AddWorker/mamber", {
     workers,
+    geoApiKey: process.env.geoapify
   });
 };
-
 export const deleteWorker = async (req, res) => {
 
   await Worker.findByIdAndDelete(

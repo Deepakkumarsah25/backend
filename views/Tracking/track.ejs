@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>VIP Party Tracking</title>
+
+    <style>
+      body {
+        font-family: Arial;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .card {
+        max-width: 500px;
+        margin: auto;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      button {
+        padding: 12px 20px;
+        border: none;
+        background: #0d6efd;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      #status {
+        margin-top: 20px;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h2>VIP Party Live Tracking</h2>
+
+      <p><%= route.routeName %></p>
+
+      <button onclick="startTracking()">Start Tracking</button>
+
+      <div id="status">Waiting...</div>
+    </div>
+
+    <script>
+      function startTracking() {
+        if (!navigator.geolocation) {
+          alert("GPS Not Supported");
+
+          return;
+        }
+
+        navigator.geolocation.watchPosition(
+          async (position) => {
+            const lat = position.coords.latitude;
+
+            const lng = position.coords.longitude;
+
+            const speed = position.coords.speed || 0;
+
+            document.getElementById("status").innerHTML = `
+      Lat: ${lat}
+      <br>
+      Lng: ${lng}
+      <br>
+      Speed: ${speed}
+      `;
+
+            await fetch("/api/tracking/update", {
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json",
+              },
+
+              body: JSON.stringify({
+                routeId: "<%= route._id %>",
+
+                driverId: "<%= route.driverId || '' %>",
+
+                lat,
+                lng,
+                speed,
+              }),
+            });
+          },
+
+          (err) => {
+            console.log("GPS ERROR");
+            console.log(err);
+
+            alert(
+              "Error Code: " + err.code + "\nError Message: " + err.message,
+            );
+          },
+
+          {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 60000,
+          },
+        );
+      }
+    </script>
+  </body>
+</html>

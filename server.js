@@ -7,11 +7,16 @@ import session from "express-session";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-
+import userRoutes from "./routes/user/userRoutes.js";
+import trackingRoutes from "./routes/tracking/trackingRoutes.js";
+import driverRoutes from "./routes/sections/driver.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 import bainarliveupdate from './routes/sections/banners.js'
 import workerRoutes from "./routes/sections/worker.js";
+import routeRoutes from "./routes/route/routeRoutes.js";
+import scrollerRoutes from "./routes/scrollerRoutes.js";
+import notificationRoutes from "./routes/notification/notificationRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -33,11 +38,19 @@ app.use(
     saveUninitialized: false,
   })
 );
-
+app.use(userRoutes);
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
 app.use("/", bainarliveupdate)
 app.use("/", workerRoutes);
+app.use("/",driverRoutes);
+app.use("/", trackingRoutes);
+app.use(scrollerRoutes);
+app.use(routeRoutes);
+app.use(
+  "/api/notifications",
+  notificationRoutes
+);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))

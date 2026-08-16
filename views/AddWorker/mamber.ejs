@@ -13,6 +13,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
     /* ---------- reset & base ---------- */
     * {
@@ -53,7 +55,7 @@
 
     /* ---------- main container ---------- */
     .worker-container {
-      max-width: 820px;
+      max-width: 1280px;
       margin: 2.5rem auto;
       padding: 0 1.5rem;
       flex: 1;
@@ -90,11 +92,20 @@
       font-size: 1.9rem;
     }
 
-    /* ---------- form grid ---------- */
+    /* ---------- TWO COLUMN LAYOUT: form left, map right ---------- */
+    .form-columns {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    /* left column: normal form fields grid */
     .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1.5rem 2rem;
+      align-content: start;
     }
 
     .form-group {
@@ -195,6 +206,119 @@
       background: #d6e3ff;
     }
 
+    /* ---------- RIGHT COLUMN: map + search ---------- */
+    .map-column {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      position: sticky;
+      top: 1.5rem;
+    }
+
+    .map-column label {
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #1e3a5f;
+      letter-spacing: 0.2px;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .map-column label i {
+      color: #2563eb;
+      font-size: 0.8rem;
+    }
+
+    /* custom search bar + live suggestions */
+    .location-search-wrap {
+      position: relative;
+    }
+
+    #locationSearch {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.6rem;
+      border: 1.5px solid #dfe8f2;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      background: #fafdff url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%232563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 0.9rem center;
+      background-size: 1rem;
+      color: #0b1e33;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    #locationSearch:focus {
+      border-color: #2563eb;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    #searchSuggestions {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border: 1.5px solid #dfe8f2;
+      border-radius: 16px;
+      box-shadow: 0 12px 28px -8px rgba(0, 20, 40, 0.18);
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+    #searchSuggestions.active {
+      display: block;
+    }
+    #searchSuggestions .suggestion-item {
+      padding: 0.7rem 1rem;
+      font-size: 0.88rem;
+      color: #1e3a5f;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5fa;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      line-height: 1.35;
+    }
+    #searchSuggestions .suggestion-item:last-child {
+      border-bottom: none;
+    }
+    #searchSuggestions .suggestion-item:hover,
+    #searchSuggestions .suggestion-item.highlighted {
+      background: #eef4fa;
+    }
+    #searchSuggestions .suggestion-item i {
+      color: #2563eb;
+      margin-top: 0.15rem;
+      flex-shrink: 0;
+    }
+    #searchSuggestions .suggestion-empty {
+      padding: 0.9rem 1rem;
+      font-size: 0.85rem;
+      color: #9bb0c9;
+      text-align: center;
+    }
+
+    #workerMap {
+      height: 420px;
+      width: 100%;
+      border-radius: 20px;
+      border: 1.5px solid #dfe8f2;
+      z-index: 1;
+    }
+
+    .selected-coords {
+      font-size: 0.8rem;
+      color: #6c8299;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .selected-coords i {
+      color: #2563eb;
+    }
+
     /* ---------- save button ---------- */
     .save-btn {
       grid-column: 1 / -1;
@@ -229,7 +353,25 @@
       transform: scale(0.96);
     }
 
+    .submit-row {
+      margin-top: 2rem;
+    }
+
     /* ---------- responsive ---------- */
+    @media (max-width: 900px) {
+      .form-columns {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .map-column {
+        position: static;
+        order: -1; /* map/search shows above form on mobile so it's easy to pick location first; remove this line if you want form first */
+      }
+      #workerMap {
+        height: 320px;
+      }
+    }
+
     @media (max-width: 700px) {
       .worker-card {
         padding: 1.8rem 1.5rem 2.2rem;
@@ -269,6 +411,9 @@
         font-size: 0.9rem;
         border-radius: 14px;
       }
+      #workerMap {
+        height: 260px;
+      }
     }
 
     /* small helper */
@@ -280,7 +425,7 @@
 <body>
 
   <!-- header include (replaced by server) -->
-  <%- include("../common/header.ejs") %>
+  
 
   <div class="worker-container">
 
@@ -293,104 +438,148 @@
 
       <form action="/worker/add" method="POST" enctype="multipart/form-data">
 
-        <div class="form-grid">
+        <div class="form-columns">
 
-          <!-- Worker Name -->
-          <div class="form-group full-width">
-            <label><i class="fa-regular fa-user"></i> Worker Name</label>
-            <input
-              type="text"
-              name="fullName"
-              placeholder="Enter full name"
-              required
-            />
-          </div>
+          <!-- ================= LEFT: FORM FIELDS ================= -->
+          <div class="form-grid">
 
-          <!-- Phone -->
-          <div class="form-group">
-            <label><i class="fa-solid fa-phone"></i> Phone</label>
-            <input
-              type="tel"
-              name="phone"
-              placeholder="10-digit number"
-              maxlength="10"
-              required
-            />
-          </div>
-
-          <!-- State -->
-          <div class="form-group">
-            <label><i class="fa-solid fa-location-dot"></i> State</label>
-            <select id="state" name="state" required>
-              <option value="">Select State</option>
-            </select>
-          </div>
-
-          <!-- District -->
-          <div class="form-group">
-            <label><i class="fa-regular fa-map"></i> District</label>
-            <select id="district" name="district" required disabled>
-              <option value="">Select District</option>
-            </select>
-          </div>
-
-          <!-- Village -->
-          <div class="form-group">
-            <label><i class="fa-regular fa-building"></i> Village</label>
-            <input
-              type="text"
-              name="village"
-              placeholder="Village name"
-              required
-            />
-          </div>
-
-          <!-- Ward No -->
-          <div class="form-group">
-            <label><i class="fa-regular fa-hashtag"></i> Ward No.</label>
-            <input
-              type="text"
-              name="wardNo"
-              placeholder="Ward number"
-              required
-            />
-          </div>
-
-          <!-- Address (full width) -->
-          <div class="form-group full-width">
-            <label><i class="fa-regular fa-address-book"></i> Address</label>
-            <textarea
-              name="address"
-              rows="3"
-              placeholder="Full address (street, landmark, etc.)"
-            ></textarea>
-          </div>
-
-          <!-- Photo (full width) -->
-          <div class="form-group full-width">
-            <label><i class="fa-regular fa-image"></i> Worker Photo</label>
-            <div class="file-upload-wrapper">
+            <!-- Worker Name -->
+            <div class="form-group full-width">
+              <label><i class="fa-regular fa-user"></i> Member Name *</label>
               <input
-                type="file"
-                name="photo"
-                accept="image/*"
+                type="text"
+                name="fullName"
+                placeholder="Enter full name"
+                required
               />
-              <span style="font-size: 0.8rem; color: #8aa3be;">(optional)</span>
             </div>
-          </div>
 
+            <!-- Phone -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-phone"></i> Phone</label>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="10-digit number"
+                maxlength="10"
+                required
+              />
+            </div>
+            <div class="form-group ">
+            <label><i class="fa-regular fa-envelope"></i> Worker Email</label>
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter worker email"
+                required
+            />
+            </div>
+            <!-- State -->
+            <div class="form-group">
+              <label><i class="fa-solid fa-location-dot"></i> State</label>
+              <select id="state" name="state" required>
+                <option value="">Select State</option>
+              </select>
+            </div>
+
+            <!-- District -->
+            <div class="form-group">
+              <label><i class="fa-regular fa-map"></i> District</label>
+              <select id="district" name="district" required disabled>
+                <option value="">Select District</option>
+              </select>
+            </div>
+
+            <!-- Village -->
+            <div class="form-group">
+              <label><i class="fa-regular fa-building"></i> Village</label>
+              <input
+                type="text"
+                name="village"
+                placeholder="Village name"
+                required
+              />
+            </div>
+
+            <!-- Ward No -->
+            <div class="form-group">
+              <label><i class="fa-regular fa-hashtag"></i> Ward No.</label>
+              <input
+                type="text"
+                name="wardNo"
+                placeholder="Ward number"
+                required
+              />
+            </div>
+
+            <!-- Address (full width) -->
+            <!-- <div class="form-group full-width">
+              <label><i class="fa-regular fa-address-book"></i> Address</label>
+              <textarea
+                name="address"
+                rows="3"
+                placeholder="Full address (street, landmark, etc.)"
+              ></textarea>
+            </div> -->
+
+            <!-- Photo (full width) -->
+            <div class="form-group full-width">
+              <label><i class="fa-regular fa-image"></i> Worker Photo</label>
+              <div class="file-upload-wrapper">
+                <input
+                  type="file"
+                  name="photo"
+                  accept="image/*"
+                />
+                <span style="font-size: 0.8rem; color: #8aa3be;">(optional)</span>
+              </div>
+            </div>
+
+          </div><!-- /form-grid (LEFT) -->
+
+          <!-- ================= RIGHT: MAP + SEARCH ================= -->
+          <div class="map-column">
+
+            <input type="hidden" name="lat" id="lat" />
+            <input type="hidden" name="lng" id="lng" />
+
+            <label><i class="fa-solid fa-map-location-dot"></i> Select Worker Location</label>
+
+            <div class="location-search-wrap">
+              <input
+                type="text"
+                id="locationSearch"
+                placeholder="Search Village, City, District..."
+                autocomplete="off"
+              />
+              <div id="searchSuggestions"></div>
+            </div>
+
+            <div id="workerMap"></div>
+
+            <div class="selected-coords">
+              <i class="fa-solid fa-crosshairs"></i>
+              <span id="coordsDisplay">No location selected yet — search above or click/tap on the map.</span>
+            </div>
+
+          </div><!-- /map-column (RIGHT) -->
+
+        </div><!-- /form-columns -->
+
+        <div class="submit-row">
           <!-- Submit -->
           <button type="submit" class="save-btn">
             <i class="fa-solid fa-floppy-disk"></i> Save Worker
           </button>
-
-        </div><!-- /form-grid -->
+        </div>
 
       </form>
 
     </div><!-- /worker-card -->
 
   </div><!-- /worker-container -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
     // ---------- All India States/UTs + Districts ----------
@@ -467,6 +656,177 @@
     document.addEventListener("DOMContentLoaded", function () {
       if (stateEl.value) {
         stateEl.dispatchEvent(new Event("change"));
+      }
+    });
+
+    // ================= MAP + WORKING SEARCH BAR =================
+
+    const workerMap = L.map("workerMap").setView([25.5941, 85.1376], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(workerMap);
+
+    let workerMarker;
+    const latInput = document.getElementById("lat");
+    const lngInput = document.getElementById("lng");
+    const coordsDisplay = document.getElementById("coordsDisplay");
+
+    function setWorkerLocation(lat, lng, label) {
+      latInput.value = lat;
+      lngInput.value = lng;
+
+      if (workerMarker) {
+        workerMap.removeLayer(workerMarker);
+      }
+      workerMarker = L.marker([lat, lng]).addTo(workerMap);
+
+      coordsDisplay.textContent = label
+        ? label
+        : `Lat: ${Number(lat).toFixed(5)}, Lng: ${Number(lng).toFixed(5)}`;
+    }
+
+    // click anywhere on map to drop/move the marker
+    workerMap.on("click", function (e) {
+      setWorkerLocation(e.latlng.lat, e.latlng.lng);
+    });
+
+    // ---------- custom search bar (uses OpenStreetMap Nominatim directly) ----------
+    const searchInput = document.getElementById("locationSearch");
+    const suggestionsBox = document.getElementById("searchSuggestions");
+
+    let searchDebounce = null;
+    let currentResults = [];
+    let highlightedIndex = -1;
+
+    function clearSuggestions() {
+      suggestionsBox.innerHTML = "";
+      suggestionsBox.classList.remove("active");
+      currentResults = [];
+      highlightedIndex = -1;
+    }
+
+    function renderSuggestions(results) {
+      currentResults = results;
+      highlightedIndex = -1;
+
+      if (!results.length) {
+        suggestionsBox.innerHTML = '<div class="suggestion-empty">No matching places found</div>';
+        suggestionsBox.classList.add("active");
+        return;
+      }
+
+      suggestionsBox.innerHTML = results
+        .map(
+          (r, i) => `
+          <div class="suggestion-item" data-index="${i}">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>${r.display_name}</span>
+          </div>`
+        )
+        .join("");
+
+      suggestionsBox.classList.add("active");
+
+      suggestionsBox.querySelectorAll(".suggestion-item").forEach((item) => {
+        item.addEventListener("click", function () {
+          const idx = parseInt(this.getAttribute("data-index"), 10);
+          selectSearchResult(currentResults[idx]);
+        });
+      });
+    }
+
+    function selectSearchResult(result) {
+      if (!result) return;
+      const lat = parseFloat(result.lat);
+      const lng = parseFloat(result.lon);
+
+      workerMap.setView([lat, lng], 15);
+      setWorkerLocation(lat, lng, result.display_name);
+
+      searchInput.value = result.display_name;
+      clearSuggestions();
+    }
+
+    async function searchPlaces(query) {
+      if (!query || query.trim().length < 3) {
+        clearSuggestions();
+        return;
+      }
+
+      try {
+        const url =
+          "https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=6&countrycodes=in&q=" +
+          encodeURIComponent(query);
+
+        const res = await fetch(url, {
+          headers: { Accept: "application/json" }
+        });
+
+        if (!res.ok) throw new Error("Search request failed");
+
+        const data = await res.json();
+        renderSuggestions(data);
+      } catch (err) {
+        console.error("Location search error:", err);
+        suggestionsBox.innerHTML = '<div class="suggestion-empty">Search failed, try again</div>';
+        suggestionsBox.classList.add("active");
+      }
+    }
+
+    searchInput.addEventListener("input", function () {
+      const query = this.value;
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => searchPlaces(query), 400);
+    });
+
+    // keyboard navigation (up/down/enter) through suggestions
+    searchInput.addEventListener("keydown", function (e) {
+      const items = suggestionsBox.querySelectorAll(".suggestion-item");
+      if (!items.length) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          searchPlaces(searchInput.value);
+        }
+        return;
+      }
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+        updateHighlight(items);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        highlightedIndex = Math.max(highlightedIndex - 1, 0);
+        updateHighlight(items);
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (highlightedIndex >= 0 && currentResults[highlightedIndex]) {
+          selectSearchResult(currentResults[highlightedIndex]);
+        } else if (currentResults.length) {
+          selectSearchResult(currentResults[0]);
+        } else {
+          searchPlaces(searchInput.value);
+        }
+      } else if (e.key === "Escape") {
+        clearSuggestions();
+      }
+    });
+
+    function updateHighlight(items) {
+      items.forEach((item, i) => {
+        item.classList.toggle("highlighted", i === highlightedIndex);
+      });
+      if (highlightedIndex >= 0) {
+        items[highlightedIndex].scrollIntoView({ block: "nearest" });
+      }
+    }
+
+    // close suggestions when clicking outside
+    document.addEventListener("click", function (e) {
+      if (!e.target.closest(".location-search-wrap")) {
+        clearSuggestions();
       }
     });
   </script>
