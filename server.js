@@ -12,14 +12,14 @@ import trackingRoutes from "./routes/tracking/trackingRoutes.js";
 import driverRoutes from "./routes/sections/driver.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
-
 import cmsRoutes from "./routes/cmsRoutes.js";
-
 import bainarliveupdate from './routes/sections/banners.js'
 import workerRoutes from "./routes/sections/worker.js";
 import routeRoutes from "./routes/route/routeRoutes.js";
 import scrollerRoutes from "./routes/scrollerRoutes.js";
 import notificationRoutes from "./routes/notification/notificationRoutes.js";
+import feedbackRoutes from "./routes/feedback/feedbackRoutes.js";
+import paymentRoutes from "./routes/payment/paymentRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -56,11 +56,21 @@ app.use(
   "/api/notifications",
   notificationRoutes
 );
+app.use(
+  "/api",
+  feedbackRoutes
+);
+
+app.use(
+  "/feedback-admin",
+  feedbackRoutes
+);
+app.use("/api/payment", paymentRoutes);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(console.error);
   
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server Running http://192.168.64.158:${PORT}`);
+    console.log(`🚀 Server Running http://localhost:${PORT}`);
 });
