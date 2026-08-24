@@ -1,201 +1,174 @@
+
+// import User from "../models/User.js";
 // import Join from "../models/joinmodel.js";
+// import { uploadToCloudinary } from "../config/cloudinary.js";
 
-// /*******************************************************
-//  * MEMBER ID GENERATOR
-//  * Format: <TYPE PREFIX><YEAR><6-DIGIT RANDOM>
-//  * e.g. PM2026483920, SM2026118273, VL2026903841
-//  *******************************************************/
-
-// const generateMemberId = (type) => {
-//   const prefixMap = {
-//     party: "PM",
-//     student: "SM",
-//     volunteer: "VL",
-//   };
-
-//   const prefix = prefixMap[type] || "MB";
+// const generateMemberId = () => {
 //   const year = new Date().getFullYear();
 //   const random = Math.floor(100000 + Math.random() * 900000);
-
-//   return `${prefix}${year}${random}`;
+//   return `MB${year}${random}`;
 // };
 
 // /*******************************************************
-//  * CREATE APPLICATION (User submits from Apply screen)
-//  * POST /api/membership/apply
+//  * QUICK JOIN — works for guests AND logged-in users
+//  * POST /api/join/quick
+//  *
+//  * Rules:
+//  * - Logged-in user who already has a card -> return it (one card per account, ever).
+//  * - Mobile already registered -> 409, no silent uid attachment to someone else's card.
 //  *******************************************************/
-
-// export const createJoinApplication = async (req, res) => {
+// export const quickJoin = async (req, res) => {
 //   try {
-//     const userId = req.user?._id;
-//     const uid = req.user?.uid;
+//     const { fullName, mobile, state, district } = req.body;
+//     const uid = req.user?.uid || null;
+//     const userId = req.user?._id || null;
 
-//     if (!userId || !uid) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "You must be logged in to submit an application.",
-//       });
+//     if (!fullName?.trim()) {
+//       return res.status(400).json({ success: false, message: "Full name is required." });
+//     }
+//     if (!/^[6-9]\d{9}$/.test(mobile || "")) {
+//       return res.status(400).json({ success: false, message: "Enter a valid 10-digit mobile number." });
+//     }
+//     if (!state || !district) {
+//       return res.status(400).json({ success: false, message: "State and district are required." });
 //     }
 
-//     const {
-//       type,
-//       profilePhoto,
-//       fullName,
-//       email,
-//       mobile,
-//       fatherName,
-//       gender,
-//       dob,
-//       alternateMobile,
-//       whatsappNumber,
-//       address,
-//       state,
-//       district,
-//       block,
-//       policeStation,
-//       assembly,
-//       pinCode,
-//       occupation,
-//       collegeName,
-//       course,
-//       yearSemester,
-//       studentId,
-//       profession,
-//       areaOfInterest,
-//       availableTime,
-//       previousExperience,
-//       declarationAccepted,
-//     } = req.body;
-
-//     if (!["party", "student", "volunteer"].includes(type)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid membership type.",
-//       });
+//     if (uid) {
+//       const byUid = await Join.findOne({ uid });
+//       if (byUid) {
+//         return res.status(200).json({
+//           success: true,
+//           message: "Membership already exists for this account.",
+//           memberId: byUid.memberId,
+//         });
+//       }
 //     }
 
-//     if (!declarationAccepted) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Declaration must be accepted to submit the application.",
-//       });
-//     }
-
-//    // Prevent duplicate pending applications of the same type
-//     const existingPending = await Join.findOne({
-//       userId,
-//       type,
-//       status: "Pending",
-//     });
-
-//     if (existingPending) {
+//     const existing = await Join.findOne({ mobile: mobile.trim() });
+//     if (existing) {
 //       return res.status(409).json({
 //         success: false,
-//         message: "You already have a pending application of this type.",
+//         message: "A membership already exists for this mobile number.",
+//         memberId: existing.memberId,
 //       });
 //     }
 
-//     const fields = {
-//       profilePhoto,
-//       fullName,
-//       email,
-//       mobile,
-//       fatherName,
-//       gender,
-//       dob,
-//       alternateMobile,
-//       whatsappNumber,
-//       address,
+//     let photoPath = "";
+//     if (req.file) {
+//       const result = await uploadToCloudinary(req.file.buffer);
+//       photoPath = result.secure_url;
+//     }
+
+//     const memberId = generateMemberId();
+
+//     const application = await Join.create({
+//       mode: "quick",
+//       type: "quick_member",
+//       memberId,
+//       profilePhoto: photoPath,
+//       fullName: fullName.trim(),
+//       mobile: mobile.trim(),
 //       state,
 //       district,
-//       block,
-//       policeStation,
-//       assembly,
-//       pinCode,
-//       occupation,
-//       collegeName,
-//       course,
-//       yearSemester,
-//       studentId,
-//       profession,
-//       areaOfInterest,
-//       availableTime,
-//       previousExperience,
-//       declarationAccepted,
-//     };
-
-//     // Agar user ka pehle se koi Rejected application hai (same type),
-//     // usi ko update karke wapas Pending kar do — naya document mat banao
-//     const existingRejected = await Join.findOne({
-//       userId,
-//       type,
-//       status: "Rejected",
+//       declarationAccepted: true,
+//       ...(uid && { uid }),
+//       ...(userId && { userId }),
 //     });
-
-//     let application;
-
-//     if (existingRejected) {
-//       Object.assign(existingRejected, fields);
-//       existingRejected.status = "Pending";
-//       existingRejected.remarks = "";
-//       existingRejected.memberId = "";
-
-//       application = await existingRejected.save();
-//     } else {
-//       application = await Join.create({
-//         userId,
-//         uid,
-//         type,
-//         ...fields,
-//       });
-//     }
 
 //     return res.status(201).json({
 //       success: true,
-//       message: "Application submitted successfully.",
-//       data: application,
+//       message: "Membership created successfully.",
+//       memberId: application.memberId,
 //     });
 //   } catch (err) {
-//     console.error("createJoinApplication error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Something went wrong while submitting the application.",
-//     });
+//     console.error("quickJoin error:", err);
+//     return res.status(500).json({ success: false, message: "Something went wrong." });
 //   }
 // };
 
 // /*******************************************************
-//  * GET ALL APPLICATIONS (Admin, with filters + pagination)
-//  * GET /api/admin/join?type=&status=&search=&page=&limit=
+//  * AGENT — ADD MEMBER
 //  *******************************************************/
-
-// export const getAllJoinApplications = async (req, res) => {
+// export const addMemberByAgent = async (req, res) => {
 //   try {
-//     const {
-//       type,
-//       status,
-//       search = "",
-//       page = 1,
-//       limit = 20,
-//     } = req.query;
-
-//     const query = {};
-
-//     if (type && ["party", "student", "volunteer"].includes(type)) {
-//       query.type = type;
+//     const agentId = req.user?._id;
+//     if (!agentId) {
+//       return res.status(401).json({ success: false, message: "Login required." });
 //     }
 
-//     if (status && ["Pending", "Approved", "Rejected"].includes(status)) {
-//       query.status = status;
+//     const { fullName, mobile, state, district } = req.body;
+//     if (!fullName?.trim()) {
+//       return res.status(400).json({ success: false, message: "Full name is required." });
 //     }
+//     if (!/^[6-9]\d{9}$/.test(mobile || "")) {
+//       return res.status(400).json({ success: false, message: "Enter a valid 10-digit mobile number." });
+//     }
+//     if (!state || !district) {
+//       return res.status(400).json({ success: false, message: "State and district are required." });
+//     }
+
+//     const existing = await Join.findOne({ mobile: mobile.trim() });
+//     if (existing) {
+//       return res.status(409).json({
+//         success: false,
+//         message: "A member with this mobile number already exists.",
+//         memberId: existing.memberId,
+//       });
+//     }
+
+//     let photoPath = "";
+//     if (req.file) {
+//       const result = await uploadToCloudinary(req.file.buffer);
+//       photoPath = result.secure_url;
+//     }
+
+//     const memberId = generateMemberId();
+
+//     const application = await Join.create({
+//       mode: "quick",
+//       type: "quick_member",
+//       memberId,
+//       profilePhoto: photoPath,
+//       fullName: fullName.trim(),
+//       mobile: mobile.trim(),
+//       state,
+//       district,
+//       declarationAccepted: true,
+//       addedBy: agentId,
+//     });
+
+//     return res.status(201).json({
+//       success: true,
+//       message: "Member added successfully.",
+//       memberId: application.memberId,
+//       data: application,
+//     });
+//   } catch (err) {
+//     console.error("addMemberByAgent error:", err);
+//     return res.status(500).json({ success: false, message: "Something went wrong." });
+//   }
+// };
+
+// /*******************************************************
+//  * AGENT — MY ADDED MEMBERS
+//  *******************************************************/
+// export const getMyAddedMembers = async (req, res) => {
+//   try {
+//     const agentId = req.user?._id;
+//     if (!agentId) {
+//       return res.status(401).json({ success: false, message: "Login required." });
+//     }
+
+//     const { search = "", page = 1, limit = 20 } = req.query;
+//     const query = { addedBy: agentId };
 
 //     if (search.trim()) {
 //       const regex = new RegExp(search.trim(), "i");
 //       query.$or = [
 //         { fullName: regex },
 //         { mobile: regex },
-//         { email: regex },
 //         { memberId: regex },
+//         { district: regex },
 //       ];
 //     }
 
@@ -203,18 +176,15 @@
 //     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 //     const skip = (pageNum - 1) * limitNum;
 
-//     const [applications, total] = await Promise.all([
-//       Join.find(query)
-//         .sort({ createdAt: -1 })
-//         .skip(skip)
-//         .limit(limitNum)
-//         .lean(),
+//     const [members, total] = await Promise.all([
+//       Join.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
 //       Join.countDocuments(query),
 //     ]);
 
 //     return res.status(200).json({
 //       success: true,
-//       data: applications,
+//       data: members,
+//       referralCode: req.user.referralCode || null,
 //       pagination: {
 //         total,
 //         page: pageNum,
@@ -223,217 +193,156 @@
 //       },
 //     });
 //   } catch (err) {
-//     console.error("getAllJoinApplications error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch applications.",
-//     });
+//     console.error("getMyAddedMembers error:", err);
+//     return res.status(500).json({ success: false, message: "Failed to fetch members." });
 //   }
 // };
 
 // /*******************************************************
-//  * GET SINGLE APPLICATION (Admin)
-//  * GET /api/admin/join/:id
+//  * ADMIN — list / view / delete
 //  *******************************************************/
+// export const getAllJoinApplications = async (req, res) => {
+//   try {
+//     const { search = "", page = 1, limit = 20 } = req.query;
+//     const query = {};
+
+//     if (search.trim()) {
+//       const regex = new RegExp(search.trim(), "i");
+//       query.$or = [{ fullName: regex }, { mobile: regex }, { memberId: regex }];
+//     }
+
+//     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+//     const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+//     const skip = (pageNum - 1) * limitNum;
+
+//     const [applications, total] = await Promise.all([
+//       Join.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
+//       Join.countDocuments(query),
+//     ]);
+
+//     return res.status(200).json({
+//       success: true,
+//       data: applications,
+//       pagination: { total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) },
+//     });
+//   } catch (err) {
+//     console.error("getAllJoinApplications error:", err);
+//     return res.status(500).json({ success: false, message: "Failed to fetch applications." });
+//   }
+// };
 
 // export const getJoinApplicationById = async (req, res) => {
 //   try {
 //     const application = await Join.findById(req.params.id);
-
 //     if (!application) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Application not found.",
-//       });
+//       return res.status(404).json({ success: false, message: "Application not found." });
 //     }
-
-//     return res.status(200).json({
-//       success: true,
-//       data: application,
-//     });
+//     return res.status(200).json({ success: true, data: application });
 //   } catch (err) {
 //     console.error("getJoinApplicationById error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch application.",
-//     });
+//     return res.status(500).json({ success: false, message: "Failed to fetch application." });
 //   }
 // };
-
-// /*******************************************************
-//  * UPDATE STATUS — Approve / Reject (Admin)
-//  * PATCH /api/admin/join/:id/status
-//  * body: { status: "Approved" | "Rejected", remarks?: string }
-//  *******************************************************/
-
-// export const updateJoinStatus = async (req, res) => {
-//   try {
-//     const { status, remarks = "" } = req.body;
-
-//     if (!["Approved", "Rejected"].includes(status)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Status must be Approved or Rejected.",
-//       });
-//     }
-
-//     const application = await Join.findById(req.params.id);
-
-//     if (!application) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Application not found.",
-//       });
-//     }
-
-//     if (application.status !== "Pending") {
-//       return res.status(400).json({
-//         success: false,
-//         message: `Application is already ${application.status}.`,
-//       });
-//     }
-
-//     application.status = status;
-//     application.remarks = remarks;
-
-//     if (status === "Approved" && !application.memberId) {
-//       application.memberId = generateMemberId(application.type);
-//     }
-
-//     await application.save();
-
-//     return res.status(200).json({
-//       success: true,
-//       message: `Application ${status.toLowerCase()} successfully.`,
-//       data: application,
-//     });
-//   } catch (err) {
-//     console.error("updateJoinStatus error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to update application status.",
-//     });
-//   }
-// };
-
-// /*******************************************************
-//  * DELETE APPLICATION (Admin)
-//  * DELETE /api/admin/join/:id
-//  *******************************************************/
 
 // export const deleteJoinApplication = async (req, res) => {
 //   try {
 //     const application = await Join.findByIdAndDelete(req.params.id);
-
 //     if (!application) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Application not found.",
-//       });
+//       return res.status(404).json({ success: false, message: "Application not found." });
 //     }
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Application deleted successfully.",
-//     });
+//     return res.status(200).json({ success: true, message: "Application deleted successfully." });
 //   } catch (err) {
 //     console.error("deleteJoinApplication error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to delete application.",
-//     });
+//     return res.status(500).json({ success: false, message: "Failed to delete application." });
 //   }
 // };
-
-// /*******************************************************
-//  * PREFILL DATA FOR APPLY SCREEN (Logged-in user)
-//  * GET /api/join/prefill
-//  * Returns basic profile fields + user's most recent
-//  * application (any status), so the mobile form can
-//  * prefill instead of the user retyping everything.
-//  *******************************************************/
-
-// export const getPrefillData = async (req, res) => {
-//   try {
-//     const user = req.user;
-
-//     const previousApplication = await Join.findOne({ userId: user._id })
-//       .sort({ createdAt: -1 })
-//       .lean();
-
-//     return res.status(200).json({
-//       success: true,
-//       data: {
-//         profile: {
-//           name: user.name || "",
-//           email: user.email || "",
-//           phone: user.phone || "",
-//           photoURL: user.photoURL || "",
-//         },
-//         previousApplication: previousApplication || null,
-//       },
-//     });
-//   } catch (err) {
-//     console.error("getPrefillData error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Failed to fetch prefill data.",
-//     });
-//   }
-// };
-
-// /*******************************************************
-//  * RENDER ADMIN JOIN REQUESTS PAGE (EJS)
-//  * GET /admin/join
-//  *******************************************************/
 
 // export const renderJoinAdminPage = async (req, res) => {
 //   try {
-//     const applications = await Join.find({})
-//       .sort({ createdAt: -1 })
-//       .limit(20)
-//       .lean();
-
+//     const applications = await Join.find({}).sort({ createdAt: -1 }).limit(20).lean();
 //     const total = await Join.countDocuments({});
-
-//     res.render("joinmember", {
-//       applications,
-//       total,
-//       pageTitle: "Membership Applications",
-//     });
+//     res.render("joinmember", { applications, total, pageTitle: "Membership Applications" });
 //   } catch (err) {
 //     console.error("renderJoinAdminPage error:", err);
 //     res.status(500).send("Failed to load join requests page.");
 //   }
 // };
 
+// /*******************************************************
+//  * PUBLIC CARD LOOKUP — no login required
+//  *******************************************************/
+// export const getCardByMemberId = async (req, res) => {
+//   try {
+//     const application = await Join.findOne({ memberId: req.params.memberId }).lean();
+//     if (!application) {
+//       return res.status(404).json({ success: false, message: "Card not found." });
+//     }
+
+//     const {
+//       memberId, fullName, profilePhoto, type, mode,
+//       state, district, address, createdAt,
+//     } = application;
+
+//     return res.status(200).json({
+//       success: true,
+//       data: { memberId, fullName, profilePhoto, type, mode, state, district, address, createdAt },
+//     });
+//   } catch (err) {
+//     console.error("getCardByMemberId error:", err);
+//     return res.status(500).json({ success: false, message: "Failed to fetch card." });
+//   }
+// };
+
+// /*******************************************************
+//  * MY CARD — logged-in user, fetched fresh every time.
+//  * Always queries by uid directly — never trusts anything
+//  * cached client-side.
+//  *******************************************************/
+// export const getMyMembershipCard = async (req, res) => {
+//   try {
+//     const uid = req.user?.uid;
+//     if (!uid) {
+//       return res.status(401).json({ success: false, message: "Login required" });
+//     }
+
+//     const member = await Join.findOne({ uid }).lean();
+//     if (!member) {
+//       return res.status(404).json({ success: false, message: "Membership not found" });
+//     }
+
+//     return res.json({ success: true, data: member });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ success: false, message: "Server Error" });
+//   }
+// };
+import User from "../models/User.js";
 import Join from "../models/joinmodel.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
+import Counter from "../models/Counter.js";
+const generateMemberId = async () => {
+  const counter = await Counter.findOneAndUpdate(
+    { _id: "membershipId" },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true, setDefaultsOnInsert: true }
+  );
 
-/*******************************************************
- * MEMBER ID GENERATOR
- *******************************************************/
-const prefixMap = {
-  quick_member: "MB",
-  party_member: "PM",
-  student_member: "SM",
-  volunteer_member: "VL",
+  return `VIP${String(counter.seq).padStart(7, "0")}`;
 };
 
-const generateMemberId = (type) => {
-  const prefix = prefixMap[type] || "MB";
-  const year = new Date().getFullYear();
-  const random = Math.floor(100000 + Math.random() * 900000);
-  return `${prefix}${year}${random}`;
-};
+// Non-agent users can add members up to this many before they must
+// request agent verification from admin.
+const MEMBER_LIMIT_WITHOUT_AGENT = 5;
 
 /*******************************************************
- * QUICK JOIN — no login required
+ * QUICK JOIN — works for guests AND logged-in users
  * POST /api/join/quick
- * Needs multer on the route (photo comes in as FormData)
  *******************************************************/
 export const quickJoin = async (req, res) => {
   try {
     const { fullName, mobile, state, district } = req.body;
+    const uid = req.user?.uid || null;
+    const userId = req.user?._id || null;
 
     if (!fullName?.trim()) {
       return res.status(400).json({ success: false, message: "Full name is required." });
@@ -441,24 +350,34 @@ export const quickJoin = async (req, res) => {
     if (!/^[6-9]\d{9}$/.test(mobile || "")) {
       return res.status(400).json({ success: false, message: "Enter a valid 10-digit mobile number." });
     }
-    if (!state || !district) {
-      return res.status(400).json({ success: false, message: "State and district are required." });
+
+    if (uid) {
+      const byUid = await Join.findOne({ uid });
+      if (byUid) {
+        return res.status(200).json({
+          success: true,
+          message: "Membership already exists for this account.",
+          memberId: byUid.memberId,
+        });
+      }
     }
 
-    // Same number already has a card — return it instead of a duplicate
     const existing = await Join.findOne({ mobile: mobile.trim() });
     if (existing) {
-      return res.status(200).json({
-        success: true,
-        message: "Membership already exists for this number.",
+      return res.status(409).json({
+        success: false,
+        message: "A membership already exists for this mobile number.",
         memberId: existing.memberId,
-        mode: existing.mode,
-        type: existing.type,
       });
     }
 
-    const photoPath = req.file ? `/uploads/${req.file.filename}` : "";
-    const memberId = generateMemberId("quick_member");
+    let photoPath = "";
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      photoPath = result.secure_url;
+    }
+
+    const memberId = await generateMemberId();
 
     const application = await Join.create({
       mode: "quick",
@@ -467,17 +386,17 @@ export const quickJoin = async (req, res) => {
       profilePhoto: photoPath,
       fullName: fullName.trim(),
       mobile: mobile.trim(),
-      state,
-      district,
+      state: state || "",
+      district: district || "",
       declarationAccepted: true,
+      ...(uid && { uid }),
+      ...(userId && { userId }),
     });
 
     return res.status(201).json({
       success: true,
       message: "Membership created successfully.",
       memberId: application.memberId,
-      mode: application.mode,
-      type: application.type,
     });
   } catch (err) {
     console.error("quickJoin error:", err);
@@ -486,122 +405,144 @@ export const quickJoin = async (req, res) => {
 };
 
 /*******************************************************
- * FULL JOIN — logged-in user
- * POST /api/join/apply
- * Upgrades an existing quick-join record for this mobile
- * number instead of creating a second document. memberId
- * stays the same — only the data + type change.
+ * ADD MEMBER — any logged-in user, up to MEMBER_LIMIT_WITHOUT_AGENT
+ * unless they're a verified agent (unlimited).
+ * POST /api/join/add-member
  *******************************************************/
-export const createJoinApplication = async (req, res) => {
+export const addMemberByAgent = async (req, res) => {
   try {
-    const userId = req.user?._id;
-    const uid = req.user?.uid;
-
-    if (!userId || !uid) {
-      return res.status(401).json({ success: false, message: "You must be logged in to submit an application." });
+    const agentUser = req.user;
+    if (!agentUser?._id) {
+      return res.status(401).json({ success: false, message: "Login required." });
     }
 
-    const {
-      type, profilePhoto, fullName, email, mobile, fatherName, gender, dob,
-      alternateMobile, whatsappNumber, address, state, district, block,
-      policeStation, assembly, pinCode, occupation, collegeName, course,
-      yearSemester, studentId, profession, areaOfInterest, availableTime,
-      previousExperience, declarationAccepted,
-    } = req.body;
-
-    if (!["party_member", "student_member", "volunteer_member"].includes(type)) {
-      return res.status(400).json({ success: false, message: "Invalid membership type." });
-    }
-    if (!declarationAccepted) {
-      return res.status(400).json({ success: false, message: "Declaration must be accepted to submit the application." });
-    }
-
-    const fields = {
-      type, profilePhoto, fullName, email, mobile, fatherName, gender, dob,
-      alternateMobile, whatsappNumber, address, state, district, block,
-      policeStation, assembly, pinCode, occupation, collegeName, course,
-      yearSemester, studentId, profession, areaOfInterest, availableTime,
-      previousExperience, declarationAccepted, mode: "full",
-    };
-
-    const existingQuick = await Join.findOne({ mobile: mobile?.trim(), mode: "quick" });
-
-    let application;
-
-    if (existingQuick) {
-      // Same mobile → same card. Data + type update, memberId untouched.
-      Object.assign(existingQuick, fields, { userId, uid });
-      application = await existingQuick.save();
-    } else {
-      const existingFull = await Join.findOne({ userId, type });
-      if (existingFull) {
-        return res.status(409).json({ success: false, message: "You already have a membership of this type." });
+    if (!agentUser.isAgent) {
+      const addedCount = await Join.countDocuments({ addedBy: agentUser._id });
+      if (addedCount >= MEMBER_LIMIT_WITHOUT_AGENT) {
+        return res.status(403).json({
+          success: false,
+          code: "AGENT_VERIFICATION_REQUIRED",
+          message: `You've added ${MEMBER_LIMIT_WITHOUT_AGENT} members. Please request agent verification to add more.`,
+        });
       }
-      application = await Join.create({
-        userId,
-        uid,
-        memberId: generateMemberId(type),
-        ...fields,
+    }
+
+    const { fullName, mobile, state, district } = req.body;
+    if (!fullName?.trim()) {
+      return res.status(400).json({ success: false, message: "Full name is required." });
+    }
+    if (!/^[6-9]\d{9}$/.test(mobile || "")) {
+      return res.status(400).json({ success: false, message: "Enter a valid 10-digit mobile number." });
+    }
+
+    const existing = await Join.findOne({ mobile: mobile.trim() });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "A member with this mobile number already exists.",
+        memberId: existing.memberId,
       });
     }
 
+    let photoPath = "";
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      photoPath = result.secure_url;
+    }
+
+    const memberId = await generateMemberId();
+
+    const application = await Join.create({
+      mode: "quick",
+      type: "quick_member",
+      memberId,
+      profilePhoto: photoPath,
+      fullName: fullName.trim(),
+      mobile: mobile.trim(),
+      state: state || "",
+      district: district || "",
+      declarationAccepted: true,
+      addedBy: agentUser._id,
+    });
+
     return res.status(201).json({
       success: true,
-      message: "Application submitted successfully.",
+      message: "Member added successfully.",
       memberId: application.memberId,
       data: application,
     });
   } catch (err) {
-    console.error("createJoinApplication error:", err);
-    return res.status(500).json({ success: false, message: "Something went wrong while submitting the application." });
+    console.error("addMemberByAgent error:", err);
+    return res.status(500).json({ success: false, message: "Something went wrong." });
   }
 };
 
 /*******************************************************
- * PREFILL DATA FOR APPLY SCREEN
- * GET /api/join/prefill
+ * MY ADDED MEMBERS — any logged-in user (agent or not),
+ * scoped to their own additions.
+ * GET /api/join/my-added-members
  *******************************************************/
-export const getPrefillData = async (req, res) => {
+export const getMyAddedMembers = async (req, res) => {
   try {
-    const user = req.user;
-    const previousApplication = await Join.findOne({ userId: user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        profile: {
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          photoURL: user.photoURL || "",
-        },
-        previousApplication: previousApplication || null,
-      },
-    });
-  } catch (err) {
-    console.error("getPrefillData error:", err);
-    return res.status(500).json({ success: false, message: "Failed to fetch prefill data." });
-  }
-};
-
-/*******************************************************
- * ADMIN — list / view / delete (no status anywhere)
- *******************************************************/
-export const getAllJoinApplications = async (req, res) => {
-  try {
-    const { type, mode, search = "", page = 1, limit = 20 } = req.query;
-    const query = {};
-
-    if (type && ["quick_member", "party_member", "student_member", "volunteer_member"].includes(type)) {
-      query.type = type;
+    const agentId = req.user?._id;
+    if (!agentId) {
+      return res.status(401).json({ success: false, message: "Login required." });
     }
-    if (mode && ["quick", "full"].includes(mode)) query.mode = mode;
+
+    const { search = "", page = 1, limit = 20 } = req.query;
+    const query = { addedBy: agentId };
 
     if (search.trim()) {
       const regex = new RegExp(search.trim(), "i");
-      query.$or = [{ fullName: regex }, { mobile: regex }, { email: regex }, { memberId: regex }];
+      query.$or = [
+        { fullName: regex },
+        { mobile: regex },
+        { memberId: regex },
+        { district: regex },
+      ];
+    }
+
+    const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const skip = (pageNum - 1) * limitNum;
+
+    const [members, total] = await Promise.all([
+      Join.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
+      Join.countDocuments(query),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      data: members,
+      isAgent: !!req.user.isAgent,
+      remainingSlots: req.user.isAgent
+        ? null
+        : Math.max(MEMBER_LIMIT_WITHOUT_AGENT - total, 0),
+      referralCode: req.user.referralCode || null,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
+  } catch (err) {
+    console.error("getMyAddedMembers error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch members." });
+  }
+};
+
+/*******************************************************
+ * ADMIN — list / view / delete
+ *******************************************************/
+export const getAllJoinApplications = async (req, res) => {
+  try {
+    const { search = "", page = 1, limit = 20 } = req.query;
+    const query = {};
+
+    if (search.trim()) {
+      const regex = new RegExp(search.trim(), "i");
+      query.$or = [{ fullName: regex }, { mobile: regex }, { memberId: regex }];
     }
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
@@ -663,19 +604,14 @@ export const renderJoinAdminPage = async (req, res) => {
 
 /*******************************************************
  * PUBLIC CARD LOOKUP — no login required
- * GET /api/join/card/:memberId
- * Used by both Quick Join (no account) and Full Join
- * to render the digital card.
  *******************************************************/
 export const getCardByMemberId = async (req, res) => {
   try {
     const application = await Join.findOne({ memberId: req.params.memberId }).lean();
-
     if (!application) {
       return res.status(404).json({ success: false, message: "Card not found." });
     }
 
-    // Mobile intentionally excluded — card display doesn't need it
     const {
       memberId, fullName, profilePhoto, type, mode,
       state, district, address, createdAt,
@@ -688,5 +624,62 @@ export const getCardByMemberId = async (req, res) => {
   } catch (err) {
     console.error("getCardByMemberId error:", err);
     return res.status(500).json({ success: false, message: "Failed to fetch card." });
+  }
+};
+
+/*******************************************************
+ * MY CARD — logged-in user, fetched fresh every time.
+ *******************************************************/
+export const getMyMembershipCard = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ success: false, message: "Login required" });
+    }
+
+    const member = await Join.findOne({ uid }).lean();
+    if (!member) {
+      return res.status(404).json({ success: false, message: "Membership not found" });
+    }
+
+    return res.json({ success: true, data: member });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+/*******************************************************
+ * UPDATE MY CARD
+ * PATCH /api/join/my-card
+ *******************************************************/
+export const updateMyCard = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ success: false, message: "Login required." });
+    }
+
+    const { fullName, mobile, state, district } = req.body;
+    const update = {};
+    if (fullName?.trim()) update.fullName = fullName.trim();
+    if (mobile?.trim()) update.mobile = mobile.trim();
+    if (state) update.state = state;
+    if (district) update.district = district;
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      update.profilePhoto = result.secure_url;
+    }
+
+    const member = await Join.findOneAndUpdate({ uid }, { $set: update }, { new: true });
+    if (!member) {
+      return res.status(404).json({ success: false, message: "Membership not found." });
+    }
+
+    return res.status(200).json({ success: true, message: "Card updated.", data: member });
+  } catch (err) {
+    console.error("updateMyCard error:", err);
+    return res.status(500).json({ success: false, message: "Something went wrong." });
   }
 };

@@ -14,8 +14,12 @@ import vipLiveRoute from "./routes/vipLiveRoute.js";
 import videoRoutes from "./routes/videogalleryRoutes.js";
 import albumRoutes from "./routes/albumRoutes.js";
 import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
-
+import authRoutes from "./routes/authRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
 import joinRoutes from "./routes/joinRoutes.js";
+import agentRoutes from "./routes/agentRoutes.js";
+import organisationRoutes from "./routes/organisationRoutes.js";
+import adminUserRoutes from "./routes/adminUserRoutes.js";
 import bainarliveupdate from './routes/sections/banners.js'
 import workerRoutes from "./routes/sections/worker.js";
 const app = express();
@@ -43,12 +47,18 @@ app.use(
 
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
+app.use("/api", searchRoutes);
+
+app.use("/api/auth", authRoutes);
 app.use("/api", vipLiveRoute);
 app.use("/api", videoRoutes);
 app.use("/api",albumRoutes);
 app.use("/api/join", joinRoutes);
+app.use("/api/agent", agentRoutes);
+app.use("/", adminUserRoutes);
 app.use("/", mediaGalleryRoutes);
 app.use("/api", mediaGalleryRoutes);
+app.use("/organisation", organisationRoutes);
 
 app.use("/", bainarliveupdate)
 app.use("/", workerRoutes);

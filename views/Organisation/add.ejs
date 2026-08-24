@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Add Organisation Member</title>
+
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/sidebar.css">
+
+<style>
+
+.content{
+    margin-left:260px;
+    padding:30px;
+}
+
+.card{
+    max-width:800px;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+h2{
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+input,
+textarea,
+select{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:15px;
+}
+
+textarea{
+    resize:none;
+    height:100px;
+}
+
+button{
+    margin-top:25px;
+    background:#0d6efd;
+    color:#fff;
+    border:none;
+    padding:12px 25px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#0b5ed7;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<%- include("../common/sidebar") %>
+
+<div class="content">
+
+<div class="card">
+
+<h2>Add Organisation Member</h2>
+
+<form
+action="/organisation/add"
+method="POST"
+enctype="multipart/form-data"
+>
+
+<label>Category</label>
+
+<select name="category" required>
+
+<option value="">Select Category</option>
+
+<option value="State President">State President</option>
+
+<option value="State Office Bearers">State Office Bearers</option>
+
+<option value="District Presidents">District Presidents</option>
+
+<option value="State Executive Members">State Executive Members</option>
+
+<option value="Spokespersons">Spokespersons</option>
+
+<option value="Morchas & Cells">Morchas & Cells</option>
+
+<option value="Permanent Invitees">Permanent Invitees</option>
+
+<option value="Special Invitees">Special Invitees</option>
+
+<option value="Committees">Committees</option>
+
+<option value="State Prabhari">State Prabhari</option>
+
+<option value="State General Secretary (ORG.)">State General Secretary (ORG.)</option>
+
+<option value="Departments">Departments</option>
+
+</select>
+
+<label>Name</label>
+
+<input
+type="text"
+name="name"
+required
+>
+
+<label>Designation</label>
+
+<input
+type="text"
+name="designation"
+required
+>
+
+<label>Address</label>
+
+<textarea
+name="address"
+placeholder="Enter Address"
+></textarea>
+
+<label>Phone</label>
+
+<input
+type="text"
+name="phone"
+placeholder="Enter Phone Number"
+>
+
+<label>Email</label>
+
+<input
+type="email"
+name="email"
+placeholder="Enter Email"
+>
+
+<label>Fax</label>
+
+<input
+type="text"
+name="fax"
+placeholder="Enter Fax"
+>
+
+<label>Photo</label>
+
+<input
+type="file"
+name="image"
+accept="image/*"
+required
+>
+
+<button type="submit">
+Save Organisation
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+
+const imageInput=document.querySelector('input[name="image"]');
+
+imageInput.addEventListener("change",function(){
+
+if(this.files.length){
+
+const file=this.files[0];
+
+if(!file.type.startsWith("image/")){
+
+alert("Please select image");
+
+this.value="";
+
+}
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

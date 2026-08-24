@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Organisation Members</title>
+
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/sidebar.css">
+
+<style>
+
+.content{
+    margin-left:260px;
+    padding:30px;
+}
+
+.top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:20px;
+}
+
+.add-btn{
+    background:#0d6efd;
+    color:#fff;
+    padding:10px 18px;
+    text-decoration:none;
+    border-radius:6px;
+}
+
+.add-btn:hover{
+    background:#0b5ed7;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+th,
+td{
+    border:1px solid #ddd;
+    padding:12px;
+    text-align:center;
+}
+
+th{
+    background:#0d6efd;
+    color:#fff;
+}
+
+img{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    object-fit:cover;
+}
+
+.edit-btn{
+    background:#198754;
+    color:#fff;
+    padding:6px 12px;
+    border-radius:5px;
+    text-decoration:none;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:#fff;
+    padding:6px 12px;
+    border-radius:5px;
+    text-decoration:none;
+}
+
+.edit-btn:hover{
+    background:#157347;
+}
+
+.delete-btn:hover{
+    background:#bb2d3b;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<%- include("../common/sidebar") %>
+
+<div class="content">
+
+<div class="top-bar">
+
+<h2>Organisation Members</h2>
+
+<a href="/organisation/add" class="add-btn">
++ Add Member
+</a>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Photo</th>
+
+<th>Category</th>
+
+<th>Name</th>
+
+<th>Designation</th>
+
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<% if(organisation.length===0){ %>
+
+<tr>
+
+<td colspan="5">
+No Organisation Members Found
+</td>
+
+</tr>
+
+<% } %>
+
+<% organisation.forEach(item=>{ %>
+
+<tr>
+
+<td>
+
+<img
+<img src="<%= item.imageUrl %>">
+
+
+
+</td>
+
+<td>
+<%= item.category %>
+</td>
+
+<td>
+<%= item.name %>
+</td>
+
+<td>
+<%= item.designation %>
+</td>
+
+<td>
+
+<a
+href="/organisation/edit/<%= item._id %>"
+class="edit-btn"
+>
+Edit
+</a>
+
+<a
+href="/organisation/delete/<%= item._id %>"
+class="delete-btn"
+onclick="return confirm('Are you sure?')"
+>
+Delete
+</a>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+
+</html>
