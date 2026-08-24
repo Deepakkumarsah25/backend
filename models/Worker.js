@@ -10,7 +10,10 @@ const workerSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: true,
-     
+    },
+    email: {
+      type: String,
+      default: "",
     },
 
     state: {
@@ -33,11 +36,7 @@ const workerSchema = new mongoose.Schema(
       required: true,
     },
 
-    address: {
-      type: String,
-      default: "",
-    },
-
+   
     photo: {
       type: String,
       default: "",
@@ -47,13 +46,29 @@ const workerSchema = new mongoose.Schema(
       type: String,
       default: "Active",
     },
+    location: {
+      lat: {
+        type: Number,
+        default: 0,
+      },
+      lng: {
+        type: Number,
+        default: 0,
+      },
+    },
+    alertSent: {
+  type: Boolean,
+  default: false
+},
+
+lastAlertAt: {
+  type: Date,
+  default: null
+},
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export default mongoose.model(
-  "Worker",
-  workerSchema
-);
+export default mongoose.model("Worker", workerSchema);

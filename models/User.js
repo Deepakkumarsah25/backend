@@ -7,26 +7,75 @@ const userSchema = new mongoose.Schema(
       unique: true,
       required: true,
     },
-    name: String,
-    email: String,
-    phone: String,
-    photoURL: String,
-    provider: String,
+
+    name: {
+      type: String,
+      default: "",
+    },
+
+    email: {
+      type: String,
+      default: "",
+    },
+
+    phone: {
+      type: String,
+      default: "",
+    },
+
+    photoURL: {
+      type: String,
+      default: "",
+    },
+
+    provider: {
+      type: String,
+      default: "google",
+    },
+
+    // Firebase Cloud Messaging Token
+    fcmToken: {
+      type: String,
+      default: "",
+    },
+
+    // Notification Enable / Disable
+    notificationEnabled: {
+      type: Boolean,
+      default: true,
+    },
+
+    // Last Login Time
+    lastLogin: {
+      type: Date,
+      default: Date.now,
+    },
 
     // Set by admin via /AdminAgent — gates access to Add Member / My Members
     isAgent: {
       type: Boolean,
       default: false,
     },
-agentRequestPending: { type: Boolean, default: false },
-agentRequestedAt: { type: Date, default: null },
-referralCode: {
+
+    agentRequestPending: {
+      type: Boolean,
+      default: false,
+    },
+
+    agentRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
+    referralCode: {
       type: String,
       unique: true,
       sparse: true, // field genuinely absent (not null) on docs without one
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model("User", userSchema);

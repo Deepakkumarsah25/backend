@@ -7,7 +7,9 @@ import session from "express-session";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-
+import userRoutes from "./routes/user/userRoutes.js";
+import trackingRoutes from "./routes/tracking/trackingRoutes.js";
+import driverRoutes from "./routes/sections/driver.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
 import vipLiveRoute from "./routes/vipLiveRoute.js";
@@ -20,8 +22,14 @@ import joinRoutes from "./routes/joinRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import organisationRoutes from "./routes/organisationRoutes.js";
 import adminUserRoutes from "./routes/adminUserRoutes.js";
+import cmsRoutes from "./routes/cmsRoutes.js";
 import bainarliveupdate from './routes/sections/banners.js'
 import workerRoutes from "./routes/sections/worker.js";
+import routeRoutes from "./routes/route/routeRoutes.js";
+import scrollerRoutes from "./routes/scrollerRoutes.js";
+import notificationRoutes from "./routes/notification/notificationRoutes.js";
+import feedbackRoutes from "./routes/feedback/feedbackRoutes.js";
+import paymentRoutes from "./routes/payment/paymentRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -44,7 +52,7 @@ app.use(
     saveUninitialized: false,
   })
 );
-
+app.use(userRoutes);
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
 app.use("/api", searchRoutes);
@@ -59,14 +67,33 @@ app.use("/", adminUserRoutes);
 app.use("/", mediaGalleryRoutes);
 app.use("/api", mediaGalleryRoutes);
 app.use("/organisation", organisationRoutes);
+app.use("/cms", cmsRoutes);
 
 app.use("/", bainarliveupdate)
 app.use("/", workerRoutes);
+app.use("/",driverRoutes);
+app.use("/", trackingRoutes);
+app.use(scrollerRoutes);
+app.use(routeRoutes);
+app.use(
+  "/api/notifications",
+  notificationRoutes
+);
+app.use(
+  "/api",
+  feedbackRoutes
+);
+
+app.use(
+  "/feedback-admin",
+  feedbackRoutes
+);
+app.use("/api/payment", paymentRoutes);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(console.error);
-
-app.listen(9191,"0.0.0.0",()=>{
- console.log("🚀 Server Running http://localhost:9191");
+  
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🚀 Server Running http://localhost:${PORT}`);
 });
