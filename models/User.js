@@ -50,6 +50,28 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+
+    // Set by admin via /AdminAgent — gates access to Add Member / My Members
+    isAgent: {
+      type: Boolean,
+      default: false,
+    },
+
+    agentRequestPending: {
+      type: Boolean,
+      default: false,
+    },
+
+    agentRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true, // field genuinely absent (not null) on docs without one
+    },
   },
   {
     timestamps: true,

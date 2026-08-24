@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Edit Organisation Member</title>
+
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/sidebar.css">
+
+<style>
+
+.content{
+    margin-left:260px;
+    padding:30px;
+}
+
+.card{
+    max-width:800px;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+h2{
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+input,
+textarea,
+select{
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:15px;
+}
+
+textarea{
+    resize:none;
+    height:100px;
+}
+
+button{
+    margin-top:25px;
+    background:#0d6efd;
+    color:#fff;
+    border:none;
+    padding:12px 25px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+button:hover{
+    background:#0b5ed7;
+}
+
+.preview{
+    margin-top:10px;
+}
+
+.preview img{
+    width:120px;
+    border-radius:8px;
+    border:1px solid #ddd;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<%- include("../common/sidebar") %>
+
+<div class="content">
+
+<div class="card">
+
+<h2>Edit Organisation Member</h2>
+
+<form
+action="/organisation/edit/<%= organisation._id %>"
+method="POST"
+enctype="multipart/form-data"
+>
+
+<label>Category</label>
+
+<select name="category" required>
+
+<option value="">Select Category</option>
+
+<option value="State President" <%= organisation.category==="State President" ? "selected" : "" %>>State President</option>
+
+<option value="State Office Bearers" <%= organisation.category==="State Office Bearers" ? "selected" : "" %>>State Office Bearers</option>
+
+<option value="District Presidents" <%= organisation.category==="District Presidents" ? "selected" : "" %>>District Presidents</option>
+
+<option value="State Executive Members" <%= organisation.category==="State Executive Members" ? "selected" : "" %>>State Executive Members</option>
+
+<option value="Spokespersons" <%= organisation.category==="Spokespersons" ? "selected" : "" %>>Spokespersons</option>
+
+<option value="Morchas & Cells" <%= organisation.category==="Morchas & Cells" ? "selected" : "" %>>Morchas & Cells</option>
+
+<option value="Permanent Invitees" <%= organisation.category==="Permanent Invitees" ? "selected" : "" %>>Permanent Invitees</option>
+
+<option value="Special Invitees" <%= organisation.category==="Special Invitees" ? "selected" : "" %>>Special Invitees</option>
+
+<option value="Committees" <%= organisation.category==="Committees" ? "selected" : "" %>>Committees</option>
+
+<option value="State Prabhari" <%= organisation.category==="State Prabhari" ? "selected" : "" %>>State Prabhari</option>
+
+<option value="State General Secretary (ORG.)" <%= organisation.category==="State General Secretary (ORG.)" ? "selected" : "" %>>State General Secretary (ORG.)</option>
+
+<option value="Departments" <%= organisation.category==="Departments" ? "selected" : "" %>>Departments</option>
+
+</select>
+
+<label>Name</label>
+
+<input
+type="text"
+name="name"
+value="<%= organisation.name %>"
+required
+>
+
+<label>Designation</label>
+
+<input
+type="text"
+name="designation"
+value="<%= organisation.designation %>"
+required
+>
+
+<label>Address</label>
+
+<textarea name="address"><%= organisation.address %></textarea>
+
+<label>Phone</label>
+
+<input
+type="text"
+name="phone"
+value="<%= organisation.phone %>"
+>
+
+<label>Email</label>
+
+<input
+type="email"
+name="email"
+value="<%= organisation.email %>"
+>
+
+<label>Fax</label>
+
+<input
+type="text"
+name="fax"
+value="<%= organisation.fax %>"
+>
+
+<label>Current Photo</label>
+
+<div class="preview">
+<img
+  src="<%= organisation.imageUrl %>"
+  alt="Organisation Image"
+  width="120"
+>
+
+</div>
+
+<label>Change Photo</label>
+
+<input
+type="file"
+name="image"
+accept="image/*"
+>
+
+<button type="submit">
+
+Update Organisation
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+
+const imageInput=document.querySelector('input[name="image"]');
+
+imageInput.addEventListener("change",function(){
+
+if(this.files.length){
+
+const file=this.files[0];
+
+if(!file.type.startsWith("image/")){
+
+alert("Please select an image file.");
+
+this.value="";
+
+}
+
+}
+
+});
+
+</script>
+
+</body>
+</html>

@@ -12,6 +12,16 @@ import trackingRoutes from "./routes/tracking/trackingRoutes.js";
 import driverRoutes from "./routes/sections/driver.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import apiRoutes from "./routes/apiRoutes.js";
+import vipLiveRoute from "./routes/vipLiveRoute.js";
+import videoRoutes from "./routes/videogalleryRoutes.js";
+import albumRoutes from "./routes/albumRoutes.js";
+import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import searchRoutes from "./routes/searchRoutes.js";
+import joinRoutes from "./routes/joinRoutes.js";
+import agentRoutes from "./routes/agentRoutes.js";
+import organisationRoutes from "./routes/organisationRoutes.js";
+import adminUserRoutes from "./routes/adminUserRoutes.js";
 import cmsRoutes from "./routes/cmsRoutes.js";
 import bainarliveupdate from './routes/sections/banners.js'
 import workerRoutes from "./routes/sections/worker.js";
@@ -30,6 +40,7 @@ app.set("view engine", "ejs");
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/assets", express.static(path.join(__dirname, "assets")));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -44,6 +55,18 @@ app.use(
 app.use(userRoutes);
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
+app.use("/api", searchRoutes);
+
+app.use("/api/auth", authRoutes);
+app.use("/api", vipLiveRoute);
+app.use("/api", videoRoutes);
+app.use("/api",albumRoutes);
+app.use("/api/join", joinRoutes);
+app.use("/api/agent", agentRoutes);
+app.use("/", adminUserRoutes);
+app.use("/", mediaGalleryRoutes);
+app.use("/api", mediaGalleryRoutes);
+app.use("/organisation", organisationRoutes);
 app.use("/cms", cmsRoutes);
 
 app.use("/", bainarliveupdate)

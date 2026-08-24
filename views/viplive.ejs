@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>VIP Live Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #eef0ff;
+            --live-red: #e11d48;
+            --off-gray: #94a3b8;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            background: #f8fafc;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        /* ===========================
+   Main Content
+=========================== */
+
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            padding: 30px;
+            background: #f8fafc;
+            transition: .3s;
+        }
+
+        @media(max-width:992px) {
+
+            .main-content {
+                margin-left: 0;
+                padding: 80px 15px 20px;
+            }
+
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .page-title i {
+            width: 46px;
+            height: 46px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 12px;
+            font-size: 18px;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: -6px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, .07);
+            border: 1px solid var(--border);
+        }
+
+        .card-body {
+            padding: 26px;
+        }
+
+        .section-heading {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .section-heading i {
+            color: var(--primary);
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--ink);
+            font-size: 13.5px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            height: 48px;
+            border: 1.5px solid var(--border);
+            font-size: 14.5px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, .14);
+        }
+
+        textarea.form-control {
+            height: 120px !important;
+            resize: none;
+        }
+
+        .form-check {
+            background: #bcd1ec;
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-check-input {
+            width: 2.4em;
+            height: 1.3em;
+            margin-top: 0;
+            cursor: pointer;
+        }
+
+        .form-check-input:checked {
+            background-color: #1c3f71;
+            border-color: #e11d48;
+        }
+
+        .form-check-label {
+            margin-left: 10px;
+            font-weight: 600;
+            color: #e11d48;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            font-weight: 600;
+            padding: 11px 32px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 6px 16px rgba(79, 70, 229, .25);
+            transition: .2s;
+        }
+
+        .btn-save:hover {
+            background: var(--primary-dark);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(79, 70, 229, .32);
+        }
+
+        #resetBtn {
+            border-radius: 10px;
+            padding: 11px 24px;
+            font-weight: 600;
+            border: 1.5px solid var(--border);
+            color: var(--muted);
+            background: #fff;
+        }
+
+        #resetBtn:hover {
+            background: #f8fafc;
+        }
+
+        .thumb-preview {
+            width: 100%;
+            height: 370px;
+            border-radius: 14px;
+            background: repeating-linear-gradient(45deg, #f1f2fe, #f1f2fe 10px, #eaeafd 10px, #eaeafd 20px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 1.5px dashed #d3d5fb;
+            position: relative;
+        }
+
+        .thumb-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .badge-live,
+        .badge-off {
+            font-weight: 600;
+            font-size: 12.5px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-live {
+            background: rgba(229, 57, 53, .12);
+            color: var(--live-red);
+        }
+
+        .badge-live::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--live-red);
+            animation: pulse-dot 1.4s infinite;
+        }
+
+        .badge-off {
+            background: rgba(108, 117, 125, .12);
+            color: var(--off-gray);
+        }
+
+        .badge-off::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--off-gray);
+        }
+
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 rgba(229, 57, 53, .5); }
+            70% { box-shadow: 0 0 0 6px rgba(229, 57, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0); }
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
+            font-size: 12.5px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 14px;
+        }
+
+        .table tbody td {
+            vertical-align: middle;
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--ink);
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafd;
+        }
+
+        .table img {
+            width: 130px;
+            height: 75px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, .1);
+        }
+
+        .action-btn {
+            margin-right: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <%- include('common/sidebar') %>
+
+        <div class="main-content">
+
+            <div class="container-fluid py-4">
+
+                <h2 class="page-title mb-1">
+
+                    <i class="fa-solid fa-tower-broadcast"></i>
+
+                    VIP Live Management
+
+                </h2>
+
+                <p class="page-sub">Manage YouTube live streams shown to VIP users</p>
+
+                <div class="row g-4">
+
+                    <div class="col-lg-5">
+
+                        <div class="card">
+
+                            <div class="card-body">
+
+                                <h5 class="section-heading">
+
+                                    <i class="fa-solid fa-circle-plus"></i>
+
+                                    Add / Edit Live
+
+                                </h5>
+
+                                <form id="liveForm">
+
+                                    <input type="hidden" id="liveId">
+
+                                    <div class="mb-3">
+
+                                        <label>
+
+                                            Title
+
+                                        </label>
+
+                                        <input type="text" class="form-control" id="title" required>
+
+                                    </div>
+
+                                    <div class="mb-3">
+
+                                        <label>
+
+                                            Description
+
+                                        </label>
+
+                                        <textarea class="form-control" id="description"></textarea>
+
+                                    </div>
+
+                                    <div class="mb-3">
+
+                                        <label>
+
+                                            YouTube URL
+
+                                        </label>
+
+                                        <input type="text" class="form-control" id="youtubeUrl"
+                                            placeholder="https://youtube.com/watch?v=..." required>
+
+                                    </div>
+
+                                    <div class="form-check mb-4">
+
+                                        <input class="form-check-input" type="checkbox" id="isLive">
+
+                                        <label class="form-check-label" for="isLive">
+
+                                            Currently Live
+
+                                        </label>
+
+                                    </div>
+
+                                    <button class="btn btn-save" type="submit">
+
+                                        <i class="fa-solid fa-floppy-disk"></i>
+
+                                        Save Live
+
+                                    </button>
+
+                                    <button type="reset" class="btn btn-secondary ms-2" id="resetBtn">
+
+                                        Reset
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-7">
+
+                        <div class="card">
+
+                            <div class="card-body">
+
+                                <h5 class="section-heading">
+
+                                    <i class="fa-brands fa-youtube" style="color:#e11d48"></i>
+
+                                    Thumbnail Preview
+
+                                </h5>
+
+                                <div class="thumb-preview">
+
+                                    <img id="previewImage" src="https://placehold.co/800x450?text=Thumbnail">
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card mt-4">
+
+                    <div class="card-body">
+
+                        <h5 class="section-heading">
+
+                            <i class="fa-solid fa-video"></i>
+
+                            All Live Videos
+
+                        </h5>
+
+                        <div class="table-responsive">
+
+                            <table class="table align-middle">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+
+                                            Thumbnail
+
+                                        </th>
+
+                                        <th>
+
+                                            Title
+
+                                        </th>
+
+                                        <th>
+
+                                            Status
+
+                                        </th>
+
+                                        <th width="240">
+
+                                            Action
+
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+                                <tbody id="liveTable">
+
+                                    <tr>
+
+                                        <td colspan="4" class="text-center">
+
+                                            Loading...
+
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+                <script src="/js/vip_live.js"></script>
+
+</body>
+
+</html>
