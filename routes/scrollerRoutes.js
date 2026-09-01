@@ -1,4 +1,5 @@
 import express from "express";
+
 import upload from "../middlewar/upload.js";
 
 import {
@@ -12,26 +13,59 @@ import {
 
 const router = express.Router();
 
-/* Upload Page */
-router.get("/scroller", scrollerPage);
+/* =========================================
+   Admin Scroller Page
+========================================= */
 
-/* Upload Media */
+router.get(
+  "/scroller",
+  scrollerPage
+);
+
+/* =========================================
+   Upload Media
+========================================= */
+
 router.post(
   "/scroller/add",
   upload.array("media", 20),
   addScrollerMedia
 );
 
-/* React Native API */
-router.get("/api/scroller", getScrollerApi);
+/* =========================================
+   React Native API
+========================================= */
 
-/* Delete */
-router.get("/scroller/delete/:id", deleteScrollerMedia);
+router.get(
+  "/api/scroller",
+  getScrollerApi
+);
 
-/* Active / Inactive */
-router.get("/scroller/status/:id", toggleScrollerStatus);
+/* =========================================
+   Delete Media
+========================================= */
 
-/* Update Display Order */
-router.post("/scroller/order/:id", updateDisplayOrder);
+router.delete(
+  "/scroller/delete/:id",
+  deleteScrollerMedia
+);
+
+/* =========================================
+   Active / Inactive
+========================================= */
+
+router.get(
+  "/scroller/status/:id",
+  toggleScrollerStatus
+);
+
+/* =========================================
+   Display Order
+========================================= */
+
+router.post(
+  "/scroller/order/:id",
+  updateDisplayOrder
+);
 
 export default router;

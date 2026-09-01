@@ -30,6 +30,7 @@ import scrollerRoutes from "./routes/scrollerRoutes.js";
 import notificationRoutes from "./routes/notification/notificationRoutes.js";
 import feedbackRoutes from "./routes/feedback/feedbackRoutes.js";
 import paymentRoutes from "./routes/payment/paymentRoutes.js";
+import newsRoutes from "./routes/news/newsRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -89,6 +90,7 @@ app.use(
   feedbackRoutes
 );
 app.use("/api/payment", paymentRoutes);
+app.use("/", newsRoutes);
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => console.log("MongoDB Connected"))

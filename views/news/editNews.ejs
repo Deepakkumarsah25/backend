@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>Edit News</title>
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1"
+/>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f7fc;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 25px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+h1 {
+  color: #1565c0;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 18px;
+  box-shadow: 0 5px 20px rgba(0,0,0,.08);
+}
+
+.group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 10px;
+}
+
+textarea {
+  min-height: 120px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.currentImage {
+  width: 220px;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.videoBox {
+  padding: 18px;
+  background: #f8fafc;
+  border-radius: 14px;
+}
+
+.checks {
+  display: flex;
+  gap: 25px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.check input {
+  width: auto;
+}
+
+button {
+  background: #1565c0;
+  color: white;
+  border: none;
+  padding: 13px 22px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+@media(max-width:700px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="top">
+
+<h1>
+Edit News
+</h1>
+
+<a href="/news">
+← Back
+</a>
+
+</div>
+
+<form
+  action="/news/edit/<%= news._id %>"
+  method="POST"
+  enctype="multipart/form-data"
+  class="card"
+>
+
+<div class="group">
+
+<label>
+Title
+</label>
+
+<input
+  name="title"
+  value="<%= news.title %>"
+  required
+/>
+
+</div>
+
+<div class="group">
+
+<label>
+Short Description
+</label>
+
+<textarea
+  name="description"
+><%= news.description %></textarea>
+
+</div>
+
+<div class="group">
+
+<label>
+Full Content
+</label>
+
+<textarea
+  name="content"
+  style="min-height:220px"
+><%= news.content %></textarea>
+
+</div>
+
+<div class="grid">
+
+<div class="group">
+
+<label>
+Category
+</label>
+
+<select name="category">
+
+<%
+const categories = [
+"General",
+"Politics",
+"Events",
+"Campaign",
+"Party",
+"Press",
+"Announcement"
+];
+%>
+
+<% categories.forEach(category => { %>
+
+<option
+  value="<%= category %>"
+  <%= news.category === category ? "selected" : "" %>
+>
+  <%= category %>
+</option>
+
+<% }) %>
+
+</select>
+
+</div>
+
+<div class="group">
+
+<label>
+Date
+</label>
+
+<input
+  type="datetime-local"
+  name="date"
+  value="<%= new Date(news.date).toISOString().slice(0,16) %>"
+/>
+
+</div>
+
+</div>
+
+<div class="grid">
+
+<div class="group">
+
+<label>
+Location
+</label>
+
+<input
+  name="location"
+  value="<%= news.location %>"
+/>
+
+</div>
+
+<div class="group">
+
+<label>
+Author
+</label>
+
+<input
+  name="author"
+  value="<%= news.author %>"
+/>
+
+</div>
+
+</div>
+
+<div class="group">
+
+<label>
+Current Cover Image
+</label>
+
+<% if (news.coverImage) { %>
+
+<img
+  src="<%= news.coverImage %>"
+  class="currentImage"
+/>
+
+<% } %>
+
+<input
+  type="file"
+  name="coverImage"
+  accept="image/*"
+/>
+
+</div>
+
+<div class="group">
+
+<label>
+Add More Images
+</label>
+
+<input
+  type="file"
+  name="images"
+  accept="image/*"
+  multiple
+/>
+
+</div>
+
+<div class="videoBox">
+
+<h3>
+Video
+</h3>
+
+<p>
+Current type:
+<strong>
+<%= news.videoType %>
+</strong>
+</p>
+
+<% if (news.youtubeUrl) { %>
+
+<p>
+YouTube:
+<%= news.youtubeUrl %>
+</p>
+
+<% } %>
+
+<% if (news.videoUrl) { %>
+
+<video
+  src="<%= news.videoUrl %>"
+  controls
+  style="width:100%;max-height:300px"
+></video>
+
+<% } %>
+
+<br>
+
+<label>
+Change to YouTube
+</label>
+
+<input
+  type="text"
+  name="youtubeUrl"
+  placeholder="YouTube URL"
+/>
+
+<br><br>
+
+<label>
+Upload New Video
+</label>
+
+<input
+  type="file"
+  name="video"
+  accept="video/*"
+/>
+
+</div>
+
+<br>
+
+<div class="grid">
+
+<div>
+
+<label>
+Display Order
+</label>
+
+<input
+  type="number"
+  name="displayOrder"
+  value="<%= news.displayOrder %>"
+/>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="checks">
+
+<label class="check">
+
+<input
+  type="checkbox"
+  name="active"
+  <%= news.active ? "checked" : "" %>
+/>
+
+Active
+
+</label>
+
+<label class="check">
+
+<input
+  type="checkbox"
+  name="featured"
+  <%= news.featured ? "checked" : "" %>
+/>
+
+Featured
+
+</label>
+
+</div>
+
+<br>
+
+<button type="submit">
+Update News
+</button>
+
+</form>
+
+</div>
+
+</body>
+
+</html>

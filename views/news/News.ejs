@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Add News</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #1e293b;
+    }
+
+    .page {
+      padding: 30px;
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: #1565c0;
+    }
+
+    .back-btn {
+      text-decoration: none;
+      background: #1565c0;
+      color: white;
+      padding: 11px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #dbe3ee;
+      border-radius: 9px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #1565c0;
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.08);
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .submit-btn {
+      border: none;
+      background: #1565c0;
+      color: white;
+      padding: 14px 26px;
+      border-radius: 9px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #0d47a1;
+    }
+
+    .hint {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #64748b;
+    }
+
+    /* VIDEO SECTION */
+
+    .video-section {
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 20px;
+      background: #f8fafc;
+    }
+
+    .video-section-title {
+      margin-top: 0;
+      margin-bottom: 18px;
+      color: #1565c0;
+      font-size: 19px;
+    }
+
+    .video-type {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .video-option {
+      position: relative;
+    }
+
+    .video-option input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .video-option label {
+      margin: 0;
+      padding: 15px;
+      border: 1px solid #dbe3ee;
+      background: white;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    .video-option input:checked + label {
+      border-color: #1565c0;
+      background: #eaf2ff;
+      color: #1565c0;
+    }
+
+    .video-input {
+      display: none;
+    }
+
+    .video-input.active {
+      display: block;
+    }
+
+    .youtube-preview {
+      display: none;
+      margin-top: 15px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .youtube-preview iframe {
+      width: 100%;
+      height: 320px;
+      border: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .checkbox-row {
+      display: flex;
+      gap: 25px;
+      margin-top: 10px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .checkbox-item input {
+      width: auto;
+    }
+
+    @media (max-width: 700px) {
+      .page {
+        padding: 15px;
+      }
+
+      .grid,
+      .video-type {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        gap: 15px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <div class="header">
+
+    <h1>
+      <i class="fa-solid fa-newspaper"></i>
+      Add News
+    </h1>
+
+    <a href="/news" class="back-btn">
+      <i class="fa-solid fa-arrow-left"></i>
+      Back
+    </a>
+
+  </div>
+
+
+  <div class="card">
+
+    <form
+      action="/news/add"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+
+      <!-- TITLE -->
+
+      <div class="form-group">
+
+        <label for="title">
+          News Title
+        </label>
+
+        <input
+          type="text"
+          id="title"
+          name="title"
+          placeholder="Enter news title"
+          required
+        >
+
+      </div>
+
+
+      <!-- CATEGORY -->
+
+      <div class="form-group">
+
+        <label for="category">
+          Category
+        </label>
+
+        <select
+          id="category"
+          name="category"
+        >
+
+          <option value="General">
+            General
+          </option>
+
+          <option value="Politics">
+            Politics
+          </option>
+
+          <option value="Events">
+            Events
+          </option>
+
+          <option value="Campaign">
+            Campaign
+          </option>
+
+          <option value="Party">
+            Party
+          </option>
+
+          <option value="Press">
+            Press
+          </option>
+
+          <option value="Announcement">
+            Announcement
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- DESCRIPTION -->
+
+      <div class="form-group">
+
+        <label for="description">
+          Short Description
+        </label>
+
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Write short news description..."
+        ></textarea>
+
+      </div>
+
+
+      <!-- CONTENT -->
+
+      <div class="form-group">
+
+        <label for="content">
+          Full News Content
+        </label>
+
+        <textarea
+          id="content"
+          name="content"
+          placeholder="Write complete news content..."
+          style="min-height:220px;"
+        ></textarea>
+
+      </div>
+
+
+      <!-- IMAGE -->
+
+      <div class="form-group">
+
+        <label for="coverImage">
+          <i class="fa-solid fa-image"></i>
+          Cover Image
+        </label>
+
+        <input
+          type="file"
+          id="coverImage"
+          name="coverImage"
+          accept="image/jpeg,image/png,image/webp"
+        >
+
+        <div class="hint">
+          JPG, PNG or WEBP
+        </div>
+
+      </div>
+
+
+      <!-- MULTIPLE IMAGES -->
+
+      <div class="form-group">
+
+        <label for="images">
+          <i class="fa-solid fa-images"></i>
+          Additional Images
+        </label>
+
+        <input
+          type="file"
+          id="images"
+          name="images"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+        >
+
+        <div class="hint">
+          You can select multiple images.
+        </div>
+
+      </div>
+
+
+      <!-- VIDEO -->
+
+      <div class="video-section">
+
+        <h3 class="video-section-title">
+          <i class="fa-solid fa-video"></i>
+          News Video
+        </h3>
+
+
+        <div class="video-type">
+
+          <!-- NONE -->
+
+          <div class="video-option">
+
+            <input
+              type="radio"
+              id="videoNone"
+              name="videoType"
+              value="none"
+              checked
+            >
+
+            <label for="videoNone">
+              <i class="fa-solid fa-ban"></i>
+              No Video
+            </label>
+
+          </div>
+
+
+          <!-- YOUTUBE -->
+
+          <div class="video-option">
+
+            <input
+              type="radio"
+              id="videoYoutube"
+              name="videoType"
+              value="youtube"
+            >
+
+            <label for="videoYoutube">
+              <i class="fa-brands fa-youtube"></i>
+              YouTube URL
+            </label>
+
+          </div>
+
+
+          <!-- UPLOAD -->
+
+          <div class="video-option">
+
+            <input
+              type="radio"
+              id="videoUpload"
+              name="videoType"
+              value="uploaded"
+            >
+
+            <label for="videoUpload">
+              <i class="fa-solid fa-upload"></i>
+              Upload Video
+            </label>
+
+          </div>
+
+        </div>
+
+
+        <!-- YOUTUBE URL -->
+
+        <div
+          id="youtubeInput"
+          class="video-input"
+        >
+
+          <label for="youtubeUrl">
+            YouTube Video URL
+          </label>
+
+          <input
+            type="url"
+            id="youtubeUrl"
+            name="youtubeUrl"
+            placeholder="https://www.youtube.com/watch?v=XXXXXXXXXXX"
+          >
+
+          <div class="hint">
+            YouTube, YouTube Shorts, youtu.be और YouTube Live URL supported हैं।
+          </div>
+
+
+          <div
+            id="youtubePreview"
+            class="youtube-preview"
+          >
+
+            <iframe
+              id="youtubeFrame"
+              allowfullscreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            ></iframe>
+
+          </div>
+
+        </div>
+
+
+        <!-- UPLOAD VIDEO -->
+
+        <div
+          id="uploadInput"
+          class="video-input"
+        >
+
+          <label for="video">
+            Upload Video
+          </label>
+
+          <input
+            type="file"
+            id="video"
+            name="video"
+            accept="video/mp4,video/webm,video/quicktime,video/mov"
+          >
+
+          <div class="hint">
+            MP4, WEBM, MOV supported. Maximum 100 MB.
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <br>
+
+
+      <!-- DATE / LOCATION -->
+
+      <div class="grid">
+
+        <div class="form-group">
+
+          <label for="date">
+            Date & Time
+          </label>
+
+          <input
+            type="datetime-local"
+            id="date"
+            name="date"
+          >
+
+        </div>
+
+
+        <div class="form-group">
+
+          <label for="location">
+            Location
+          </label>
+
+          <input
+            type="text"
+            id="location"
+            name="location"
+            placeholder="Enter location"
+          >
+
+        </div>
+
+      </div>
+
+
+      <!-- AUTHOR -->
+
+      <div class="form-group">
+
+        <label for="author">
+          Author
+        </label>
+
+        <input
+          type="text"
+          id="author"
+          name="author"
+          value="VIP Party"
+          placeholder="Author name"
+        >
+
+      </div>
+
+
+      <!-- ORDER -->
+
+      <div class="form-group">
+
+        <label for="displayOrder">
+          Display Order
+        </label>
+
+        <input
+          type="number"
+          id="displayOrder"
+          name="displayOrder"
+          value="0"
+          min="0"
+        >
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="checkbox-row">
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="active"
+            checked
+          >
+
+          Active
+
+        </label>
+
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="featured"
+          >
+
+          Featured
+
+        </label>
+
+      </div>
+
+
+      <br>
+
+
+      <button
+        type="submit"
+        class="submit-btn"
+      >
+
+        <i class="fa-solid fa-plus"></i>
+
+        Add News
+
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  const youtubeRadio =
+    document.getElementById("videoYoutube");
+
+  const uploadRadio =
+    document.getElementById("videoUpload");
+
+  const noneRadio =
+    document.getElementById("videoNone");
+
+  const youtubeInput =
+    document.getElementById("youtubeInput");
+
+  const uploadInput =
+    document.getElementById("uploadInput");
+
+  const youtubeUrl =
+    document.getElementById("youtubeUrl");
+
+  const youtubePreview =
+    document.getElementById("youtubePreview");
+
+  const youtubeFrame =
+    document.getElementById("youtubeFrame");
+
+
+  function getYoutubeId(url) {
+
+    if (!url) return "";
+
+    const value = url.trim();
+
+    const patterns = [
+
+      /youtu\.be\/([^?&/]+)/,
+
+      /youtube\.com\/watch\?v=([^?&]+)/,
+
+      /youtube\.com\/embed\/([^?&/]+)/,
+
+      /youtube\.com\/shorts\/([^?&/]+)/,
+
+      /youtube\.com\/live\/([^?&/]+)/
+
+    ];
+
+    for (const pattern of patterns) {
+
+      const match =
+        value.match(pattern);
+
+      if (match && match[1]) {
+
+        return match[1];
+
+      }
+
+    }
+
+    return "";
+
+  }
+
+
+  function updateVideoType() {
+
+    youtubeInput.classList.remove("active");
+
+    uploadInput.classList.remove("active");
+
+    youtubePreview.style.display = "none";
+
+    if (youtubeRadio.checked) {
+
+      youtubeInput.classList.add("active");
+
+    }
+
+    if (uploadRadio.checked) {
+
+      uploadInput.classList.add("active");
+
+    }
+
+  }
+
+
+  youtubeRadio.addEventListener(
+    "change",
+    updateVideoType
+  );
+
+  uploadRadio.addEventListener(
+    "change",
+    updateVideoType
+  );
+
+  noneRadio.addEventListener(
+    "change",
+    updateVideoType
+  );
+
+
+  youtubeUrl.addEventListener(
+    "input",
+    function () {
+
+      const id =
+        getYoutubeId(this.value);
+
+      if (id) {
+
+        youtubeFrame.src =
+          `https://www.youtube.com/embed/${id}`;
+
+        youtubePreview.style.display =
+          "block";
+
+      } else {
+
+        youtubeFrame.src = "";
+
+        youtubePreview.style.display =
+          "none";
+
+      }
+
+    }
+  );
+
+
+  updateVideoType();
+
+</script>
+
+</body>
+</html>
