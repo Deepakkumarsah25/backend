@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Edit Event</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      padding: 25px;
+      border-radius: 18px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.07);
+    }
+
+    label {
+      display: block;
+      margin: 15px 0 7px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 130px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border: 0;
+      border-radius: 10px;
+      background: #1d4ed8;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .current-image {
+      width: 250px;
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <h1>Edit Event</h1>
+
+    <form
+      action="/admin/events/update/<%= event._id %>"
+      method="POST"
+      enctype="multipart/form-data"
+    >
+
+      <label>Event Title</label>
+
+      <input
+        type="text"
+        name="title"
+        value="<%= event.title %>"
+        required
+      >
+
+      <label>Location</label>
+
+      <input
+        type="text"
+        name="location"
+        value="<%= event.location %>"
+        required
+      >
+
+      <label>Event Date</label>
+
+      <input
+        type="date"
+        name="eventDate"
+        value="<%= new Date(event.eventDate).toISOString().slice(0,10) %>"
+        required
+      >
+
+      <label>Event Time</label>
+
+      <input
+        type="time"
+        name="eventTime"
+        value="<%= event.eventTime || '' %>"
+      >
+
+      <label>Tag</label>
+
+      <input
+        type="text"
+        name="tag"
+        value="<%= event.tag || 'Event' %>"
+      >
+
+      <label>Tag Color</label>
+
+      <input
+        type="color"
+        name="tagColor"
+        value="<%= event.tagColor || '#1d4ed8' %>"
+      >
+
+      <label>Description</label>
+
+      <textarea name="description"><%= event.description || '' %></textarea>
+
+      <% if (event.image) { %>
+
+        <label>Current Image</label>
+
+        <img
+          src="<%= event.image %>"
+          class="current-image"
+        >
+
+      <% } %>
+
+      <label>Replace Image</label>
+
+      <input
+        type="file"
+        name="image"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
+      >
+
+      <label>
+        <input
+          type="checkbox"
+          name="published"
+          <%= event.published ? "checked" : "" %>
+        >
+        Published
+      </label>
+
+      <label>
+        <input
+          type="checkbox"
+          name="featured"
+          <%= event.featured ? "checked" : "" %>
+        >
+        Featured
+      </label>
+
+      <button type="submit">
+        Update Event
+      </button>
+
+    </form>
+
+  </div>
+
+</div>
+
+</body>
+</html>

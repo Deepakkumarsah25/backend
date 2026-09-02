@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>VIP Events Management</title>
+
+  <!-- Sidebar -->
+  <link
+    rel="stylesheet"
+    href="/css/sidebar.css"
+  />
+
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+    }
+
+    /* =========================
+       MAIN
+    ========================= */
+
+    .container {
+      width: calc(100% - 280px);
+      margin-left: 260px;
+      padding: 30px 25px;
+      max-width: 1700px;
+    }
+
+    /* =========================
+       HEADER
+    ========================= */
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-size: 30px;
+      font-weight: 800;
+      margin: 0;
+      color: #172033;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-top: 7px;
+      font-size: 14px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .total-events {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 16px;
+      background: #eaf2ff;
+      color: #1d4ed8;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    /* =========================
+       CARD
+    ========================= */
+
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 25px;
+
+      box-shadow:
+        0 5px 25px rgba(15, 23, 42, 0.07);
+
+      border: 1px solid #edf1f6;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+
+      border-bottom: 1px solid #edf1f6;
+    }
+
+    .card-header-icon {
+      width: 44px;
+      height: 44px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 13px;
+
+      background: #eaf2ff;
+      color: #1d4ed8;
+
+      font-size: 19px;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .card-header p {
+      margin: 4px 0 0;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    /* =========================
+       FORM
+    ========================= */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      width: 100%;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      font-size: 13px;
+      font-weight: 800;
+
+      margin-bottom: 8px;
+
+      color: #334155;
+    }
+
+    .required {
+      color: #dc2626;
+    }
+
+    .optional {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+
+      border: 1px solid #dbe2ea;
+      border-radius: 11px;
+
+      padding: 13px 14px;
+
+      font-size: 14px;
+
+      outline: none;
+
+      background: #fff;
+      color: #172033;
+
+      transition: 0.2s;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: #1d4ed8;
+
+      box-shadow:
+        0 0 0 3px rgba(
+          29,
+          78,
+          216,
+          0.08
+        );
+    }
+
+    textarea {
+      min-height: 125px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .short-description {
+      min-height: 90px;
+    }
+
+    .full-description {
+      min-height: 230px;
+    }
+
+    .field-help {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    .counter {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* =========================
+       COLOR
+    ========================= */
+
+    .color-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .color-input {
+      width: 58px;
+      height: 45px;
+      padding: 4px;
+      cursor: pointer;
+    }
+
+    .color-value {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 700;
+    }
+
+    /* =========================
+       IMAGE UPLOAD
+    ========================= */
+
+    .upload-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      background: #f8fafc;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+
+    .upload-box:hover {
+      border-color: #1d4ed8;
+      background: #f1f5ff;
+    }
+
+    .upload-icon {
+      width: 55px;
+      height: 55px;
+
+      margin: 0 auto 12px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 16px;
+
+      background: #eaf2ff;
+      color: #1d4ed8;
+
+      font-size: 23px;
+    }
+
+    .upload-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .upload-description {
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .upload-input {
+      margin-top: 15px;
+      cursor: pointer;
+    }
+
+    .image-count {
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #1d4ed8;
+    }
+
+    /* =========================
+       IMAGE PREVIEW
+    ========================= */
+
+    .preview-container {
+      display: grid;
+
+      grid-template-columns:
+        repeat(
+          auto-fill,
+          minmax(150px, 1fr)
+        );
+
+      gap: 13px;
+
+      margin-top: 18px;
+    }
+
+    .preview-item {
+      position: relative;
+
+      height: 145px;
+
+      border-radius: 13px;
+
+      overflow: hidden;
+
+      background: #e2e8f0;
+
+      border: 1px solid #e2e8f0;
+    }
+
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cover-label {
+      position: absolute;
+
+      top: 8px;
+      left: 8px;
+
+      padding: 5px 9px;
+
+      background: #1d4ed8;
+      color: #fff;
+
+      border-radius: 8px;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      z-index: 2;
+    }
+
+    .image-number {
+      position: absolute;
+
+      bottom: 8px;
+      left: 8px;
+
+      width: 25px;
+      height: 25px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: rgba(
+        0,
+        0,
+        0,
+        0.65
+      );
+
+      color: #fff;
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    /* =========================
+       CHECKBOX
+    ========================= */
+
+    .check-boxes {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+
+      padding: 15px;
+
+      background: #f8fafc;
+
+      border-radius: 13px;
+
+      border: 1px solid #edf1f6;
+    }
+
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+
+      margin: 0;
+
+      font-size: 13px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .check-label input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    /* =========================
+       BUTTON
+    ========================= */
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      padding-top: 5px;
+    }
+
+    .btn {
+      border: 0;
+
+      border-radius: 11px;
+
+      padding: 13px 20px;
+
+      cursor: pointer;
+
+      font-size: 13px;
+      font-weight: 800;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 8px;
+
+      text-decoration: none;
+
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: #1d4ed8;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #1e40af;
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .btn-danger:hover {
+      background: #b91c1c;
+    }
+
+    .btn-edit {
+      background: #f59e0b;
+      color: #fff;
+    }
+
+    .btn-edit:hover {
+      background: #d97706;
+    }
+
+    /* =========================
+       EVENTS HEADER
+    ========================= */
+
+    .events-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      gap: 15px;
+
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .events-header h2 {
+      margin: 0;
+
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .events-header p {
+      margin: 5px 0 0;
+
+      color: #94a3b8;
+
+      font-size: 12px;
+    }
+
+    /* =========================
+       EVENTS GRID
+    ========================= */
+
+    .events-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(
+          auto-fill,
+          minmax(290px, 1fr)
+        );
+
+      gap: 20px;
+    }
+
+    .event-card {
+      background: #fff;
+
+      border-radius: 18px;
+
+      overflow: hidden;
+
+      border: 1px solid #edf1f6;
+
+      box-shadow:
+        0 5px 20px rgba(
+          15,
+          23,
+          42,
+          0.06
+        );
+
+      transition: 0.2s;
+    }
+
+    .event-card:hover {
+      transform: translateY(-3px);
+
+      box-shadow:
+        0 12px 30px rgba(
+          15,
+          23,
+          42,
+          0.11
+        );
+    }
+
+    .event-image-wrapper {
+      position: relative;
+      height: 200px;
+      background: #e2e8f0;
+    }
+
+    .event-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .no-image {
+      width: 100%;
+      height: 100%;
+
+      display: flex;
+      flex-direction: column;
+
+      align-items: center;
+      justify-content: center;
+
+      color: #94a3b8;
+
+      gap: 8px;
+
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .photo-count {
+      position: absolute;
+
+      right: 10px;
+      top: 10px;
+
+      display: flex;
+      align-items: center;
+
+      gap: 5px;
+
+      padding: 6px 9px;
+
+      background: rgba(
+        0,
+        0,
+        0,
+        0.65
+      );
+
+      color: #fff;
+
+      border-radius: 9px;
+
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .featured-badge {
+      position: absolute;
+
+      left: 10px;
+      top: 10px;
+
+      padding: 6px 9px;
+
+      background: #f59e0b;
+
+      color: #fff;
+
+      border-radius: 9px;
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .event-body {
+      padding: 17px;
+    }
+
+    .tag {
+      display: inline-block;
+
+      color: #fff;
+
+      padding: 5px 10px;
+
+      border-radius: 20px;
+
+      font-size: 10px;
+
+      font-weight: 800;
+
+      margin-bottom: 10px;
+    }
+
+    .event-title {
+      font-size: 17px;
+
+      font-weight: 800;
+
+      line-height: 1.4;
+
+      margin: 0 0 11px;
+
+      color: #172033;
+    }
+
+    .event-description {
+      color: #64748b;
+
+      font-size: 12px;
+
+      line-height: 1.5;
+
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      display: flex;
+      align-items: flex-start;
+
+      gap: 8px;
+
+      color: #64748b;
+
+      font-size: 12px;
+
+      margin: 8px 0;
+    }
+
+    .meta i {
+      width: 15px;
+
+      color: #1d4ed8;
+
+      margin-top: 2px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+
+      gap: 8px;
+
+      margin-top: 13px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+
+      padding: 5px 9px;
+
+      border-radius: 15px;
+
+      font-size: 10px;
+
+      font-weight: 800;
+    }
+
+    .published {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .draft {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .featured-status {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    /* =========================
+       ACTIONS
+    ========================= */
+
+    .actions {
+      display: flex;
+
+      gap: 8px;
+
+      margin-top: 15px;
+
+      padding-top: 14px;
+
+      border-top: 1px solid #edf1f6;
+    }
+
+    .actions .btn {
+      flex: 1;
+      padding: 10px 12px;
+    }
+
+    /* =========================
+       EMPTY
+    ========================= */
+
+    .empty {
+      padding: 60px 20px;
+
+      text-align: center;
+
+      color: #94a3b8;
+    }
+
+    .empty-icon {
+      width: 70px;
+      height: 70px;
+
+      margin: 0 auto 15px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      border-radius: 50%;
+
+      background: #eaf2ff;
+      color: #1d4ed8;
+
+      font-size: 28px;
+    }
+
+    .empty h3 {
+      margin: 0 0 7px;
+
+      color: #334155;
+
+      font-size: 17px;
+    }
+
+    .empty p {
+      margin: 0;
+
+      font-size: 13px;
+    }
+
+    /* =========================
+       ALERT
+    ========================= */
+
+    .alert {
+      padding: 13px 16px;
+
+      border-radius: 12px;
+
+      margin-bottom: 20px;
+
+      font-size: 13px;
+
+      font-weight: 700;
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 1100px) {
+      .container {
+        width: calc(100% - 80px);
+        margin-left: 70px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .full {
+        grid-column: auto;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .container {
+        width: 100%;
+        margin-left: 0;
+        padding: 20px 14px;
+      }
+
+      .title {
+        font-size: 24px;
+      }
+
+      .card {
+        padding: 17px;
+        border-radius: 16px;
+      }
+
+      .preview-container {
+        grid-template-columns:
+          repeat(2, 1fr);
+      }
+
+      .events-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .form-actions .btn {
+        width: 100%;
+      }
+
+      .header-right {
+        width: 100%;
+      }
+
+      .total-events {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================================
+       MAIN CONTAINER
+  ========================================== -->
+
+  <div class="container">
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="header">
+
+      <div>
+        <h1 class="title">
+          <i
+            class="fa-solid fa-calendar-days"
+            style="color:#1d4ed8;"
+          ></i>
+
+          VIP Events
+        </h1>
+
+        <div class="subtitle">
+          Create, publish and manage VIP party events
+        </div>
+      </div>
+
+      <div class="header-right">
+
+        <div class="total-events">
+
+          <i class="fa-solid fa-calendar-check"></i>
+
+          <span>
+            <%= events ? events.length : 0 %>
+            Total Events
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =========================================
+         ERROR MESSAGE
+    ========================================== -->
+
+    <% if (typeof error !== "undefined" && error) { %>
+
+      <div class="alert alert-error">
+
+        <i class="fa-solid fa-circle-exclamation"></i>
+
+        <%= error %>
+
+      </div>
+
+    <% } %>
+
+
+    <!-- =========================================
+         SUCCESS MESSAGE
+    ========================================== -->
+
+    <% if (typeof message !== "undefined" && message) { %>
+
+      <div class="alert alert-success">
+
+        <i class="fa-solid fa-circle-check"></i>
+
+        <%= message %>
+
+      </div>
+
+    <% } %>
+
+
+    <!-- =========================================
+         CREATE EVENT
+    ========================================== -->
+
+    <div class="card">
+
+      <div class="card-header">
+
+        <div class="card-header-icon">
+
+          <i class="fa-solid fa-calendar-plus"></i>
+
+        </div>
+
+        <div>
+
+          <h2>
+            Create New Event
+          </h2>
+
+          <p>
+            Enter complete event information for the mobile application
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <form
+        id="eventForm"
+        action="/admin/events/create"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+
+        <div class="form-grid">
+
+
+          <!-- =====================================
+               TITLE
+          ====================================== -->
+
+          <div class="form-group full">
+
+            <label for="title">
+
+              <span>
+                Event Title
+                <span class="required">*</span>
+              </span>
+
+              <span
+                class="counter"
+                id="titleCounter"
+              >
+                0 / 150
+              </span>
+
+            </label>
+
+            <input
+              id="title"
+              type="text"
+              name="title"
+              maxlength="150"
+              placeholder="Example: National Executive Meeting 2026"
+              required
+            />
+
+            <div class="field-help">
+              Enter the main title that users will see on the event card.
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               SHORT DESCRIPTION
+          ====================================== -->
+
+          <div class="form-group full">
+
+            <label for="shortDescription">
+
+              <span>
+                Short Summary
+                <span class="optional">
+                  Optional
+                </span>
+              </span>
+
+              <span
+                class="counter"
+                id="shortCounter"
+              >
+                0 / 300
+              </span>
+
+            </label>
+
+            <textarea
+              id="shortDescription"
+              name="shortDescription"
+              class="short-description"
+              maxlength="300"
+              placeholder="Write a short summary about this event..."
+            ></textarea>
+
+            <div class="field-help">
+              Short text can be used for event previews/cards.
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               LOCATION
+          ====================================== -->
+
+          <div class="form-group">
+
+            <label for="location">
+
+              <span>
+                Event Location
+                <span class="required">*</span>
+              </span>
+
+            </label>
+
+            <input
+              id="location"
+              type="text"
+              name="location"
+              maxlength="200"
+              placeholder="Example: Party Headquarters, New Delhi"
+              required
+            />
+
+          </div>
+
+
+          <!-- =====================================
+               DATE
+          ====================================== -->
+
+          <div class="form-group">
+
+            <label for="eventDate">
+
+              <span>
+                Event Date
+                <span class="required">*</span>
+              </span>
+
+            </label>
+
+            <input
+              id="eventDate"
+              type="date"
+              name="eventDate"
+              required
+            />
+
+          </div>
+
+
+          <!-- =====================================
+               TIME
+          ====================================== -->
+
+          <div class="form-group">
+
+            <label for="eventTime">
+
+              <span>
+                Event Time
+              </span>
+
+              <span class="optional">
+                Optional
+              </span>
+
+            </label>
+
+            <input
+              id="eventTime"
+              type="time"
+              name="eventTime"
+            />
+
+          </div>
+
+
+          <!-- =====================================
+               CATEGORY
+          ====================================== -->
+
+          <div class="form-group">
+
+            <label for="tag">
+
+              <span>
+                Event Category / Tag
+              </span>
+
+            </label>
+
+            <input
+              id="tag"
+              type="text"
+              name="tag"
+              maxlength="50"
+              value="Event"
+              placeholder="Meeting / Rally / Drive / Conference"
+            />
+
+            <div class="field-help">
+              Example: Meeting, Rally, Youth, Conference
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               TAG COLOR
+          ====================================== -->
+
+          <div class="form-group">
+
+            <label for="tagColor">
+
+              <span>
+                Tag Color
+              </span>
+
+            </label>
+
+            <div class="color-wrapper">
+
+              <input
+                id="tagColor"
+                class="color-input"
+                type="color"
+                name="tagColor"
+                value="#1d4ed8"
+              />
+
+              <span
+                id="colorValue"
+                class="color-value"
+              >
+                #1d4ed8
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               FULL DESCRIPTION
+          ====================================== -->
+
+          <div class="form-group full">
+
+            <label for="description">
+
+              <span>
+                Complete Event Details
+                <span class="optional">
+                  Recommended
+                </span>
+              </span>
+
+              <span
+                class="counter"
+                id="descriptionCounter"
+              >
+                0 / 5000
+              </span>
+
+            </label>
+
+            <textarea
+              id="description"
+              name="description"
+              class="full-description"
+              maxlength="5000"
+              placeholder="Write complete information about the event...
+
+Example:
+
+The VIP Party will organize a National Executive Meeting at the party headquarters.
+
+All state presidents, office bearers and senior party members will participate in the meeting.
+
+The meeting will discuss upcoming programs, organizational development and future plans.
+
+Please arrive at the venue before the scheduled time."
+            ></textarea>
+
+            <div class="field-help">
+              Write all important information that should be visible on the Event Details page.
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               IMAGES
+          ====================================== -->
+
+          <div class="form-group full">
+
+            <label>
+
+              <span>
+                Event Photos
+                <span class="required">*</span>
+              </span>
+
+              <span class="optional">
+                Maximum 10 images
+              </span>
+
+            </label>
+
+
+            <div
+              class="upload-box"
+              id="uploadBox"
+            >
+
+              <div class="upload-icon">
+
+                <i class="fa-solid fa-images"></i>
+
+              </div>
+
+              <div class="upload-title">
+
+                Upload Event Images
+
+              </div>
+
+              <div class="upload-description">
+
+                Select 1 to 10 JPG, JPEG, PNG or WEBP images
+
+                <br />
+
+                Maximum 5 MB per image
+
+              </div>
+
+
+              <input
+                id="eventImages"
+                class="upload-input"
+                type="file"
+                name="images"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                multiple
+                required
+              />
+
+
+              <div
+                id="imageCount"
+                class="image-count"
+              >
+                No images selected
+              </div>
+
+            </div>
+
+
+            <!-- IMAGE PREVIEW -->
+
+            <div
+              id="imagePreview"
+              class="preview-container"
+            ></div>
+
+
+            <div class="field-help">
+
+              <strong>Important:</strong>
+
+              The first selected image will automatically become the
+              <strong>Cover Image</strong>.
+
+              The remaining images will appear in the Event Gallery.
+
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               PUBLISH / FEATURED
+          ====================================== -->
+
+          <div class="form-group full">
+
+            <label>
+              Event Visibility
+            </label>
+
+            <div class="check-boxes">
+
+              <label class="check-label">
+
+                <input
+                  type="checkbox"
+                  name="published"
+                  value="true"
+                  checked
+                />
+
+                <i
+                  class="fa-solid fa-eye"
+                  style="color:#16a34a;"
+                ></i>
+
+                Publish Event
+
+              </label>
+
+
+              <label class="check-label">
+
+                <input
+                  type="checkbox"
+                  name="featured"
+                  value="true"
+                />
+
+                <i
+                  class="fa-solid fa-star"
+                  style="color:#f59e0b;"
+                ></i>
+
+                Featured Event
+
+              </label>
+
+            </div>
+
+            <div class="field-help">
+
+              Published events will be available through the mobile API.
+              Featured events can be highlighted on the app.
+
+            </div>
+
+          </div>
+
+
+          <!-- =====================================
+               ACTION
+          ====================================== -->
+
+          <div class="form-group full">
+
+            <div class="form-actions">
+
+              <button
+                type="reset"
+                class="btn"
+                style="
+                  background:#e2e8f0;
+                  color:#334155;
+                "
+                id="resetButton"
+              >
+
+                <i class="fa-solid fa-rotate-left"></i>
+
+                Reset
+
+              </button>
+
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+                id="submitButton"
+              >
+
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+
+                Create Event
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+
+
+    <!-- =========================================
+         ALL EVENTS
+    ========================================== -->
+
+    <div class="card">
+
+      <div class="events-header">
+
+        <div>
+
+          <h2>
+            <i
+              class="fa-solid fa-calendar-days"
+              style="color:#1d4ed8;"
+            ></i>
+
+            All Events
+          </h2>
+
+          <p>
+            Manage events already added to the system.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <% if (!events || events.length === 0) { %>
+
+        <div class="empty">
+
+          <div class="empty-icon">
+
+            <i class="fa-solid fa-calendar-xmark"></i>
+
+          </div>
+
+          <h3>
+            No Events Found
+          </h3>
+
+          <p>
+            Create your first event using the form above.
+          </p>
+
+        </div>
+
+      <% } else { %>
+
+
+        <div class="events-grid">
+
+          <% events.forEach(event => { %>
+
+
+            <div class="event-card">
+
+
+              <!-- EVENT IMAGE -->
+
+              <div class="event-image-wrapper">
+
+
+                <% if (
+                  event.images &&
+                  event.images.length > 0
+                ) { %>
+
+                  <img
+                    src="<%= event.images[0] %>"
+                    class="event-image"
+                    alt="<%= event.title %>"
+                    loading="lazy"
+                  />
+
+
+                  <div class="photo-count">
+
+                    <i class="fa-solid fa-images"></i>
+
+                    <%= event.images.length %>
+
+                  </div>
+
+
+                <% } else { %>
+
+
+                  <div class="no-image">
+
+                    <i
+                      class="fa-regular fa-image"
+                      style="font-size:30px;"
+                    ></i>
+
+                    No Image
+
+                  </div>
+
+
+                <% } %>
+
+
+                <% if (event.featured) { %>
+
+                  <div class="featured-badge">
+
+                    <i class="fa-solid fa-star"></i>
+
+                    FEATURED
+
+                  </div>
+
+                <% } %>
+
+
+              </div>
+
+
+              <!-- EVENT BODY -->
+
+              <div class="event-body">
+
+
+                <!-- TAG -->
+
+                <span
+                  class="tag"
+                  style="
+                    background:<%= event.tagColor || '#1d4ed8' %>;
+                  "
+                >
+
+                  <%= event.tag || "Event" %>
+
+                </span>
+
+
+                <!-- TITLE -->
+
+                <h3 class="event-title">
+
+                  <%= event.title %>
+
+                </h3>
+
+
+                <!-- SHORT DESCRIPTION -->
+
+                <% if (event.shortDescription) { %>
+
+                  <div class="event-description">
+
+                    <%= event.shortDescription %>
+
+                  </div>
+
+                <% } else if (event.description) { %>
+
+                  <div class="event-description">
+
+                    <%= event.description.length > 120
+                      ? event.description.substring(0, 120) + "..."
+                      : event.description
+                    %>
+
+                  </div>
+
+                <% } %>
+
+
+                <!-- LOCATION -->
+
+                <div class="meta">
+
+                  <i class="fa-solid fa-location-dot"></i>
+
+                  <span>
+                    <%= event.location %>
+                  </span>
+
+                </div>
+
+
+                <!-- DATE -->
+
+                <div class="meta">
+
+                  <i class="fa-regular fa-calendar"></i>
+
+                  <span>
+
+                    <%= new Date(
+                      event.eventDate
+                    ).toLocaleDateString(
+                      "en-IN",
+                      {
+                        weekday: "short",
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                      }
+                    ) %>
+
+                  </span>
+
+                </div>
+
+
+                <!-- TIME -->
+
+                <% if (event.eventTime) { %>
+
+                  <div class="meta">
+
+                    <i class="fa-regular fa-clock"></i>
+
+                    <span>
+                      <%= event.eventTime %>
+                    </span>
+
+                  </div>
+
+                <% } %>
+
+
+                <!-- STATUS -->
+
+                <div class="status-row">
+
+
+                  <% if (event.published) { %>
+
+                    <span class="status published">
+
+                      <i class="fa-solid fa-circle-check"></i>
+
+                      &nbsp;Published
+
+                    </span>
+
+                  <% } else { %>
+
+                    <span class="status draft">
+
+                      <i class="fa-solid fa-eye-slash"></i>
+
+                      &nbsp;Hidden
+
+                    </span>
+
+                  <% } %>
+
+
+                  <% if (event.featured) { %>
+
+                    <span class="status featured-status">
+
+                      <i class="fa-solid fa-star"></i>
+
+                      &nbsp;Featured
+
+                    </span>
+
+                  <% } %>
+
+
+                </div>
+
+
+                <!-- ACTIONS -->
+
+                <div class="actions">
+
+
+                  <a
+                    href="/admin/events/edit/<%= event._id %>"
+                    class="btn btn-edit"
+                  >
+
+                    <i class="fa-solid fa-pen"></i>
+
+                    Edit
+
+                  </a>
+
+
+                  <form
+                    action="/admin/events/delete/<%= event._id %>"
+                    method="POST"
+                    style="flex:1;"
+                    onsubmit="
+                      return confirm(
+                        'Are you sure you want to permanently delete this event and all its images?'
+                      );
+                    "
+                  >
+
+                    <button
+                      type="submit"
+                      class="btn btn-danger"
+                      style="width:100%;"
+                    >
+
+                      <i class="fa-solid fa-trash"></i>
+
+                      Delete
+
+                    </button>
+
+                  </form>
+
+
+                </div>
+
+
+              </div>
+
+            </div>
+
+
+          <% }); %>
+
+        </div>
+
+
+      <% } %>
+
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================
+       JAVASCRIPT
+  ========================================== -->
+
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+
+        /* =====================================
+           ELEMENTS
+        ====================================== */
+
+        const form =
+          document.getElementById(
+            "eventForm"
+          );
+
+        const title =
+          document.getElementById(
+            "title"
+          );
+
+        const shortDescription =
+          document.getElementById(
+            "shortDescription"
+          );
+
+        const description =
+          document.getElementById(
+            "description"
+          );
+
+        const titleCounter =
+          document.getElementById(
+            "titleCounter"
+          );
+
+        const shortCounter =
+          document.getElementById(
+            "shortCounter"
+          );
+
+        const descriptionCounter =
+          document.getElementById(
+            "descriptionCounter"
+          );
+
+        const eventImages =
+          document.getElementById(
+            "eventImages"
+          );
+
+        const imagePreview =
+          document.getElementById(
+            "imagePreview"
+          );
+
+        const imageCount =
+          document.getElementById(
+            "imageCount"
+          );
+
+        const tagColor =
+          document.getElementById(
+            "tagColor"
+          );
+
+        const colorValue =
+          document.getElementById(
+            "colorValue"
+          );
+
+        const submitButton =
+          document.getElementById(
+            "submitButton"
+          );
+
+
+        /* =====================================
+           CHARACTER COUNTER
+        ====================================== */
+
+        function updateCounter(
+          input,
+          counter,
+          max
+        ) {
+
+          if (!input || !counter) {
+            return;
+          }
+
+          counter.textContent =
+            `${input.value.length} / ${max}`;
+
+        }
+
+
+        title.addEventListener(
+          "input",
+          function () {
+
+            updateCounter(
+              title,
+              titleCounter,
+              150
+            );
+
+          }
+        );
+
+
+        shortDescription.addEventListener(
+          "input",
+          function () {
+
+            updateCounter(
+              shortDescription,
+              shortCounter,
+              300
+            );
+
+          }
+        );
+
+
+        description.addEventListener(
+          "input",
+          function () {
+
+            updateCounter(
+              description,
+              descriptionCounter,
+              5000
+            );
+
+          }
+        );
+
+
+        /* =====================================
+           COLOR
+        ====================================== */
+
+        tagColor.addEventListener(
+          "input",
+          function () {
+
+            colorValue.textContent =
+              tagColor.value;
+
+          }
+        );
+
+
+        /* =====================================
+           IMAGE PREVIEW
+        ====================================== */
+
+        eventImages.addEventListener(
+          "change",
+          function () {
+
+            imagePreview.innerHTML = "";
+
+            const files =
+              Array.from(
+                this.files || []
+              );
+
+
+            /* MAX 10 */
+
+            if (files.length > 10) {
+
+              alert(
+                "You can upload maximum 10 images."
+              );
+
+              this.value = "";
+
+              imageCount.textContent =
+                "No images selected";
+
+              return;
+
+            }
+
+
+            if (files.length === 0) {
+
+              imageCount.textContent =
+                "No images selected";
+
+              return;
+
+            }
+
+
+            imageCount.textContent =
+              `${files.length} image${files.length > 1 ? "s" : ""} selected`;
+
+
+            files.forEach(
+              function (
+                file,
+                index
+              ) {
+
+
+                /* FILE TYPE */
+
+                const allowedTypes = [
+                  "image/jpeg",
+                  "image/jpg",
+                  "image/png",
+                  "image/webp"
+                ];
+
+
+                if (
+                  !allowedTypes.includes(
+                    file.type
+                  )
+                ) {
+
+                  alert(
+                    `${file.name} is not a supported image format.`
+                  );
+
+                  eventImages.value = "";
+
+                  imagePreview.innerHTML = "";
+
+                  imageCount.textContent =
+                    "No images selected";
+
+                  return;
+
+                }
+
+
+                /* FILE SIZE */
+
+                if (
+                  file.size >
+                  5 * 1024 * 1024
+                ) {
+
+                  alert(
+                    `${file.name} is larger than 5 MB.`
+                  );
+
+                  eventImages.value = "";
+
+                  imagePreview.innerHTML = "";
+
+                  imageCount.textContent =
+                    "No images selected";
+
+                  return;
+
+                }
+
+
+                const reader =
+                  new FileReader();
+
+
+                reader.onload =
+                  function (
+                    e
+                  ) {
+
+                    const item =
+                      document.createElement(
+                        "div"
+                      );
+
+                    item.className =
+                      "preview-item";
+
+
+                    item.innerHTML = `
+
+                      <img
+                        src="${e.target.result}"
+                        alt="Event Image ${index + 1}"
+                      />
+
+                      ${
+                        index === 0
+                          ? `
+                            <div class="cover-label">
+                              <i class="fa-solid fa-star"></i>
+                              COVER
+                            </div>
+                          `
+                          : ""
+                      }
+
+                      <div class="image-number">
+                        ${index + 1}
+                      </div>
+
+                    `;
+
+
+                    imagePreview.appendChild(
+                      item
+                    );
+
+                  };
+
+
+                reader.readAsDataURL(
+                  file
+                );
+
+              }
+            );
+
+          }
+        );
+
+
+        /* =====================================
+           FORM SUBMIT
+        ====================================== */
+
+        form.addEventListener(
+          "submit",
+          function (
+            e
+          ) {
+
+            const files =
+              Array.from(
+                eventImages.files || []
+              );
+
+
+            if (
+              files.length === 0
+            ) {
+
+              e.preventDefault();
+
+              alert(
+                "Please upload at least 1 event image."
+              );
+
+              eventImages.focus();
+
+              return;
+
+            }
+
+
+            if (
+              files.length > 10
+            ) {
+
+              e.preventDefault();
+
+              alert(
+                "Maximum 10 images are allowed."
+              );
+
+              return;
+
+            }
+
+
+            /* DISABLE BUTTON */
+
+            submitButton.disabled =
+              true;
+
+            submitButton.innerHTML = `
+
+              <i class="fa-solid fa-spinner fa-spin"></i>
+
+              Creating Event...
+
+            `;
+
+          }
+        );
+
+
+        /* =====================================
+           RESET
+        ====================================== */
+
+        form.addEventListener(
+          "reset",
+          function () {
+
+            setTimeout(
+              function () {
+
+                imagePreview.innerHTML =
+                  "";
+
+                imageCount.textContent =
+                  "No images selected";
+
+                colorValue.textContent =
+                  tagColor.value;
+
+                updateCounter(
+                  title,
+                  titleCounter,
+                  150
+                );
+
+                updateCounter(
+                  shortDescription,
+                  shortCounter,
+                  300
+                );
+
+                updateCounter(
+                  description,
+                  descriptionCounter,
+                  5000
+                );
+
+              },
+              50
+            );
+
+          }
+        );
+
+
+        /* =====================================
+           INITIAL COUNTERS
+        ====================================== */
+
+        updateCounter(
+          title,
+          titleCounter,
+          150
+        );
+
+        updateCounter(
+          shortDescription,
+          shortCounter,
+          300
+        );
+
+        updateCounter(
+          description,
+          descriptionCounter,
+          5000
+        );
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>
