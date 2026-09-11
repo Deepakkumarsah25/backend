@@ -1,5 +1,22 @@
 import Organisation from "../models/Organisation.js";
 import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
+
+// ===========================
+// Helper: Upload buffer to Cloudinary
+// ===========================
+const streamUpload = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { resource_type: "auto" }, // "auto" supports both images and videos
+      (error, result) => {
+        if (result) resolve(result);
+        else reject(error);
+      }
+    );
+    streamifier.createReadStream(buffer).pipe(stream);
+  });
+};
 
 // ===========================
 // Show All Organisation
@@ -41,23 +58,23 @@ export const addOrganisation = async (req, res) => {
       fax,
     } = req.body;
 
-   let imageUrl = "";
+    let imageUrl = "";
 
-if (req.file) {
-  const result = await cloudinary.uploader.upload(req.file.path);
-  imageUrl = result.secure_url;
-}
+    if (req.file) {
+      const result = await streamUpload(req.file.buffer);
+      imageUrl = result.secure_url;
+    }
 
-await Organisation.create({
-  category,
-  name,
-  designation,
-  address,
-  phone,
-  email,
-  fax,
-  imageUrl,
-});
+    await Organisation.create({
+      category,
+      name,
+      designation,
+      address,
+      phone,
+      email,
+      fax,
+      imageUrl,
+    });
 
     res.redirect("/organisation");
   } catch (error) {
@@ -110,21 +127,21 @@ export const updateOrganisation = async (req, res) => {
 
     let imageUrl = organisation.imageUrl;
 
-if (req.file) {
-  const result = await cloudinary.uploader.upload(req.file.path);
-  imageUrl = result.secure_url;
-}
+    if (req.file) {
+      const result = await streamUpload(req.file.buffer);
+      imageUrl = result.secure_url;
+    }
 
-await Organisation.findByIdAndUpdate(req.params.id, {
-  category,
-  name,
-  designation,
-  address,
-  phone,
-  email,
-  fax,
-  imageUrl,
-});
+    await Organisation.findByIdAndUpdate(req.params.id, {
+      category,
+      name,
+      designation,
+      address,
+      phone,
+      email,
+      fax,
+      imageUrl,
+    });
 
     res.redirect("/organisation");
   } catch (error) {

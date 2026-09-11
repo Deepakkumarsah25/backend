@@ -67,6 +67,19 @@ button:hover{
     background:#0b5ed7;
 }
 
+.error-text{
+    color:#dc3545;
+    font-size:13px;
+    margin-top:4px;
+    display:none;
+}
+
+input.invalid,
+textarea.invalid,
+select.invalid{
+    border-color:#dc3545;
+}
+
 </style>
 
 </head>
@@ -82,14 +95,16 @@ button:hover{
 <h2>Add Organisation Member</h2>
 
 <form
+id="orgForm"
 action="/organisation/add"
 method="POST"
 enctype="multipart/form-data"
+novalidate
 >
 
 <label>Category</label>
 
-<select name="category" required>
+<select name="category" id="category" required>
 
 <option value="">Select Category</option>
 
@@ -118,62 +133,87 @@ enctype="multipart/form-data"
 <option value="Departments">Departments</option>
 
 </select>
+<span class="error-text" id="categoryError">Please select a category.</span>
 
 <label>Name</label>
 
 <input
 type="text"
 name="name"
+id="name"
+placeholder="Enter Full Name"
+minlength="3"
+maxlength="60"
 required
 >
+<span class="error-text" id="nameError">Name should be 3–60 letters (spaces allowed).</span>
 
 <label>Designation</label>
 
 <input
 type="text"
 name="designation"
+id="designation"
+placeholder="Enter Designation"
+minlength="2"
+maxlength="80"
 required
 >
+<span class="error-text" id="designationError">Designation should be 2–80 characters.</span>
 
 <label>Address</label>
 
 <textarea
 name="address"
+id="address"
 placeholder="Enter Address"
+maxlength="250"
 ></textarea>
+<span class="error-text" id="addressError">Address must be under 250 characters.</span>
 
 <label>Phone</label>
 
 <input
 type="text"
 name="phone"
-placeholder="Enter Phone Number"
+id="phone"
+placeholder="Enter 10-digit Phone Number"
+maxlength="10"
+inputmode="numeric"
 >
+<span class="error-text" id="phoneError">Enter a valid 10-digit phone number.</span>
 
 <label>Email</label>
 
 <input
 type="email"
 name="email"
+id="email"
 placeholder="Enter Email"
 >
+<span class="error-text" id="emailError">Enter a valid email address.</span>
 
 <label>Fax</label>
 
 <input
 type="text"
 name="fax"
+id="fax"
 placeholder="Enter Fax"
+maxlength="20"
 >
+<span class="error-text" id="faxError">Fax should be under 20 characters.</span>
 
 <label>Photo</label>
 
 <input
 type="file"
 name="image"
+id="image"
 accept="image/*"
 required
 >
+<span class="error-text" id="imageError">Please select a valid image (max 5 MB).</span>
 
 <button type="submit">
 Save Organisation
@@ -187,24 +227,110 @@ Save Organisation
 
 <script>
 
-const imageInput=document.querySelector('input[name="image"]');
+const form = document.getElementById("orgForm");
 
-imageInput.addEventListener("change",function(){
+const fields = {
+  category: {
+    el: document.getElementById("category"),
+    error: document.getElementById("categoryError"),
+    validate: (v) => v.trim() !== "",
+  },
+  name: {
+    el: document.getElementById("name"),
+    error: document.getElementById("nameError"),
+    validate: (v) => /^[A-Za-zÀ-ÿ\s.'-]{3,60}$/.test(v.trim()),
+  },
+  designation: {
+    el: document.getElementById("designation"),
+    error: document.getElementById("designationError"),
+    validate: (v) => v.trim().length >= 2 && v.trim().length <= 80,
+  },
+  address: {
+    el: document.getElementById("address"),
+    error: document.getElementById("addressError"),
+    validate: (v) => v.trim().length <= 250,
+  },
+  phone: {
+    el: document.getElementById("phone"),
+    error: document.getElementById("phoneError"),
+    validate: (v) => v.trim() === "" || /^[6-9]\d{9}$/.test(v.trim()),
+  },
+  email: {
+    el: document.getElementById("email"),
+    error: document.getElementById("emailError"),
+    validate: (v) =>
+      v.trim() === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()),
+  },
+  fax: {
+    el: document.getElementById("fax"),
+    error: document.getElementById("faxError"),
+    validate: (v) => v.trim().length <= 20,
+  },
+};
 
-if(this.files.length){
+function validateField(key) {
+  const field = fields[key];
+  const value = field.el.value;
+  const isValid = field.validate(value);
 
-const file=this.files[0];
+  if (isValid) {
+    field.el.classList.remove("invalid");
+    field.error.style.display = "none";
+  } else {
+    field.el.classList.add("invalid");
+    field.error.style.display = "block";
+  }
 
-if(!file.type.startsWith("image/")){
-
-alert("Please select image");
-
-this.value="";
-
+  return isValid;
 }
 
-}
+Object.keys(fields).forEach((key) => {
+  fields[key].el.addEventListener("input", () => validateField(key));
+  fields[key].el.addEventListener("blur", () => validateField(key));
+});
 
+// Image validation
+const imageInput = document.getElementById("image");
+const imageError = document.getElementById("imageError");
+
+imageInput.addEventListener("change", function () {
+  if (this.files.length) {
+    const file = this.files[0];
+    const maxSize = 5 * 1024 * 1024; // 5 MB
+
+    if (!file.type.startsWith("image/")) {
+      imageError.textContent = "Please select an image file.";
+      imageError.style.display = "block";
+      this.value = "";
+    } else if (file.size > maxSize) {
+      imageError.textContent = "Image size must be under 5 MB.";
+      imageError.style.display = "block";
+      this.value = "";
+    } else {
+      imageError.style.display = "none";
+    }
+  }
+});
+
+// Full form submit validation
+form.addEventListener("submit", function (e) {
+  let isFormValid = true;
+
+  Object.keys(fields).forEach((key) => {
+    if (!validateField(key)) {
+      isFormValid = false;
+    }
+  });
+
+  if (!imageInput.files.length) {
+    imageError.textContent = "Please select a photo.";
+    imageError.style.display = "block";
+    isFormValid = false;
+  }
+
+  if (!isFormValid) {
+    e.preventDefault();
+  }
 });
 
 </script>

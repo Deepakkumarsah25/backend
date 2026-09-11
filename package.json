@@ -23,6 +23,7 @@
     "mongoose": "^9.7.4",
     "multer": "^2.3.0",
     "nodemailer": "^9.0.3",
-    "razorpay": "^2.9.8"
+    "razorpay": "^2.9.8",
+    "streamifier": "^0.1.1"
   }
 }

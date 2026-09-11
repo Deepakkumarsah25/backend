@@ -1,28 +1,13 @@
+
 import multer from "multer";
-import fs from "fs";
-import path from "path";
 
-const uploadDir = "uploads";
-
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-
-  filename: (req, file, cb) => {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-
-    cb(null, uniqueName);
-  },
-});
+/*
+  Cloudinary uploads need a Buffer (req.file.buffer), not a disk path.
+  memoryStorage keeps the file in RAM only — nothing is written to
+  the local filesystem, and uploadToCloudinary(req.file.buffer)
+  works directly.
+*/
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,

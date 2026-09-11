@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Leadership Management</title>
+
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+       .content{
+    margin-left:260px;
+    padding:30px;
+    overflow-x:auto;
+}
+
+       .top-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-bottom:20px;
+}
+
+        .add-btn{
+            background:#0d6efd;
+            color:#fff;
+            text-decoration:none;
+            padding:10px 18px;
+            border-radius:6px;
+        }
+
+        .add-btn:hover{
+            background:#0b5ed7;
+        }
+table{
+    width:100%;
+    min-width:700px;
+    border-collapse:collapse;
+    background:#fff;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+        th{
+            background:#0d6efd;
+            color:#fff;
+            padding:15px;
+        }
+
+        td{
+            padding:12px;
+            text-align:center;
+            border-bottom:1px solid #ddd;
+        }
+
+        td img{
+            width:70px;
+            height:70px;
+            border-radius:50%;
+            object-fit:cover;
+        }
+
+        .edit{
+            color:green;
+            margin-right:12px;
+            font-size:18px;
+        }
+
+        .delete{
+            color:red;
+            font-size:18px;
+        }
+
+        .badge{
+            padding:5px 10px;
+            border-radius:20px;
+            color:#fff;
+            font-size:13px;
+        }
+
+        .founder{
+            background:#0d6efd;
+        }
+
+        .leader{
+            background:#198754;
+        }
+
+        .leadersscm{
+            background:#fd7e14;
+        }
+
+        .no-data{
+            padding:25px;
+            text-align:center;
+        }
+        @media (max-width:768px){
+
+    .content{
+        margin-left:0;
+        padding:15px;
+    }
+
+    .top-bar{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .top-bar h2{
+        font-size:24px;
+        margin:0;
+    }
+
+    .add-btn{
+        width:100%;
+        text-align:center;
+        box-sizing:border-box;
+    }
+
+    table{
+        min-width:650px;
+    }
+
+}
+    </style>
+
+</head>
+
+<body>
+
+<%- include("../common/sidebar") %>
+
+<div class="content">
+
+<div class="top-bar">
+
+<h2>Leadership Management</h2>
+
+<a href="/leadership/add" class="add-btn">
+<i class="fa-solid fa-plus"></i>
+Add Leadership
+</a>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Photo</th>
+<th>Name</th>
+<th>Designation</th>
+<th>Category</th>
+<th>Action</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<% if(leaders.length > 0){ %>
+
+<% leaders.forEach(item=>{ %>
+<tr>
+
+<td>
+
+<img src="<%= item.imageUrl %>">
+
+</td>
+
+<td>
+
+<%= item.name %>
+
+</td>
+
+<td>
+
+<%= item.designation %>
+
+</td>
+
+<td>
+
+<td>
+<%
+let badgeClass = "";
+let badgeText = "";
+
+if (item.category === "founder") {
+    badgeClass = "founder";
+    badgeText = "Founder";
+} else if (item.category === "leader") {
+    badgeClass = "leader";
+    badgeText = "MLA";
+} else if (item.category === "leaderss") {
+    badgeClass = "leader";
+    badgeText = "Leaders";
+} else {
+    badgeClass = "";
+    badgeText = item.category;
+}
+%>
+
+<span class="badge <%= badgeClass %>">
+    <%= badgeText %>
+</span>
+
+</td>
+
+<td>
+
+<a
+href="/leadership/edit/<%= item._id %>"
+class="edit"
+>
+
+<i class="fa-solid fa-pen"></i>
+
+</a>
+
+<a
+href="#"
+class="delete"
+onclick="deleteLeadership('<%= item._id %>')"
+>
+
+<i class="fa-solid fa-trash"></i>
+
+</a>
+
+</td>
+
+</tr>
+
+<% }) %>
+
+<% }else{ %>
+
+<tr>
+
+<td colspan="5" class="no-data">
+
+No Leadership Found
+
+</td>
+
+</tr>
+
+<% } %>
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function deleteLeadership(id){
+
+const confirmDelete=confirm("Delete this record?");
+
+if(!confirmDelete) return;
+
+try{
+
+const response=await fetch(`/leadership/delete/${id}`,{
+
+method:"DELETE"
+
+});
+
+const data=await response.json();
+
+if(data.success){
+
+alert("Deleted Successfully");
+
+location.reload();
+
+}else{
+
+alert(data.message);
+
+}
+
+}catch(error){
+
+console.log(error);
+
+alert("Something went wrong");
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>
