@@ -80,7 +80,7 @@ export const protect = async (req, res, next) => {
 let user;
     try {
       user = await User.findOneAndUpdate({ uid }, updateData, {
-        new: true,
+        returnDocument: "after",
         upsert: true,
       });
     } catch (upsertErr) {

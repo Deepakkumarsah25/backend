@@ -19,8 +19,11 @@ import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
 import joinRoutes from "./routes/joinRoutes.js";
+import VolunteerRoutes from "./routes/volunteer/volunteerRoutes.js"
 import agentRoutes from "./routes/agentRoutes.js";
 import organisationRoutes from "./routes/organisationRoutes.js";
+import morchaRoutes from "./routes/morchaRoutes.js"
+import leadershipRoutes from "./routes/leadershipRoutes.js"
 import adminUserRoutes from "./routes/adminUserRoutes.js";
 import cmsRoutes from "./routes/cmsRoutes.js";
 import bainarliveupdate from './routes/sections/banners.js'
@@ -32,6 +35,8 @@ import feedbackRoutes from "./routes/feedback/feedbackRoutes.js";
 import paymentRoutes from "./routes/payment/paymentRoutes.js";
 import newsRoutes from "./routes/news/newsRoutes.js";
 import eventRoutes from "./routes/events/eventRoutes.js";
+import grievanceRoutes, { adminGrievanceRouter } from "./routes/Grievance/Grievanceroutes.js";
+import Volunteer from "./models/Volunteer.js";
 const app = express();
 const PORT = process.env.PORT || 9191;
 
@@ -54,7 +59,8 @@ app.use(
     saveUninitialized: false,
   })
 );
-app.use(userRoutes);
+
+app.use("/api/users", userRoutes);
 app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
 app.use("/api", searchRoutes);
@@ -64,13 +70,17 @@ app.use("/api", vipLiveRoute);
 app.use("/api", videoRoutes);
 app.use("/api",albumRoutes);
 app.use("/api/join", joinRoutes);
+app.use("/api/volunteer",VolunteerRoutes);
 app.use("/api/agent", agentRoutes);
 app.use("/", adminUserRoutes);
 app.use("/", mediaGalleryRoutes);
 app.use("/api", mediaGalleryRoutes);
 app.use("/organisation", organisationRoutes);
+app.use("/leadership",leadershipRoutes);
+app.use("/", morchaRoutes);
 app.use("/cms", cmsRoutes);
-
+app.use("/api/grievances", grievanceRoutes);
+app.use("/grievances", adminGrievanceRouter);
 app.use("/", bainarliveupdate)
 app.use("/", workerRoutes);
 app.use("/",driverRoutes);

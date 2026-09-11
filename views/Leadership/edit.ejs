@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Edit Leadership</title>
+
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/sidebar.css">
+
+<style>
+
+.content{
+    margin-left:260px;
+    padding:30px;
+}
+
+.card{
+    max-width:750px;
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 0 10px rgba(0,0,0,.1);
+}
+
+h2{
+    margin-bottom:20px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    font-weight:bold;
+}
+
+input,
+textarea,
+select{
+
+    width:100%;
+    padding:12px;
+    margin-top:6px;
+    border:1px solid #ccc;
+    border-radius:6px;
+
+}
+
+textarea{
+    resize:none;
+    height:120px;
+}
+
+img{
+    width:180px;
+    margin-top:15px;
+    border-radius:10px;
+    border:1px solid #ddd;
+}
+
+button{
+
+    margin-top:25px;
+    background:#0d6efd;
+    color:#fff;
+    border:none;
+    padding:12px 25px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:16px;
+
+}
+
+button:hover{
+    background:#0b5ed7;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<%- include("../common/sidebar") %>
+
+<div class="content">
+
+<div class="card">
+
+<h2>Edit Leadership Member</h2>
+
+<form
+action="/leadership/update/<%= leader._id %>"
+method="POST"
+enctype="multipart/form-data"
+>
+
+<label>Name</label>
+
+<input
+type="text"
+name="name"
+value="<%= leader.name %>"
+required
+>
+
+<label>Designation</label>
+
+<input
+type="text"
+name="designation"
+value="<%= leader.designation %>"
+required
+>
+
+<label>Category</label>
+
+<select id="category" name="category" required>
+
+<option value="founder"
+<%= leader.category==="founder" ? "selected" : "" %>>
+Founder
+</option>
+
+<option value="leader"
+<%= leader.category==="leader" ? "selected" : "" %>>
+MLA
+</option>
+
+<option value="leaderss"
+<%= leader.category==="leaderss" ? "selected" : "" %>>
+Leaders
+</option>
+
+</select>
+
+<label>Short Description</label>
+
+<textarea name="description"><%= leader.description %></textarea>
+<!-- Founder -->
+
+<div id="founderFields" style="display:none;">
+
+<label>Introduction</label>
+
+<textarea name="intro"><%= leader.intro %></textarea>
+
+<label>About</label>
+
+<textarea name="about"><%= leader.about %></textarea>
+
+<label>Early Life</label>
+
+<textarea name="earlyLife"><%= leader.earlyLife %></textarea>
+
+<label>Social Thinking</label>
+
+<textarea name="socialThinking"><%= leader.socialThinking %></textarea>
+
+<label>Party Foundation</label>
+
+<textarea name="partyFoundation"><%= leader.partyFoundation %></textarea>
+
+<label>Political Journey</label>
+
+<textarea name="politicalJourney"><%= leader.politicalJourney %></textarea>
+
+<label>Achievement</label>
+
+<textarea name="achievement"><%= leader.achievement %></textarea>
+
+<label>Vision</label>
+
+<textarea name="vision"><%= leader.vision %></textarea>
+
+<label>Message</label>
+
+<textarea name="message"><%= leader.message %></textarea>
+
+</div>
+<!-- MLA -->
+
+<div id="leaderFields" style="display:none;">
+
+<label>Introduction</label>
+
+<textarea name="leaderIntro"><%= leader.intro %></textarea>
+
+<label>Journey</label>
+
+<textarea name="journey"><%= leader.journey %></textarea>
+
+<label>Achievement</label>
+
+<textarea name="leaderAchievement"><%= leader.achievement %></textarea>
+
+</div>
+
+<!-- Party Leaders -->
+
+<div id="leadersscmFields" style="display:none;">
+
+<label>Role</label>
+
+<input
+type="text"
+name="role"
+value="<%= leader.role %>"
+>
+
+<label>Introduction</label>
+
+<textarea name="leadersscmIntro"><%= leader.intro %></textarea>
+
+<label>Work</label>
+
+<textarea name="work"><%= leader.work %></textarea>
+
+</div>
+<!-- Current Image -->
+
+<label>Current Image</label>
+
+<img
+src="<%= leader.imageUrl %>"
+alt="Leader Image"
+>
+
+<!-- Change Image -->
+
+<label>Change Image</label>
+
+<input
+type="file"
+name="image"
+accept="image/*"
+>
+
+<button type="submit">
+
+Update Leadership
+
+</button>
+
+</form>
+
+</div>
+
+</div>
+<script>
+
+const imageInput = document.querySelector('input[name="image"]');
+
+imageInput.addEventListener("change", function(){
+
+    if(this.files.length){
+
+        const file = this.files[0];
+
+        if(!file.type.startsWith("image/")){
+
+            alert("Please select a valid image.");
+
+            this.value = "";
+
+        }
+
+    }
+
+});
+
+const category = document.getElementById("category");
+
+const founderFields = document.getElementById("founderFields");
+const leaderFields = document.getElementById("leaderFields");
+const leaderssFields = document.getElementById("leaderssFields");
+
+function toggleFields(){
+
+    founderFields.style.display = "none";
+    leaderFields.style.display = "none";
+    leaderssFields.style.display = "none";
+
+    if(category.value === "founder"){
+        founderFields.style.display = "block";
+    }
+
+    if(category.value === "leader"){
+        leaderFields.style.display = "block";
+    }
+
+    if(category.value === "leaderss"){
+        leaderssFields.style.display = "block";
+    }
+
+}
+
+category.addEventListener("change", toggleFields);
+
+toggleFields();
+
+</script>
+
+</body>
+</html>

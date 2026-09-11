@@ -2,15 +2,17 @@ import express from "express";
 import upload from "../middlewar/upload.js";
 
 import {
-  showOrganisation,
-  showAddOrganisation,
-  addOrganisation,
-  editOrganisation,
-  updateOrganisation,
-  deleteOrganisation,
-  getOrganisation,
-  getOrganisationDetails,
-} from "../controllers/organisationcontroller.js";
+  showLeadership,
+  showAddLeadership,
+  addLeadership,
+  editLeadership,
+  updateLeadership,
+  deleteLeadership,
+  getFounders,
+  getLeaders,
+  getLeaderss,
+  getLeadershipDetails,
+} from "../controllers/leadershipController.js";
 
 const router = express.Router();
 
@@ -19,57 +21,65 @@ const router = express.Router();
 // =======================
 
 // Show All
-router.get("/", showOrganisation);
+router.get("/", showLeadership);
 
 // Add Page
-router.get("/add", showAddOrganisation);
+router.get("/add", showAddLeadership);
 
 // Save
 router.post(
   "/add",
   upload.single("image"),
-  addOrganisation
+  addLeadership
 );
 
 // Edit Page
 router.get(
   "/edit/:id",
-  editOrganisation
+  editLeadership
 );
 
 // Update
 router.post(
   "/update/:id",
   upload.single("image"),
-  updateOrganisation
+  updateLeadership
 );
 
 // Delete
 router.delete(
   "/delete/:id",
-  deleteOrganisation
+  deleteLeadership
 );
 
 // =======================
 // Mobile APIs
 // =======================
 
-// All Members
+// Founders
 router.get(
-  "/api",
-  getOrganisation
+  "/api/founders",
+  getFounders
 );
 
-// Members By Category
+// MLA
 router.get(
-  "/api/:category",
-  getOrganisation
+  "/api/leaders",
+  getLeaders
 );
 
-// Single Member Details
+// Party Leaders
+router.get(
+  "/api/leaderss",
+  getLeaderss
+);
+
+
+
+// Details
 router.get(
   "/api/details/:id",
-  getOrganisationDetails
+  getLeadershipDetails
 );
 
 export default router;

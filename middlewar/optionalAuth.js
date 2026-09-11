@@ -30,7 +30,7 @@ export const optionalAuth = async (req, res, next) => {
 
     try {
       req.user = await User.findOneAndUpdate({ uid }, updateData, {
-        new: true,
+        returnDocument: "after",
         upsert: true,
       });
     } catch (upsertErr) {
