@@ -1,8 +1,12 @@
 <head>
-    <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
 <!-- Sidebar toggle (mobile/tablet) -->
-<button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Toggle Navigation">
+<button
+  class="sidebar-toggle-btn"
+  id="sidebarToggle"
+  aria-label="Toggle Navigation"
+>
   <span></span>
   <span></span>
   <span></span>
@@ -13,236 +17,244 @@
 <aside class="educare-fixed-sidebar dark-theme" id="responsiveSidebar">
   <div class="sidebar-brand-panel">
     <h2 class="sidebar-master-title">Control Panel</h2>
-    <button class="sidebar-mobile-close" id="sidebarClose"><i class="fas fa-times"></i></button>
+    <button class="sidebar-mobile-close" id="sidebarClose">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 
   <div class="sidebar-scrollable-content">
     <div class="sidebar-menu-group">
       <ul class="group-links-list">
         <li>
-          <a href="/dashboard" class="sidebar-link-item active" data-category="category">
-            <span class="link-icon-marker"><i class="fa-solid fa-tachograph-digital"></i></span>
+          <a href="/admin/delete-accounts" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-user-xmark"></i>
+            </span>
+
+            <span class="link-text"> Delete Account </span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/dashboard"
+            class="sidebar-link-item active"
+            data-category="category"
+          >
+            <span class="link-icon-marker"
+              ><i class="fa-solid fa-tachograph-digital"></i
+            ></span>
             <span class="link-text">Dashboard</span>
           </a>
         </li>
         <li>
-        <a href="/vip-live" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-tower-broadcast"></i>
-          </span>
-          <span class="link-text">VIP Live</span>
-        </a>
-      </li>
-
-      <li>
-        <a href="/video_gallery" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-video"></i>
-          </span>
-          <span class="link-text">Video gallery</span>
-        </a>
-      </li>
-
-      <li>
-        <a href="/album" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-images"></i>
-          </span>
-          <span class="link-text">Photo gallery</span>
-        </a>
-      </li>
-
-      <!-- ================================================= -->
-<!-- NEWS MANAGEMENT -->
-<!-- ================================================= -->
-
-<li>
-  <a href="/news" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fa-solid fa-newspaper"></i>
-    </span>
-
-    <span class="link-text">
-      News Management
-    </span>
-  </a>
-</li>
-
-<!-- ================================================= -->
-<!-- EVENTS MANAGEMENT -->
-<!-- ================================================= -->
-
-<li>
-  <a href="/admin/events" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fa-solid fa-calendar-days"></i>
-    </span>
-
-    <span class="link-text">
-      Events Management
-    </span>
-  </a>
-</li>
-
+          <a href="/vip-live" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-tower-broadcast"></i>
+            </span>
+            <span class="link-text">VIP Live</span>
+          </a>
+        </li>
 
         <li>
-        <a href="/joinmember" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-images"></i>
-          </span>
-          <span class="link-text">Join Member</span>
-        </a>
-      </li>
+          <a href="/video_gallery" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-video"></i>
+            </span>
+            <span class="link-text">Video gallery</span>
+          </a>
+        </li>
 
         <li>
-        <a href="/AdminAgent" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-images"></i>
-          </span>
-          <span class="link-text">Admin Agent </span>
-        </a>
-      </li>
+          <a href="/album" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-images"></i>
+            </span>
+            <span class="link-text">Photo gallery</span>
+          </a>
+        </li>
 
-
-      <li>
-        <a href="/mediagallery" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-photo-film"></i>
-          </span>
-          <span class="link-text">Media Gallery</span>
-        </a>
-      </li>
-
-      <li>
-        <a href="/organisation" class="sidebar-link-item">
-          <span class="link-icon-marker">
-            <i class="fa-solid fa-sitemap"></i>
-          </span>
-          <span class="link-text">Organisation</span>
-        </a>
-      </li>
-
-       
-    <li>
-    <a href="/scroller" class="sidebar-link-item">
-        <span class="link-icon-marker">
-            <i class="fa-solid fa-images"></i>
-        </span>
-
-        <span class="link-text">
-            Update Banner Scroller
-        </span>
-    </a>
-</li>
+        <!-- ================================================= -->
+        <!-- NEWS MANAGEMENT -->
+        <!-- ================================================= -->
 
         <li>
-  <a href="/cms" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fa-solid fa-file-pen"></i>
-    </span>
-    <span class="link-text">
-      About VIP (CMS)
-    </span>
-  </a>
-</li>
+          <a href="/news" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-newspaper"></i>
+            </span>
+
+            <span class="link-text"> News Management </span>
+          </a>
+        </li>
+
+        <!-- ================================================= -->
+        <!-- EVENTS MANAGEMENT -->
+        <!-- ================================================= -->
+
+        <li>
+          <a href="/admin/events" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-calendar-days"></i>
+            </span>
+
+            <span class="link-text"> Events Management </span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/joinmember" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-images"></i>
+            </span>
+            <span class="link-text">Join Member</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/AdminAgent" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-images"></i>
+            </span>
+            <span class="link-text">Admin Agent </span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/mediagallery" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-photo-film"></i>
+            </span>
+            <span class="link-text">Media Gallery</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/organisation" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-sitemap"></i>
+            </span>
+            <span class="link-text">Organisation</span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/scroller" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-images"></i>
+            </span>
+
+            <span class="link-text"> Update Banner Scroller </span>
+          </a>
+        </li>
+
+        <li>
+          <a href="/cms" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-file-pen"></i>
+            </span>
+            <span class="link-text"> About VIP (CMS) </span>
+          </a>
+        </li>
         <li>
           <a href="/bainar" class="sidebar-link-item">
-            <span class="link-icon-marker"><i class="fa-solid fa-house-flag"></i></span>
+            <span class="link-icon-marker"
+              ><i class="fa-solid fa-house-flag"></i
+            ></span>
             <span class="link-text">Live Updates Bainar </span>
           </a>
         </li>
 
         <li>
           <a href="/member" class="sidebar-link-item" id="coursesLink">
-            <span class="link-icon-marker"><i class="fas fa-file-alt"></i></span>
+            <span class="link-icon-marker"
+              ><i class="fas fa-file-alt"></i
+            ></span>
             <span class="link-text">Add Member</span>
           </a>
         </li>
 
         <li>
           <a href="/workerlist" class="sidebar-link-item" data-category="ebook">
-            <span class="link-icon-marker"><i class="fas fa-book-open"></i></span>
+            <span class="link-icon-marker"
+              ><i class="fas fa-book-open"></i
+            ></span>
             <span class="link-text">Member List</span>
           </a>
         </li>
 
         <li>
-  <a href="/route" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fas fa-route"></i>
-    </span>
+          <a href="/route" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fas fa-route"></i>
+            </span>
 
-    <span class="link-text">
-      Route Management
-    </span>
-  </a>
-</li>
-        
-<li>
-  <a href="/driver" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fas fa-car"></i>
-    </span>
-    <span class="link-text">
-      Driver Management
-    </span>
-  </a>
-</li>
+            <span class="link-text"> Route Management </span>
+          </a>
+        </li>
 
-<li>
-  <a href="/driverlist" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fas fa-car-side"></i>
-    </span>
+        <li>
+          <a href="/driver" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fas fa-car"></i>
+            </span>
+            <span class="link-text"> Driver Management </span>
+          </a>
+        </li>
 
-    <span class="link-text">
-      Driver List
-    </span>
-  </a>
-</li>
+        <li>
+          <a href="/driverlist" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fas fa-car-side"></i>
+            </span>
+
+            <span class="link-text"> Driver List </span>
+          </a>
+        </li>
         <li>
           <a href="#" class="sidebar-link-item" data-category="test">
-            <span class="link-icon-marker"><i class="fas fa-chart-line"></i></span>
+            <span class="link-icon-marker"
+              ><i class="fas fa-chart-line"></i
+            ></span>
             <span class="link-text">Models</span>
           </a>
         </li>
 
         <li>
           <a href="#" class="sidebar-link-item" data-category="qp">
-            <span class="link-icon-marker"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+            <span class="link-icon-marker"
+              ><i class="fa-solid fa-hand-holding-dollar"></i
+            ></span>
             <span class="link-text">Lottery</span>
           </a>
         </li>
 
-       <li>
-  <a href="/admin/contact" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fa-solid fa-address-book"></i>
-    </span>
-    <span class="link-text">
-      Contact
-    </span>
-  </a>
-</li>
-        
-<!-- ================================================= -->
-<!-- USER FEEDBACK -->
-<!-- ================================================= -->
+        <li>
+          <a href="/admin/contact" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-address-book"></i>
+            </span>
+            <span class="link-text"> Contact </span>
+          </a>
+        </li>
 
-<li>
-  <a href="/feedback-admin" class="sidebar-link-item">
-    <span class="link-icon-marker">
-      <i class="fa-solid fa-comments"></i>
-    </span>
+        <!-- ================================================= -->
+        <!-- USER FEEDBACK -->
+        <!-- ================================================= -->
 
-    <span class="link-text">
-      User Feedback
-    </span>
-  </a>
-</li>
+        <li>
+          <a href="/feedback-admin" class="sidebar-link-item">
+            <span class="link-icon-marker">
+              <i class="fa-solid fa-comments"></i>
+            </span>
+
+            <span class="link-text"> User Feedback </span>
+          </a>
+        </li>
         <li>
           <a href="{% url 'logout' %}" class="sidebar-link-item logout-item">
-            <span class="link-icon-marker"><i class="fa-solid fa-right-from-bracket"></i></span>
+            <span class="link-icon-marker"
+              ><i class="fa-solid fa-right-from-bracket"></i
+            ></span>
             <span class="link-text">Logout</span>
           </a>
         </li>
@@ -257,73 +269,74 @@
 </aside>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // ✅ Sidebar Active Link Highlight
-    const sidebarLinks = document.querySelectorAll('.sidebar-link-item');
+    const sidebarLinks = document.querySelectorAll(".sidebar-link-item");
     const currentUrl = window.location.pathname;
-    
-    sidebarLinks.forEach(link => {
-        const linkHref = link.getAttribute('href');
-        if (linkHref === currentUrl || (currentUrl === '/courses/' && linkHref === '/courses/')) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
+
+    sidebarLinks.forEach((link) => {
+      const linkHref = link.getAttribute("href");
+      if (
+        linkHref === currentUrl ||
+        (currentUrl === "/courses/" && linkHref === "/courses/")
+      ) {
+        link.classList.add("active");
+      } else {
+        link.classList.remove("active");
+      }
     });
-    
-   
-    
+
     // Mobile toggle functionality
-    const sidebar = document.getElementById('responsiveSidebar');
-    const toggleBtn = document.getElementById('sidebarToggle');
-    const closeBtn = document.getElementById('sidebarClose');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    
+    const sidebar = document.getElementById("responsiveSidebar");
+    const toggleBtn = document.getElementById("sidebarToggle");
+    const closeBtn = document.getElementById("sidebarClose");
+    const backdrop = document.getElementById("sidebarBackdrop");
+
     function openSidebar() {
-        sidebar.classList.add('sidebar-open');
-        backdrop.classList.add('active');
-        document.body.style.overflow = 'hidden';
+      sidebar.classList.add("sidebar-open");
+      backdrop.classList.add("active");
+      document.body.style.overflow = "hidden";
     }
-    
+
     function closeSidebar() {
-        sidebar.classList.remove('sidebar-open');
-        backdrop.classList.remove('active');
-        document.body.style.overflow = '';
+      sidebar.classList.remove("sidebar-open");
+      backdrop.classList.remove("active");
+      document.body.style.overflow = "";
     }
-    
+
     if (toggleBtn) {
-        toggleBtn.addEventListener('click', openSidebar);
+      toggleBtn.addEventListener("click", openSidebar);
     }
-    
+
     if (closeBtn) {
-        closeBtn.addEventListener('click', closeSidebar);
+      closeBtn.addEventListener("click", closeSidebar);
     }
-    
+
     if (backdrop) {
-        backdrop.addEventListener('click', closeSidebar);
+      backdrop.addEventListener("click", closeSidebar);
     }
-    
+
     // Close on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && sidebar.classList.contains('sidebar-open')) {
-            closeSidebar();
-        }
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && sidebar.classList.contains("sidebar-open")) {
+        closeSidebar();
+      }
     });
-    
+
     // Desktop collapse functionality (optional)
-    const collapseTrigger = document.getElementById('desktopCollapse');
+    const collapseTrigger = document.getElementById("desktopCollapse");
     if (collapseTrigger) {
-        collapseTrigger.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            const icon = this.querySelector('i');
-            if (sidebar.classList.contains('collapsed')) {
-                icon.className = 'fas fa-chevron-right';
-                document.body.classList.add('sidebar-collapsed');
-            } else {
-                icon.className = 'fas fa-chevron-left';
-                document.body.classList.remove('sidebar-collapsed');
-            }
-        });
+      collapseTrigger.addEventListener("click", function () {
+        sidebar.classList.toggle("collapsed");
+        const icon = this.querySelector("i");
+        if (sidebar.classList.contains("collapsed")) {
+          icon.className = "fas fa-chevron-right";
+          document.body.classList.add("sidebar-collapsed");
+        } else {
+          icon.className = "fas fa-chevron-left";
+          document.body.classList.remove("sidebar-collapsed");
+        }
+      });
     }
-});
+  });
 </script>

@@ -1,94 +1,193 @@
 import mongoose from "mongoose";
 
 const routeSchema = new mongoose.Schema(
-{
-  routeName: {
-    type: String,
-    required: true,
-  },
+  {
+    /* =========================================
+       ROUTE BASIC INFO
+    ========================================= */
 
-  // Driver Assign
-  driverId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Driver"
-  },
-
-  startLocation: {
-    type: String,
-    required: true,
-  },
-
-  startLat: Number,
-  startLng: Number,
-
-  endLocation: {
-    type: String,
-    required: true,
-  },
-
-  endLat: Number,
-  endLng: Number,
-
-  wayPoints: [
-    {
+    routeName: {
       type: String,
-    }
-  ],
+      required: true,
+      trim: true,
+    },
 
-  distanceKm: Number,
+    /* =========================================
+       DRIVER ASSIGN
+    ========================================= */
 
-  durationMin: Number,
-  driverId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "Driver"
-},
+    driverId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Driver",
+      default: null,
+    },
 
-currentLat: Number,
+    /* =========================================
+       START LOCATION
+    ========================================= */
 
-currentLng: Number,
+    startLocation: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-currentSpeed: Number,
+    startLat: {
+      type: Number,
+      default: null,
+    },
 
-trackingEnabled: {
-  type: Boolean,
-  default: false
-},
+    startLng: {
+      type: Number,
+      default: null,
+    },
 
-  // Live Tracking Data
-  currentLat: {
-    type: Number,
-    default: 0
-  },
+    /* =========================================
+       END LOCATION
+    ========================================= */
 
-  currentLng: {
-    type: Number,
-    default: 0
-  },
+    endLocation: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-  currentSpeed: {
-    type: Number,
-    default: 0
-  },
+    endLat: {
+      type: Number,
+      default: null,
+    },
 
-  trackingEnabled: {
-    type: Boolean,
-    default: false
-  },
+    endLng: {
+      type: Number,
+      default: null,
+    },
 
-  status: {
-    type: String,
-    enum: [
-      "Pending",
-      "Running",
-      "Completed"
+    /* =========================================
+       WAYPOINT NAMES
+    ========================================= */
+
+    wayPoints: [
+      {
+        type: String,
+        trim: true,
+      },
     ],
-    default: "Pending"
-  }
 
-},
-{
-  timestamps: true,
-}
+    /* =========================================
+       WAYPOINT COORDINATES
+
+       Example:
+
+       [
+         {
+           lat: 23.25,
+           lng: 77.41,
+           name: "Bhopal"
+         }
+       ]
+    ========================================= */
+
+    wayPointCoords: [
+      {
+        lat: {
+          type: Number,
+          default: null,
+        },
+
+        lng: {
+          type: Number,
+          default: null,
+        },
+
+        name: {
+          type: String,
+          default: "",
+          trim: true,
+        },
+      },
+    ],
+
+    /* =========================================
+       ROUTE DISTANCE / TIME
+    ========================================= */
+
+    distanceKm: {
+      type: Number,
+      default: 0,
+    },
+
+    durationMin: {
+      type: Number,
+      default: 0,
+    },
+
+    /* =========================================
+       LIVE VEHICLE LOCATION
+    ========================================= */
+
+    currentLat: {
+      type: Number,
+      default: null,
+    },
+
+    currentLng: {
+      type: Number,
+      default: null,
+    },
+
+    currentSpeed: {
+      type: Number,
+      default: 0,
+    },
+
+    trackingEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    /* =========================================
+       ROUTE STATUS
+    ========================================= */
+
+    status: {
+      type: String,
+
+      enum: [
+        "Pending",
+        "Running",
+        "Completed",
+      ],
+
+      default: "Pending",
+    },
+
+    /* =========================================
+       WHEN ROUTE WAS SENT
+    ========================================= */
+
+    sentAt: {
+      type: Date,
+      default: null,
+    },
+
+    /* =========================================
+       WORKERS WHO ALREADY RECEIVED EMAIL
+
+       This prevents counting same worker again
+       for current route.
+    ========================================= */
+
+    emailSentWorkerIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Worker",
+      },
+    ],
+  },
+
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model(

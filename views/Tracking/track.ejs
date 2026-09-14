@@ -3,110 +3,1052 @@
   <head>
     <meta charset="UTF-8" />
 
-    <title>VIP Party Tracking</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <title>VIP Party Live Route</title>
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
       body {
-        font-family: Arial;
-        padding: 30px;
-        text-align: center;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f3f6fa;
+        color: #111827;
+      }
+
+      .topbar {
+        background: linear-gradient(135deg, #0d6efd, #003c99);
+
+        color: white;
+
+        padding: 18px 20px;
+
+        position: sticky;
+
+        top: 0;
+
+        z-index: 1000;
+
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      }
+
+      .topbar h1 {
+        margin: 0 0 5px;
+        font-size: 24px;
+      }
+
+      .topbar p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: auto;
+        padding: 18px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+
+        gap: 12px;
+
+        margin-bottom: 16px;
+      }
+
+      .stat {
+        background: #fff;
+
+        border-radius: 14px;
+
+        padding: 16px;
+
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      .stat .label {
+        color: #64748b;
+        font-size: 13px;
+        margin-bottom: 7px;
+      }
+
+      .stat .value {
+        font-size: 28px;
+        font-weight: 800;
+      }
+
+      .blue {
+        color: #2563eb;
+      }
+
+      .orange {
+        color: #ea580c;
+      }
+
+      .green {
+        color: #16a34a;
+      }
+
+      .red {
+        color: #dc2626;
+      }
+
+      .layout {
+        display: grid;
+
+        grid-template-columns:
+          minmax(0, 2fr)
+          minmax(320px, 1fr);
+
+        gap: 16px;
+
+        align-items: start;
       }
 
       .card {
-        max-width: 500px;
-        margin: auto;
-        padding: 20px;
+        background: #fff;
+
+        border-radius: 14px;
+
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+        overflow: hidden;
+
+        margin-bottom: 16px;
+      }
+
+      .card-head {
+        padding: 15px 16px;
+
+        border-bottom: 1px solid #e5e7eb;
+
+        font-weight: 800;
+      }
+
+      #map {
+        width: 100%;
+        height: 560px;
+      }
+
+      .vehicle-box {
+        padding: 16px;
+
+        display: grid;
+
+        grid-template-columns: repeat(2, 1fr);
+
+        gap: 10px;
+      }
+
+      .info {
+        background: #f8fafc;
+
+        padding: 12px;
+
         border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       }
 
-      button {
-        padding: 12px 20px;
+      .info small {
+        display: block;
+
+        color: #64748b;
+
+        margin-bottom: 4px;
+      }
+
+      .route-path {
+        padding: 16px;
+      }
+
+      .path-item {
+        display: flex;
+
+        align-items: flex-start;
+
+        gap: 10px;
+
+        padding: 9px 0;
+
+        border-bottom: 1px dashed #e5e7eb;
+      }
+
+      .path-item:last-child {
+        border-bottom: none;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+
+        min-width: 12px;
+
+        border-radius: 50%;
+
+        margin-top: 4px;
+      }
+
+      .start {
+        background: #ec4899;
+      }
+
+      .way {
+        background: #2563eb;
+      }
+
+      .end {
+        background: #16a34a;
+      }
+
+      .actions {
+        display: flex;
+
+        gap: 8px;
+
+        flex-wrap: wrap;
+
+        padding: 0 16px 16px;
+      }
+
+      .btn {
+        display: inline-block;
+
+        text-decoration: none;
+
         border: none;
-        background: #0d6efd;
-        color: white;
-        border-radius: 5px;
+
+        border-radius: 9px;
+
+        padding: 11px 14px;
+
         cursor: pointer;
+
+        font-weight: 700;
+
+        color: #fff;
       }
 
-      #status {
-        margin-top: 20px;
-        font-size: 18px;
-        font-weight: bold;
+      .btn-blue {
+        background: #2563eb;
+      }
+
+      .btn-green {
+        background: #16a34a;
+      }
+
+      .btn-gray {
+        background: #475569;
+      }
+
+      .workers {
+        max-height: 560px;
+
+        overflow: auto;
+      }
+
+      .worker {
+        padding: 12px 14px;
+
+        border-bottom: 1px solid #eef2f7;
+      }
+
+      .worker-top {
+        display: flex;
+
+        justify-content: space-between;
+
+        gap: 10px;
+      }
+
+      .worker-name {
+        font-weight: 700;
+      }
+
+      .badge {
+        padding: 4px 7px;
+
+        border-radius: 999px;
+
+        font-size: 11px;
+
+        font-weight: 700;
+
+        white-space: nowrap;
+      }
+
+      .badge-near {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-far {
+        background: #f1f5f9;
+        color: #64748b;
+      }
+
+      .worker-meta {
+        font-size: 12px;
+
+        color: #64748b;
+
+        margin-top: 5px;
+
+        line-height: 1.5;
+      }
+
+      .email-state {
+        margin-top: 7px;
+
+        font-size: 12px;
+
+        font-weight: 700;
+      }
+
+      .last-update {
+        padding: 0 16px 14px;
+
+        color: #64748b;
+
+        font-size: 12px;
+      }
+
+      @media (max-width: 900px) {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        #map {
+          height: 440px;
+        }
+
+        .workers {
+          max-height: none;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .container {
+          padding: 10px;
+        }
+
+        .stat {
+          padding: 12px;
+        }
+
+        .stat .value {
+          font-size: 23px;
+        }
+
+        .vehicle-box {
+          grid-template-columns: 1fr;
+        }
+
+        #map {
+          height: 380px;
+        }
       }
     </style>
   </head>
 
   <body>
-    <div class="card">
-      <h2>VIP Party Live Tracking</h2>
+    <div class="topbar">
+      <h1>🚗 VIP Party Live Route</h1>
 
-      <p><%= route.routeName %></p>
+      <p id="routeTitle"><%= route.routeName %></p>
+    </div>
 
-      <button onclick="startTracking()">Start Tracking</button>
+    <div class="container">
+      <!-- ================= STATS ================= -->
 
-      <div id="status">Waiting...</div>
+      <div class="stats">
+        <div class="stat">
+          <div class="label">Total Members</div>
+
+          <div class="value blue" id="totalWorkers">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Nearby Members (10 km)</div>
+
+          <div class="value orange" id="nearbyWorkers">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Email Sent</div>
+
+          <div class="value green" id="emailSent">0</div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Email Remaining</div>
+
+          <div class="value red" id="emailRemaining">0</div>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div>
+          <!-- ================= LIVE MAP ================= -->
+
+          <div class="card">
+            <div class="card-head">📍 Live Vehicle Location</div>
+
+            <div id="map"></div>
+
+            <div class="vehicle-box">
+              <div class="info">
+                <small> Status </small>
+
+                <strong id="vehicleStatus"> Waiting for driver GPS... </strong>
+              </div>
+
+              <div class="info">
+                <small> Speed </small>
+
+                <strong id="vehicleSpeed"> 0 km/h </strong>
+              </div>
+
+              <div class="info">
+                <small> Latitude </small>
+
+                <strong id="vehicleLat"> — </strong>
+              </div>
+
+              <div class="info">
+                <small> Longitude </small>
+
+                <strong id="vehicleLng"> — </strong>
+              </div>
+            </div>
+
+            <div class="last-update">
+              Last update:
+
+              <span id="lastUpdate"> — </span>
+            </div>
+
+            <div class="actions">
+              <a
+                id="navigationBtn"
+                href="#"
+                target="_blank"
+                class="btn btn-green"
+              >
+                🧭 Open Navigation
+              </a>
+
+              <button class="btn btn-blue" onclick="loadStatus()">
+                🔄 Refresh
+              </button>
+
+              <button class="btn btn-gray" onclick="copyCurrentLink()">
+                🔗 Copy Tracking Link
+              </button>
+            </div>
+          </div>
+
+          <!-- ================= ROUTE PATH ================= -->
+
+         
+        </div>
+
+        <!-- ================= WORKERS ================= -->
+
     </div>
 
     <script>
-      function startTracking() {
-        if (!navigator.geolocation) {
-          alert("GPS Not Supported");
+      const ROUTE_ID = "<%= route._id %>";
+
+      /* =========================================================
+   MAP
+========================================================= */
+
+      const map = L.map("map").setView([23.2599, 77.4126], 6);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      /* =========================================================
+   MARKERS
+========================================================= */
+
+      let vehicleMarker = null;
+
+      let workerMarkers = {};
+
+      let routeLine = null;
+
+      /* Vehicle */
+
+      const vehicleIcon = L.divIcon({
+        className: "",
+
+        html: `
+
+<div style="
+width:32px;
+height:32px;
+background:#dc2626;
+border:3px solid #fff;
+border-radius:50%;
+box-shadow:
+0 0 0 4px
+rgba(220,38,38,.2);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:17px;
+">
+🚗
+</div>
+
+`,
+      });
+
+      /* Nearby worker */
+
+      const workerNearIcon = L.divIcon({
+        className: "",
+
+        html: `
+
+<div style="
+width:20px;
+height:20px;
+background:#16a34a;
+border:3px solid #fff;
+border-radius:50%;
+box-shadow:
+0 2px 8px
+rgba(0,0,0,.25);
+">
+</div>
+
+`,
+      });
+
+      /* Normal worker */
+
+      const workerIcon = L.divIcon({
+        className: "",
+
+        html: `
+
+<div style="
+width:16px;
+height:16px;
+background:#2563eb;
+border:2px solid #fff;
+border-radius:50%;
+">
+</div>
+
+`,
+      });
+
+      /* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+
+          .replaceAll("<", "&lt;")
+
+          .replaceAll(">", "&gt;")
+
+          .replaceAll('"', "&quot;")
+
+          .replaceAll("'", "&#039;");
+      }
+
+      /* =========================================================
+   DATE
+========================================================= */
+
+      function formatDate(value) {
+        if (!value) {
+          return "—";
+        }
+
+        const date = new Date(value);
+
+        if (Number.isNaN(date.getTime())) {
+          return "—";
+        }
+
+        return date.toLocaleString();
+      }
+
+      /* =========================================================
+   ROUTE PATH
+========================================================= */
+
+      function renderRoutePath(route) {
+        const parts = [];
+
+        /* Start */
+
+        if (
+          Number.isFinite(Number(route.startLat)) &&
+          Number.isFinite(Number(route.startLng))
+        ) {
+          parts.push({
+            type: "start",
+
+            name: route.startLocation || "Start Location",
+          });
+        }
+
+        /* Waypoints */
+
+        (route.wayPointCoords || []).forEach((point) => {
+          parts.push({
+            type: "way",
+
+            name: point.name || "Waypoint",
+          });
+        });
+
+        /* End */
+
+        if (
+          Number.isFinite(Number(route.endLat)) &&
+          Number.isFinite(Number(route.endLng))
+        ) {
+          parts.push({
+            type: "end",
+
+            name: route.endLocation || "End Location",
+          });
+        }
+
+        if (!parts.length) {
+          document.getElementById("routePath").innerHTML =
+            "No route path available.";
 
           return;
         }
 
-        navigator.geolocation.watchPosition(
-          async (position) => {
-            const lat = position.coords.latitude;
+        document.getElementById("routePath").innerHTML = parts
+          .map(
+            (item, index) => `
 
-            const lng = position.coords.longitude;
+<div class="path-item">
 
-            const speed = position.coords.speed || 0;
+<span
+class="dot ${item.type}">
+</span>
 
-            document.getElementById("status").innerHTML = `
-      Lat: ${lat}
-      <br>
-      Lng: ${lng}
-      <br>
-      Speed: ${speed}
-      `;
+<div>
 
-            await fetch("/api/tracking/update", {
-              method: "POST",
+<strong>
+${index + 1}.
+${escapeHtml(item.name)}
+</strong>
 
-              headers: {
-                "Content-Type": "application/json",
-              },
+</div>
 
-              body: JSON.stringify({
-                routeId: "<%= route._id %>",
+</div>
 
-                driverId: "<%= route.driverId || '' %>",
-
-                lat,
-                lng,
-                speed,
-              }),
-            });
-          },
-
-          (err) => {
-            console.log("GPS ERROR");
-            console.log(err);
-
-            alert(
-              "Error Code: " + err.code + "\nError Message: " + err.message,
-            );
-          },
-
-          {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 60000,
-          },
-        );
+`,
+          )
+          .join("");
       }
+
+      /* =========================================================
+   DRAW ROAD ROUTE
+========================================================= */
+
+      async function drawRoute(route) {
+        const points = [];
+
+        /* Start */
+
+        if (
+          Number.isFinite(Number(route.startLat)) &&
+          Number.isFinite(Number(route.startLng))
+        ) {
+          points.push({
+            lat: Number(route.startLat),
+
+            lng: Number(route.startLng),
+          });
+        }
+
+        /* Waypoints */
+
+        (route.wayPointCoords || []).forEach((point) => {
+          const lat = Number(point.lat);
+
+          const lng = Number(point.lng ?? point.lon);
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            points.push({
+              lat,
+              lng,
+            });
+          }
+        });
+
+        /* End */
+
+        if (
+          Number.isFinite(Number(route.endLat)) &&
+          Number.isFinite(Number(route.endLng))
+        ) {
+          points.push({
+            lat: Number(route.endLat),
+
+            lng: Number(route.endLng),
+          });
+        }
+
+        if (points.length < 2) {
+          return;
+        }
+
+        const coordString = points
+          .map((point) => `${point.lng},${point.lat}`)
+          .join(";");
+
+        try {
+          const response = await fetch(
+            `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`,
+          );
+
+          const data = await response.json();
+
+          if (!data.routes || !data.routes.length) {
+            return;
+          }
+
+          const latLngs = data.routes[0].geometry.coordinates.map((point) => [
+            point[1],
+            point[0],
+          ]);
+
+          if (routeLine) {
+            map.removeLayer(routeLine);
+          }
+
+          routeLine = L.polyline(latLngs, {
+            color: "#2563eb",
+            weight: 6,
+            opacity: 0.8,
+          }).addTo(map);
+        } catch (error) {
+          console.error("ROUTE DRAW ERROR:", error);
+        }
+      }
+
+      /* =========================================================
+   WORKERS
+========================================================= */
+
+      function renderWorkers(workers) {
+        const container = document.getElementById("workers");
+
+        if (!workers.length) {
+          container.innerHTML = `
+
+<div style="
+padding:18px;
+color:#64748b;
+">
+
+No worker location found.
+
+</div>
+
+`;
+
+          return;
+        }
+
+        container.innerHTML = workers
+          .map((worker) => {
+            const location = [worker.village, worker.district]
+              .filter(Boolean)
+              .join(", ");
+
+            return `
+
+<div class="worker">
+
+<div class="worker-top">
+
+<div class="worker-name">
+
+${escapeHtml(worker.fullName)}
+
+</div>
+
+<span
+class="badge ${worker.nearby ? "badge-near" : "badge-far"}"
+>
+
+${worker.nearby ? "NEAR" : "SAVED"}
+
+</span>
+
+</div>
+
+<div class="worker-meta">
+
+📍
+${escapeHtml(location || "Location saved")}
+
+<br>
+
+✉
+${escapeHtml(worker.email || "No email")}
+
+</div>
+
+<div class="email-state">
+
+${
+  worker.nearby && worker.emailSent
+    ? "✅ Email sent"
+    : worker.nearby
+      ? "⏳ Email pending"
+      : "— Outside 10 km"
+}
+
+</div>
+
+</div>
+
+`;
+          })
+          .join("");
+
+        /* Remove old markers */
+
+        Object.values(workerMarkers).forEach((marker) => {
+          map.removeLayer(marker);
+        });
+
+        workerMarkers = {};
+
+        /* Add worker markers */
+
+        workers.forEach((worker) => {
+          const lat = Number(worker.lat);
+
+          const lng = Number(worker.lng);
+
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            return;
+          }
+
+          const marker = L.marker([lat, lng], {
+            icon: worker.nearby ? workerNearIcon : workerIcon,
+          }).addTo(map);
+
+          marker.bindPopup(`
+
+<strong>
+${escapeHtml(worker.fullName)}
+</strong>
+
+<br>
+
+${escapeHtml(worker.email || "")}
+
+<br>
+
+${worker.nearby ? "🟢 Within 10 km" : "🔵 Saved worker location"}
+
+<br>
+
+${worker.emailSent ? "✅ Email sent" : "✉ Email pending"}
+
+`);
+
+          workerMarkers[worker._id] = marker;
+        });
+      }
+
+      /* =========================================================
+   UPDATE VEHICLE
+========================================================= */
+
+      function updateVehicle(route) {
+        if (
+          !Number.isFinite(Number(route.currentLat)) ||
+          !Number.isFinite(Number(route.currentLng))
+        ) {
+          document.getElementById("vehicleStatus").textContent =
+            "Waiting for driver GPS...";
+
+          return;
+        }
+
+        const lat = Number(route.currentLat);
+
+        const lng = Number(route.currentLng);
+
+        document.getElementById("vehicleStatus").textContent =
+          route.trackingEnabled ? "🟢 Live" : "🟡 Waiting";
+
+        document.getElementById("vehicleSpeed").textContent = `${Number(
+          route.currentSpeed || 0,
+        ).toFixed(1)} km/h`;
+
+        document.getElementById("vehicleLat").textContent = lat.toFixed(6);
+
+        document.getElementById("vehicleLng").textContent = lng.toFixed(6);
+
+        document.getElementById("lastUpdate").textContent = formatDate(
+          route.lastUpdated,
+        );
+
+        /* Vehicle marker */
+
+        if (!vehicleMarker) {
+          vehicleMarker = L.marker([lat, lng], {
+            icon: vehicleIcon,
+          }).addTo(map);
+        } else {
+          vehicleMarker.setLatLng([lat, lng]);
+        }
+
+        vehicleMarker.bindPopup(`
+
+<strong>
+🚗 VIP Party Vehicle
+</strong>
+
+<br>
+
+Speed:
+${Number(route.currentSpeed || 0).toFixed(1)}
+km/h
+
+<br>
+
+${lat.toFixed(6)},
+${lng.toFixed(6)}
+
+`);
+
+        map.setView([lat, lng], Math.max(map.getZoom(), 11));
+
+        /* Navigation */
+
+        if (
+          Number.isFinite(Number(route.endLat)) &&
+          Number.isFinite(Number(route.endLng))
+        ) {
+          document.getElementById("navigationBtn").href =
+            `https://www.google.com/maps/dir/?api=1&destination=${route.endLat},${route.endLng}&travelmode=driving`;
+        }
+      }
+
+      /* =========================================================
+   LOAD LIVE STATUS
+========================================================= */
+
+      async function loadStatus() {
+        try {
+          const response = await fetch(
+            `/api/tracking/status/${ROUTE_ID}?_=${Date.now()}`,
+          );
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(data.message || "Unable to load tracking");
+          }
+
+          /* Route title */
+
+          document.getElementById("routeTitle").textContent =
+            `${data.route.routeName}
+ •
+${data.route.status}`;
+
+          /* Stats */
+
+          document.getElementById("totalWorkers").textContent =
+            data.stats.totalWorkers;
+
+          document.getElementById("nearbyWorkers").textContent =
+            data.stats.nearbyWorkers;
+
+          document.getElementById("emailSent").textContent =
+            data.stats.emailSent;
+
+          document.getElementById("emailRemaining").textContent =
+            data.stats.emailRemaining;
+
+          /* Vehicle */
+
+          updateVehicle(data.route);
+
+          /* Workers */
+
+          renderWorkers(data.workers);
+
+          /* Route path */
+
+          renderRoutePath(data.route);
+
+          /* Road route */
+
+          await drawRoute(data.route);
+        } catch (error) {
+          console.error("TRACK STATUS ERROR:", error);
+
+          document.getElementById("vehicleStatus").textContent =
+            "Unable to load live status";
+        }
+      }
+
+      /* =========================================================
+   COPY CURRENT TRACKING LINK
+========================================================= */
+
+      function copyCurrentLink() {
+        const url = window.location.href;
+
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard
+            .writeText(url)
+            .then(() => alert("Tracking link copied."))
+            .catch(() => prompt("Copy tracking link:", url));
+        } else {
+          prompt("Copy tracking link:", url);
+        }
+      }
+
+      /* First load */
+
+      loadStatus();
+
+      /* Live refresh every 5 sec */
+
+      setInterval(loadStatus, 5000);
     </script>
   </body>
 </html>

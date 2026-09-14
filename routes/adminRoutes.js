@@ -1,4 +1,3 @@
-
 import cmsRoutes from "./cmsRoutes.js";
 import express from "express";
 import upload from "../middlewar/upload.js";
@@ -21,11 +20,29 @@ import {
 import Video from "../models/videogallery.js";
 import Album from "../models/Album.js";
 
+/* =========================================
+   DELETE ACCOUNT CONTROLLER
+========================================= */
+
+import {
+  renderDeleteAccountPage,
+  adminDeleteAccount,
+  adminCancelDeleteAccount,
+} from "../controllers/admin/deleteAccountAdminController.js";
+
 const router = express.Router();
+
+/* =========================================
+   HOME
+========================================= */
 
 router.get("/", (req, res) => {
   res.render("index");
 });
+
+/* =========================================
+   ADMIN
+========================================= */
 
 router.get("/create-admin", createAdmin);
 
@@ -33,9 +50,17 @@ router.post("/login", loginAdmin);
 
 router.get("/dashboard", dashboard);
 
+/* =========================================
+   VIP LIVE
+========================================= */
+
 router.get("/vip-live", (req, res) => {
   res.render("viplive");
 });
+
+/* =========================================
+   VIDEO GALLERY
+========================================= */
 
 router.get("/video_gallery", async (req, res) => {
   try {
@@ -55,6 +80,10 @@ router.get("/video_gallery", async (req, res) => {
   }
 });
 
+/* =========================================
+   ALBUM
+========================================= */
+
 router.get("/album", async (req, res) => {
   try {
     const albums = await Album.find().sort({
@@ -73,14 +102,30 @@ router.get("/album", async (req, res) => {
   }
 });
 
-/* Join Member */
+/* =========================================
+   JOIN MEMBER
+========================================= */
 
 router.get("/joinmember", renderJoinAdminPage);
-router.get("/joinmember/data", getAllJoinApplications);
-router.get("/joinmember/:id", getJoinApplicationById);
-router.delete("/joinmember/:id", deleteJoinApplication);
 
-/* Banner */
+router.get(
+  "/joinmember/data",
+  getAllJoinApplications
+);
+
+router.get(
+  "/joinmember/:id",
+  getJoinApplicationById
+);
+
+router.delete(
+  "/joinmember/:id",
+  deleteJoinApplication
+);
+
+/* =========================================
+   BANNER
+========================================= */
 
 router.post(
   "/banner/add",
@@ -93,15 +138,78 @@ router.delete(
   deleteBanner
 );
 
-
-// contact us page ke liye 
+/* =========================================
+   CONTACT US
+========================================= */
 
 import * as contactController from "../controllers/admin/contactController.js";
-router.get("/admin/contact", contactController.renderContactPage);
-router.post("/admin/contact/update", contactController.updateContactInfo);
-router.post("/admin/contact/office/add", contactController.addOffice);
-router.post("/admin/contact/office/edit/:id", contactController.editOffice);
-router.post("/admin/contact/office/delete/:id", contactController.deleteOffice);
-router.use("/cms", cmsRoutes);
+
+router.get(
+  "/admin/contact",
+  contactController.renderContactPage
+);
+
+router.post(
+  "/admin/contact/update",
+  contactController.updateContactInfo
+);
+
+router.post(
+  "/admin/contact/office/add",
+  contactController.addOffice
+);
+
+router.post(
+  "/admin/contact/office/edit/:id",
+  contactController.editOffice
+);
+
+router.post(
+  "/admin/contact/office/delete/:id",
+  contactController.deleteOffice
+);
+
+/* =========================================
+   DELETE ACCOUNT
+========================================= */
+
+/*
+   Open Delete Account Requests page
+   URL:
+   /admin/delete-accounts
+*/
+
+router.get(
+  "/admin/delete-accounts",
+  renderDeleteAccountPage
+);
+
+/*
+   Admin permanently deletes account
+   Firebase Auth + MongoDB
+*/
+
+router.post(
+  "/admin/delete-account/:id",
+  adminDeleteAccount
+);
+
+/*
+   Admin cancels deletion request
+*/
+
+router.post(
+  "/admin/delete-account/cancel/:id",
+  adminCancelDeleteAccount
+);
+
+/* =========================================
+   CMS
+========================================= */
+
+router.use(
+  "/cms",
+  cmsRoutes
+);
 
 export default router;

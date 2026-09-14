@@ -4,14 +4,60 @@ import {
   getRoutePage,
   addRoute,
   deleteRoute,
+  sendRoute,
+  stopTrackingRoute,
 } from "../../controllers/route/routeController.js";
 
 const router = express.Router();
 
-router.get("/route", getRoutePage);
+/* =========================================
+   ROUTE PAGE
+========================================= */
 
-router.post("/route/add", addRoute);
+router.get(
+  "/route",
+  getRoutePage
+);
 
-router.get("/route/delete/:id", deleteRoute);
+/* =========================================
+   ADD ROUTE
+========================================= */
 
-export default router;
+router.post(
+  "/route/add",
+  addRoute
+);
+
+/* =========================================
+   DELETE ROUTE
+========================================= */
+
+router.get(
+  "/route/delete/:id",
+  deleteRoute
+);
+
+/* =========================================
+   SEND / SHARE ROUTE
+========================================= */
+
+router.get(
+  "/route/send/:id",
+  sendRoute
+);
+
+router.post(
+  "/route/send/:id",
+  sendRoute
+);
+
+/* =========================================
+   STOP LIVE TRACKING
+========================================= */
+
+router.post(
+  "/route/stop/:id",
+  stopTrackingRoute
+);
+
+export default router; 
