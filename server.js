@@ -1,76 +1,50 @@
 import dotenv from "dotenv";
-
 dotenv.config();
-
 import express from "express";
 import mongoose from "mongoose";
 import session from "express-session";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-
 /* =========================================================
    ROUTES
 ========================================================= */
-
 import userRoutes from "./routes/user/userRoutes.js";
-
 import trackingRoutes from "./routes/tracking/trackingRoutes.js";
-
 import driverRoutes from "./routes/sections/driver.js";
-
 import adminRoutes from "./routes/adminRoutes.js";
-
 import apiRoutes from "./routes/apiRoutes.js";
-
 import vipLiveRoute from "./routes/vipLiveRoute.js";
-
 import videoRoutes from "./routes/videogalleryRoutes.js";
-
 import albumRoutes from "./routes/albumRoutes.js";
-
 import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
-
 import authRoutes from "./routes/authRoutes.js";
-
 import searchRoutes from "./routes/searchRoutes.js";
-
 import joinRoutes from "./routes/joinRoutes.js";
-
+import VolunteerRoutes from "./routes/volunteer/volunteerRoutes.js"
 import agentRoutes from "./routes/agentRoutes.js";
-
 import organisationRoutes from "./routes/organisationRoutes.js";
-
+import morchaRoutes from "./routes/morchaRoutes.js"
+import leadershipRoutes from "./routes/leadershipRoutes.js"
 import adminUserRoutes from "./routes/adminUserRoutes.js";
-
 import cmsRoutes from "./routes/cmsRoutes.js";
-
 import bainarliveupdate from "./routes/sections/banners.js";
-
 import workerRoutes from "./routes/sections/worker.js";
-
 import routeRoutes from "./routes/route/routeRoutes.js";
-
 import scrollerRoutes from "./routes/scrollerRoutes.js";
-
 import notificationRoutes from "./routes/notification/notificationRoutes.js";
-
 import feedbackRoutes from "./routes/feedback/feedbackRoutes.js";
-
 import paymentRoutes from "./routes/payment/paymentRoutes.js";
-
 import newsRoutes from "./routes/news/newsRoutes.js";
-
 import eventRoutes from "./routes/events/eventRoutes.js";
 
 /* =========================================================
    APP
 ========================================================= */
-
+import grievanceRoutes, { adminGrievanceRouter } from "./routes/Grievance/Grievanceroutes.js";
+import Volunteer from "./models/Volunteer.js";
 const app = express();
-
 const PORT = Number(process.env.PORT) || 9191;
-
 /* =========================================================
    PATH
 ========================================================= */
@@ -149,7 +123,6 @@ app.use(
     },
   }),
 );
-
 /* =========================================================
    STATIC FILES
 ========================================================= */
@@ -163,41 +136,31 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 /* =========================================================
    NORMAL ROUTES
 ========================================================= */
-
 app.use(userRoutes);
-
+app.use("/api/users", userRoutes);
 app.use("/", adminRoutes);
-
 app.use("/api", apiRoutes);
-
 app.use("/api", searchRoutes);
-
 app.use("/api/auth", authRoutes);
-
 app.use("/api", vipLiveRoute);
-
 app.use("/api", videoRoutes);
-
 app.use("/api", albumRoutes);
-
 app.use("/api/join", joinRoutes);
-
+app.use("/api/volunteer",VolunteerRoutes);
 app.use("/api/agent", agentRoutes);
-
 app.use("/", adminUserRoutes);
-
 app.use("/", mediaGalleryRoutes);
-
 app.use("/api", mediaGalleryRoutes);
-
 app.use("/organisation", organisationRoutes);
-
 app.use("/cms", cmsRoutes);
-
 app.use("/", bainarliveupdate);
-
+app.use("/leadership",leadershipRoutes);
+app.use("/", morchaRoutes);
+app.use("/cms", cmsRoutes);
+app.use("/api/grievances", grievanceRoutes);
+app.use("/grievances", adminGrievanceRouter);
+app.use("/", bainarliveupdate)
 app.use("/", workerRoutes);
-
 app.use("/", driverRoutes);
 
 /* =========================================================
@@ -207,37 +170,24 @@ app.use("/", driverRoutes);
    /api/tracking/status/:routeId
    /api/tracking/update
 ========================================================= */
-
 app.use("/", trackingRoutes);
-
 /* =========================================================
    ROUTE MANAGEMENT
 ========================================================= */
-
 app.use(routeRoutes);
-
 /* =========================================================
    OTHER ROUTES
 ========================================================= */
-
 app.use(scrollerRoutes);
-
 app.use("/api/notifications", notificationRoutes);
-
 app.use("/api", feedbackRoutes);
-
 app.use("/feedback-admin", feedbackRoutes);
-
 app.use("/api/payment", paymentRoutes);
-
 app.use("/", newsRoutes);
-
 app.use("/", eventRoutes);
-
 /* =========================================================
    TRACKING HEALTH CHECK
 ========================================================= */
-
 app.get("/api/tracking/health", (req, res) => {
   return res.json({
     success: true,
@@ -253,7 +203,6 @@ app.get("/api/tracking/health", (req, res) => {
 /* =========================================================
    404
 ========================================================= */
-
 app.use((req, res) => {
   /*
       API request hai to JSON do.
@@ -296,7 +245,6 @@ app.use((error, req, res, next) => {
 /* =========================================================
    MONGODB
 ========================================================= */
-
 mongoose
   .connect(process.env.MONGODB_URI)
   .then(() => {

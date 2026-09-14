@@ -23,6 +23,27 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    designation: {
+      type: String,
+      default: "",
+    },
+
+    state: {
+      type: String,
+      default: "",
+    },
+
+    district: {
+      type: String,
+      default: "",
+    },
+
+    membershipId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
     photoURL: {
       type: String,
       default: "",

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f7fc;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+    h1 { color: #1565c0; margin-bottom: 20px; }
+    .main-content{
+    margin-left:270px;
+    padding:24px;
+}
+
+@media(max-width:1100px){
+    .main-content{
+        margin-left:0;
+        padding:80px 15px 20px;
+    }
+}
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .toolbar input, .toolbar select {
+      padding: 8px 10px;
+      border: 1px solid #d9e2ef;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .toolbar button {
+      padding: 8px 16px;
+      background: #1565c0;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #eef1f6;
+      font-size: 14px;
+    }
+    th {
+      background: #eef5ff;
+      color: #1565c0;
+    }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .badge.Submitted { background: #e0f2fe; color: #075985; }
+    .badge.In-Progress { background: #fef3c7; color: #92400e; }
+    .badge.Resolved { background: #d1fae5; color: #065f46; }
+
+    .actions { white-space: nowrap; }
+    .actions button {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-right: 6px;
+      color: #fff;
+    }
+    .btn-view { background: #1565c0; }
+    .btn-share { background: #1a7f37; }
+    .btn-delete { background: #6b7280; }
+
+    .pagination {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pagination button {
+      padding: 6px 12px;
+      border: 1px solid #d9e2ef;
+      background: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: #fff;
+      border-radius: 14px;
+      padding: 24px;
+      width: 480px;
+      max-width: 90vw;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+    .modal-box h2 { margin-top: 0; color: #1565c0; }
+    .modal-box p { margin: 6px 0; font-size: 14px; }
+    .modal-box .close-btn {
+      float: right;
+      cursor: pointer;
+      font-weight: 700;
+      color: #999;
+    }
+    .status-row {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #eef1f6;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .status-row select {
+      padding: 8px 10px;
+      border: 1px solid #d9e2ef;
+      border-radius: 8px;
+      font-size: 14px;
+      flex: 1;
+    }
+    .status-row button {
+      padding: 8px 14px;
+      background: #1565c0;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+    <%- include("../common/sidebar") %>
+
+    <div class="main-content">
+
+  <h1><%= pageTitle %> (<%= total %> total)</h1>
+
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="Search title / grievance ID / name / mobile" />
+
+    <select id="categoryFilter">
+      <option value="">All Categories</option>
+      <option value="Roads">Roads</option>
+      <option value="Water">Water</option>
+      <option value="Electricity">Electricity</option>
+      <option value="Health">Health</option>
+      <option value="Education">Education</option>
+      <option value="Safety">Safety</option>
+    </select>
+
+    <select id="statusFilter">
+      <option value="">All Statuses</option>
+      <option value="Submitted">Submitted</option>
+      <option value="In Progress">In Progress</option>
+      <option value="Resolved">Resolved</option>
+    </select>
+
+    <button onclick="loadGrievances(1)">Filter</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Grievance ID</th>
+        <th>Title</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Filed By</th>
+        <th>Applied On</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- Server-rendered initial rows -->
+      <% grievances.forEach(function(g) { %>
+        <tr data-id="<%= g._id %>">
+          <td><%= g.grievanceId %></td>
+          <td><%= g.title %></td>
+          <td><%= g.category %></td>
+          <td><span class="badge <%= g.status.replace(" ", "-") %>"><%= g.status %></span></td>
+          <td><%= (g.user && g.user.name) || "-" %></td>
+          <td><%= new Date(g.createdAt).toLocaleDateString("en-GB") %></td>
+          <td class="actions">
+            <button class="btn-view" onclick="viewGrievance('<%= g._id %>')">View</button>
+            <button class="btn-share" onclick="shareGrievance('<%= g._id %>')">Share</button>
+            <button class="btn-delete" onclick="deleteGrievance('<%= g._id %>')">Delete</button>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <button id="prevBtn" onclick="changePage(-1)">Prev</button>
+    <span id="pageLabel">Page 1</span>
+    <button id="nextBtn" onclick="changePage(1)">Next</button>
+  </div>
+
+  <!-- View Modal -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal-box">
+      <span class="close-btn" onclick="closeModal()">✕</span>
+      <h2>Grievance Details</h2>
+      <div id="modalContent">Loading...</div>
+
+      <div class="status-row">
+        <select id="statusSelect">
+          <option value="Submitted">Submitted</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+        <button onclick="updateStatus()">Update Status</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let activeGrievanceId = null;
+    let activeGrievanceData = null;
+
+    async function loadGrievances(page = 1) {
+      currentPage = page;
+
+      const category = document.getElementById("categoryFilter").value;
+      const status = document.getElementById("statusFilter").value;
+      const search = document.getElementById("searchInput").value;
+
+      const params = new URLSearchParams({
+        page,
+        limit: 20,
+        category,
+        status,
+        search,
+      });
+
+      try {
+        const res = await fetch(`/grievances/data?${params.toString()}`);
+        const json = await res.json();
+
+        if (!json.success) {
+          alert(json.message || "Failed to load grievances.");
+          return;
+        }
+
+        renderTable(json.data);
+        totalPages = json.pagination.totalPages;
+        document.getElementById("pageLabel").textContent =
+          `Page ${json.pagination.page} of ${json.pagination.totalPages || 1}`;
+        document.getElementById("prevBtn").disabled = json.pagination.page <= 1;
+        document.getElementById("nextBtn").disabled =
+          json.pagination.page >= json.pagination.totalPages;
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while loading grievances.");
+      }
+    }
+
+    function statusBadgeClass(status) {
+      return status.replace(" ", "-");
+    }
+
+    function renderTable(rows) {
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+
+      if (!rows.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No grievances found.</td></tr>`;
+        return;
+      }
+
+      rows.forEach((g) => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${g.grievanceId}</td>
+          <td>${g.title}</td>
+          <td>${g.category}</td>
+          <td><span class="badge ${statusBadgeClass(g.status)}">${g.status}</span></td>
+          <td>${(g.user && g.user.name) || "-"}</td>
+          <td>${new Date(g.createdAt).toLocaleDateString("en-GB")}</td>
+          <td class="actions">
+            <button class="btn-view" onclick="viewGrievance('${g._id}')">View</button>
+            <button class="btn-share" onclick="shareGrievance('${g._id}')">Share</button>
+            <button class="btn-delete" onclick="deleteGrievance('${g._id}')">Delete</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function changePage(delta) {
+      const next = currentPage + delta;
+      if (next < 1 || next > totalPages) return;
+      loadGrievances(next);
+    }
+
+    async function fetchGrievance(id) {
+      const res = await fetch(`/grievances/${id}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message || "Failed to load grievance.");
+      return json.data;
+    }
+
+    async function viewGrievance(id) {
+      const modal = document.getElementById("viewModal");
+      const content = document.getElementById("modalContent");
+      modal.classList.add("open");
+      content.innerHTML = "Loading...";
+      activeGrievanceId = id;
+
+      try {
+        const g = await fetchGrievance(id);
+        activeGrievanceData = g;
+
+        content.innerHTML = `
+          <p><strong>Grievance ID:</strong> ${g.grievanceId}</p>
+          <p><strong>Title:</strong> ${g.title}</p>
+          <p><strong>Category:</strong> ${g.category}</p>
+          <p><strong>Description:</strong> ${g.description}</p>
+          <p><strong>Filed By:</strong> ${(g.user && g.user.name) || "-"}</p>
+          <p><strong>Mobile:</strong> ${(g.user && g.user.phone) || "-"}</p>
+          <p><strong>Filed On:</strong> ${new Date(g.createdAt).toLocaleDateString("en-GB")}</p>
+          <p><strong>Status:</strong> <span class="badge ${statusBadgeClass(g.status)}">${g.status}</span></p>
+        `;
+
+        document.getElementById("statusSelect").value = g.status;
+      } catch (err) {
+        console.error(err);
+        content.innerHTML = "Something went wrong.";
+      }
+    }
+
+    async function updateStatus() {
+      if (!activeGrievanceId) return;
+      const status = document.getElementById("statusSelect").value;
+
+      try {
+        const res = await fetch(`/grievances/${activeGrievanceId}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+        const json = await res.json();
+
+        if (!json.success) {
+          alert(json.message || "Failed to update status.");
+          return;
+        }
+
+        alert("Status updated.");
+        closeModal();
+        loadGrievances(currentPage);
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while updating status.");
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("viewModal").classList.remove("open");
+      activeGrievanceId = null;
+      activeGrievanceData = null;
+    }
+
+    async function shareGrievance(id) {
+      let g;
+      try {
+        g = await fetchGrievance(id);
+      } catch (err) {
+        console.error(err);
+        alert("Could not load grievance to share.");
+        return;
+      }
+
+      const reportText =
+        `Grievance Report\n` +
+        `ID: ${g.grievanceId}\n` +
+        `Title: ${g.title}\n` +
+        `Category: ${g.category}\n` +
+        `Status: ${g.status}\n` +
+        `Filed By: ${(g.user && g.user.name) || "-"}\n` +
+        `Mobile: ${(g.user && g.user.phone) || "-"}\n` +
+        `Filed On: ${new Date(g.createdAt).toLocaleDateString("en-GB")}\n` +
+        `Description: ${g.description}`;
+
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: `Grievance ${g.grievanceId}`, text: reportText });
+        } catch (err) {
+          // user cancelled the share sheet — nothing to do
+        }
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(reportText);
+        alert("Report copied to clipboard — you can paste and share it now.");
+      } catch (err) {
+        console.error(err);
+        alert("Could not copy report. Please try again.");
+      }
+    }
+
+    async function deleteGrievance(id) {
+      if (!confirm("Delete this grievance permanently?")) return;
+
+      try {
+        const res = await fetch(`/grievances/${id}`, { method: "DELETE" });
+        const json = await res.json();
+
+        if (!json.success) {
+          alert(json.message || "Failed to delete grievance.");
+          return;
+        }
+
+        loadGrievances(currentPage);
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong while deleting.");
+      }
+    }
+  </script>
+  </div>
+
+</body>
+</html>

@@ -1,27 +1,36 @@
+// import express from "express";
+// import { saveUser } from "../../controllers/user/userController.js";
+
+// const router = express.Router();
+
+// router.post("/api/user/save", saveUser);
+
+// export default router;
 import express from "express";
-import { saveUser } from "../../controllers/user/userController.js";
-import {
-  sendDeleteOtp,
-  verifyDeleteOtp,
-  cancelDeletion,
-} from "../../controllers/user/deleteAccountController.js";
+import upload from "../../middlewar/upload.js";
+import { protect } from "../../middlewar/firebaseAuth.js";
+import { saveUser, getMyCard, updateMyCard } from "../../controllers/user/userController.js";
 
 const router = express.Router();
 
-router.post("/api/user/save", saveUser);
-router.post(
-  "/api/user/delete/send-otp",
-  sendDeleteOtp
-);
+router.post("/save-user", saveUser);
 
-router.post(
-  "/api/user/delete/verify-otp",
-  verifyDeleteOtp
-);
+router.get("/me", protect, async (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      id: req.user._id,
+      uid: req.user.uid,
+      name: req.user.name,
+      email: req.user.email,
+      phone: req.user.phone,
+      photoURL: req.user.photoURL,
+      isAgent: req.user.isAgent || false,
+    },
+  });
+});
 
-router.post(
-  "/api/user/delete/cancel",
-  cancelDeletion
-);
+router.get("/my-card", protect, getMyCard);
+router.patch("/my-card", protect, upload.single("photo"), updateMyCard);
 
 export default router;
