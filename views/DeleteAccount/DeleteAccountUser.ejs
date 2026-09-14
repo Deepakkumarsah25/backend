@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Delete Account Requests</title>
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="/css/sidebar.css"
+  >
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #f5f7fb;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+    }
+
+    .page-wrapper {
+      margin-left: 270px;
+      padding: 30px;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 22px 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .header-left h1 {
+      margin: 0;
+      font-size: 25px;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .header-left p {
+      margin: 7px 0 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .request-count {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: 15px;
+      padding: 20px;
+
+      display: flex;
+      align-items: center;
+      gap: 14px;
+
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 13px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 21px;
+    }
+
+    .stat-icon.red {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .stat-icon.orange {
+      background: #ffedd5;
+      color: #ea580c;
+    }
+
+    .stat-icon.green {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .stat-info h3 {
+      margin: 0;
+      font-size: 24px;
+      color: #111827;
+    }
+
+    .stat-info p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .table-card {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e5e7eb;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .table-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #111827;
+    }
+
+    .refresh-btn {
+      border: 0;
+      background: #7c3aed;
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .refresh-btn:hover {
+      background: #6d28d9;
+    }
+
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1050px;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: #f9fafb;
+      color: #4b5563;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      padding: 14px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    td {
+      padding: 15px;
+      border-bottom: 1px solid #f0f1f3;
+      font-size: 13px;
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: #fafafa;
+    }
+
+    .user-name {
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .email {
+      color: #4b5563;
+    }
+
+    .uid {
+      max-width: 180px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #6b7280;
+      font-family: monospace;
+    }
+
+    .date {
+      color: #374151;
+      white-space: nowrap;
+    }
+
+    .days-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+
+      padding: 7px 10px;
+      border-radius: 8px;
+
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .days-badge.warning {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .days-badge.danger {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .days-badge.expired {
+      background: #111827;
+      color: #ffffff;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .status.pending {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 7px;
+    }
+
+    .action-btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .delete-btn {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .delete-btn:hover {
+      background: #b91c1c;
+    }
+
+    .cancel-btn {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .cancel-btn:hover {
+      background: #e5e7eb;
+    }
+
+    .empty-state {
+      padding: 70px 20px;
+      text-align: center;
+    }
+
+    .empty-icon {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      color: #9ca3af;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      margin: 0 auto 15px;
+      font-size: 28px;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 7px;
+      color: #374151;
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: #9ca3af;
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 25px;
+      bottom: 25px;
+
+      padding: 13px 18px;
+      border-radius: 10px;
+
+      background: #111827;
+      color: white;
+
+      font-size: 13px;
+      font-weight: 600;
+
+      display: none;
+      z-index: 9999;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    @media (max-width: 1000px) {
+      .page-wrapper {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .page-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .page-wrapper {
+        padding: 14px;
+      }
+
+      .page-header {
+        padding: 18px;
+      }
+
+      .header-left h1 {
+        font-size: 21px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <%- include("../common/sidebar") %>
+
+
+  <main class="page-wrapper">
+
+    <!-- HEADER -->
+    <div class="page-header">
+
+      <div class="header-left">
+        <h1>
+          <i class="fa-solid fa-user-xmark"></i>
+          Delete Account Requests
+        </h1>
+
+        <p>
+          Users who have requested account deletion
+        </p>
+      </div>
+
+      <div class="request-count">
+        <i class="fa-solid fa-clock"></i>
+        <%= deletionRequests.length %> Pending
+      </div>
+
+    </div>
+
+
+    <!-- STATS -->
+    <div class="stats-grid">
+
+      <div class="stat-card">
+
+        <div class="stat-icon red">
+          <i class="fa-solid fa-user-xmark"></i>
+        </div>
+
+        <div class="stat-info">
+          <h3>
+            <%= deletionRequests.length %>
+          </h3>
+
+          <p>
+            Total Delete Requests
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon orange">
+          <i class="fa-solid fa-hourglass-half"></i>
+        </div>
+
+        <div class="stat-info">
+          <h3>
+            10
+          </h3>
+
+          <p>
+            Days Grace Period
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <div class="stat-icon green">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+
+        <div class="stat-info">
+          <h3>
+            OTP
+          </h3>
+
+          <p>
+            Email Verification Required
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- TABLE -->
+    <div class="table-card">
+
+      <div class="table-header">
+
+        <h2>
+          Pending Requests
+        </h2>
+
+        <button
+          class="refresh-btn"
+          onclick="window.location.reload()"
+        >
+          <i class="fa-solid fa-rotate"></i>
+          Refresh
+        </button>
+
+      </div>
+
+
+      <% if (deletionRequests.length === 0) { %>
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+
+          <h3>
+            No Delete Requests
+          </h3>
+
+          <p>
+            There are currently no pending account deletion requests.
+          </p>
+
+        </div>
+
+      <% } else { %>
+
+        <div class="table-wrapper">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>UID</th>
+                <th>Request Date</th>
+                <th>Deletion Date</th>
+                <th>Remaining</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              <% deletionRequests.forEach((user, index) => { %>
+
+                <%
+                  const deletionDate = new Date(user.deletionDate);
+                  const now = new Date();
+
+                  const remainingMs =
+                    deletionDate.getTime() - now.getTime();
+
+                  const remainingDays =
+                    Math.ceil(
+                      remainingMs /
+                      (1000 * 60 * 60 * 24)
+                    );
+                %>
+
+
+                <tr>
+
+                  <!-- NUMBER -->
+                  <td>
+                    <strong>
+                      <%= index + 1 %>
+                    </strong>
+                  </td>
+
+
+                  <!-- USER -->
+                  <td>
+
+                    <div class="user-name">
+                      <%= user.name || "Unknown User" %>
+                    </div>
+
+                  </td>
+
+
+                  <!-- EMAIL -->
+                  <td>
+
+                    <div class="email">
+                      <i class="fa-regular fa-envelope"></i>
+                      <%= user.email || "No Email" %>
+                    </div>
+
+                  </td>
+
+
+                  <!-- UID -->
+                  <td>
+
+                    <div
+                      class="uid"
+                      title="<%= user.uid %>"
+                    >
+                      <%= user.uid %>
+                    </div>
+
+                  </td>
+
+
+                  <!-- REQUEST DATE -->
+                  <td>
+
+                    <div class="date">
+
+                      <%= user.updatedAt
+                        ? new Date(
+                            user.updatedAt
+                          ).toLocaleString("en-IN")
+                        : "N/A"
+                      %>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- DELETE DATE -->
+                  <td>
+
+                    <div class="date">
+
+                      <%= deletionDate.toLocaleString(
+                        "en-IN"
+                      ) %>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- REMAINING -->
+                  <td>
+
+                    <% if (remainingDays <= 0) { %>
+
+                      <span class="days-badge expired">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Ready
+                      </span>
+
+                    <% } else if (remainingDays <= 3) { %>
+
+                      <span class="days-badge danger">
+                        <i class="fa-solid fa-clock"></i>
+                        <%= remainingDays %> days
+                      </span>
+
+                    <% } else { %>
+
+                      <span class="days-badge warning">
+                        <i class="fa-solid fa-clock"></i>
+                        <%= remainingDays %> days
+                      </span>
+
+                    <% } %>
+
+                  </td>
+
+
+                  <!-- STATUS -->
+                  <td>
+
+                    <span class="status pending">
+                      <i class="fa-solid fa-hourglass-half"></i>
+                      Pending
+                    </span>
+
+                  </td>
+
+
+                  <!-- ACTION -->
+                  <td>
+
+                    <div class="action-buttons">
+
+                      <!-- DELETE NOW -->
+                      <form
+                        method="POST"
+                        action="/admin/delete-account/<%= user._id %>"
+                        onsubmit="return confirmDelete('<%= user.name || user.email %>')"
+                      >
+
+                        <button
+                          type="submit"
+                          class="action-btn delete-btn"
+                          title="Delete account permanently"
+                        >
+                          <i class="fa-solid fa-trash"></i>
+                          Delete
+                        </button>
+
+                      </form>
+
+
+                      <!-- CANCEL -->
+                      <form
+                        method="POST"
+                        action="/admin/delete-account/cancel/<%= user._id %>"
+                        onsubmit="return confirmCancel()"
+                      >
+
+                        <button
+                          type="submit"
+                          class="action-btn cancel-btn"
+                          title="Cancel deletion request"
+                        >
+                          <i class="fa-solid fa-xmark"></i>
+                          Cancel
+                        </button>
+
+                      </form>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              <% }); %>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      <% } %>
+
+    </div>
+
+  </main>
+
+
+  <div
+    id="toast"
+    class="toast"
+  ></div>
+
+
+  <script>
+
+    function confirmDelete(name) {
+
+      return confirm(
+        "WARNING!\\n\\n" +
+        "Are you sure you want to permanently delete:\\n\\n" +
+        name +
+        "\\n\\n" +
+        "This action cannot be undone."
+      );
+
+    }
+
+
+    function confirmCancel() {
+
+      return confirm(
+        "Are you sure you want to cancel this account deletion request?"
+      );
+
+    }
+
+  </script>
+
+</body>
+</html>
