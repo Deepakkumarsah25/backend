@@ -4,6 +4,9 @@ import { generateMemberId } from "../../services/memberId.js";
 
 const PLACEHOLDER = "xxx";
 
+/**
+ * Format user data for membership card
+ */
 const formatCard = (user) => ({
   type: "self",
   memberId: user.membershipId || PLACEHOLDER,
@@ -18,12 +21,13 @@ const formatCard = (user) => ({
 });
 
 /*******************************************************
- * SAVE / UPSERT USER (called on login)
+ * SAVE / UPSERT USER
+ * Called after login
+ *
  * POST /api/users/save-user
  *******************************************************/
 export const saveUser = async (req, res) => {
   try {
-
     const {
       uid,
       name,
@@ -33,6 +37,9 @@ export const saveUser = async (req, res) => {
       fcmToken,
     } = req.body;
 
+    // ------------------------------------------
+    // UID validation
+    // ------------------------------------------
     if (!uid) {
       return res.status(400).json({
         success: false,
@@ -40,28 +47,41 @@ export const saveUser = async (req, res) => {
       });
     }
 
+    // ------------------------------------------
+    // Check existing user
+    // ------------------------------------------
     const existingUser = await User.findOne({ uid });
 
     // ==========================================
     // USER LOGGED IN DURING DELETION PERIOD
     // ==========================================
-    if (
-      existingUser &&
-      existingUser.deletionRequested
-    ) {
+    if (existingUser && existingUser.deletionRequested) {
       existingUser.deletionRequested = false;
       existingUser.deletionDate = null;
 
       existingUser.lastLogin = new Date();
 
-      existingUser.name = name ?? existingUser.name;
-      existingUser.email = email ?? existingUser.email;
-      existingUser.photoURL =
-        photoURL ?? existingUser.photoURL;
-      existingUser.provider =
-        provider ?? existingUser.provider;
-      existingUser.fcmToken =
-        fcmToken ?? existingUser.fcmToken;
+      if (name !== undefined) {
+        existingUser.name = name;
+      }
+
+      if (email !== undefined) {
+        existingUser.email = email;
+      }
+
+      if (photoURL !== undefined) {
+        existingUser.photoURL = photoURL;
+      }
+
+      if (provider !== undefined) {
+        existingUser.provider = provider;
+      }
+
+      if (fcmToken !== undefined) {
+        existingUser.fcmToken = fcmToken;
+      }
+
+      existingUser.notificationEnabled = true;
 
       await existingUser.save();
 
@@ -75,43 +95,42 @@ export const saveUser = async (req, res) => {
     }
 
     // ==========================================
-    // NORMAL LOGIN / SAVE
+    // NORMAL LOGIN / SAVE / UPSERT
     // ==========================================
     const user = await User.findOneAndUpdate(
       { uid },
       {
-        uid,
-        name,
-        email,
-        photoURL,
-        provider,
-        fcmToken,
-        notificationEnabled: true,
-        lastLogin: new Date(),
+        $set: {
+          uid,
+          name,
+          email,
+          photoURL,
+          provider,
+          fcmToken,
+          notificationEnabled: true,
+          lastLogin: new Date(),
+        },
       },
       {
         new: true,
         upsert: true,
+        setDefaultsOnInsert: true,
       }
     );
-    const data = req.body;
 
-    let user = await User.findOne({
-      uid: data.uid,
-    });
-
-    if (!user) {
-      user = await User.create(data);
-
-
-    res.json({
+    // ------------------------------------------
+    // Success response
+    // ------------------------------------------
+    return res.json({
       success: true,
       deletionCancelled: false,
+      message: "User saved successfully.",
       user,
     });
   } catch (error) {
     console.error("USER SAVE ERROR:", error);
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: error.message,
     });
@@ -119,61 +138,163 @@ export const saveUser = async (req, res) => {
 };
 
 /*******************************************************
- * MY CARD — self membership card, built straight off the
- * User document. Auto-assigns a membershipId on first fetch.
+ * MY CARD
+ *
  * GET /api/users/my-card
+ *
+ * Returns logged-in user's membership card.
+ * Automatically creates membershipId if missing.
  *******************************************************/
 export const getMyCard = async (req, res) => {
   try {
     let user = req.user;
 
+    // ------------------------------------------
+    // Validate logged-in user
+    // ------------------------------------------
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated.",
+      });
+    }
+
+    // ------------------------------------------
+    // Generate membership ID if missing
+    // ------------------------------------------
     if (!user.membershipId) {
       const membershipId = await generateMemberId();
+
       user = await User.findByIdAndUpdate(
         user._id,
-        { $set: { membershipId } },
-        { returnDocument: "after" }
+        {
+          $set: {
+            membershipId,
+          },
+        },
+        {
+          new: true,
+        }
       );
     }
 
-    return res.json({ success: true, data: formatCard(user) });
+    // ------------------------------------------
+    // User not found
+    // ------------------------------------------
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: formatCard(user),
+    });
   } catch (err) {
     console.error("getMyCard error:", err);
-    return res.status(500).json({ success: false, message: "Server Error" });
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
   }
 };
 
 /*******************************************************
- * UPDATE MY CARD — edits the User document directly.
- * Fields the app collects: name, phone, designation, state,
- * district (+ photo). `email` is intentionally excluded — it's
- * a locked field and is never accepted from the client, even
- * if sent in the request body.
- * PATCH /api/users/my-card
+ * UPDATE MY CARD
+ *
+ * PUT / PATCH /api/users/my-card
+ *
+ * Updates logged-in user's membership card.
  *******************************************************/
 export const updateMyCard = async (req, res) => {
   try {
-    const { name, phone, designation, state, district } = req.body;
-    const update = {};
-    if (name?.trim()) update.name = name.trim();
-    if (phone?.trim()) update.phone = phone.trim();
-    if (designation?.trim()) update.designation = designation.trim();
-    if (state) update.state = state;
-    if (district) update.district = district;
+    const {
+      name,
+      phone,
+      designation,
+      state,
+      district,
+    } = req.body;
 
+    const update = {};
+
+    // ------------------------------------------
+    // Update basic fields
+    // ------------------------------------------
+    if (typeof name === "string" && name.trim()) {
+      update.name = name.trim();
+    }
+
+    if (typeof phone === "string" && phone.trim()) {
+      update.phone = phone.trim();
+    }
+
+    if (
+      typeof designation === "string" &&
+      designation.trim()
+    ) {
+      update.designation = designation.trim();
+    }
+
+    if (state) {
+      update.state = state;
+    }
+
+    if (district) {
+      update.district = district;
+    }
+
+    // ------------------------------------------
+    // Upload profile photo
+    // ------------------------------------------
     if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
+      const result = await uploadToCloudinary(
+        req.file.buffer
+      );
+
       update.photoURL = result.secure_url;
     }
 
-    const user = await User.findByIdAndUpdate(req.user._id, { $set: update }, { returnDocument: "after" });
+    // ------------------------------------------
+    // Update user
+    // ------------------------------------------
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: update,
+      },
+      {
+        new: true,
+      }
+    );
+
+    // ------------------------------------------
+    // User not found
+    // ------------------------------------------
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
-    return res.json({ success: true, message: "Card updated.", data: formatCard(user) });
+    // ------------------------------------------
+    // Success
+    // ------------------------------------------
+    return res.json({
+      success: true,
+      message: "Card updated.",
+      data: formatCard(user),
+    });
   } catch (err) {
     console.error("updateMyCard error:", err);
-    return res.status(500).json({ success: false, message: "Something went wrong." });
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong.",
+    });
   }
 };
