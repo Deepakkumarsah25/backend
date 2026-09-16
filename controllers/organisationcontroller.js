@@ -1,4 +1,4 @@
-import Organisation from "../models/Organisation.js";
+import Organisation from "../models/organisation.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 
@@ -8,12 +8,16 @@ import streamifier from "streamifier";
 const streamUpload = (buffer) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { resource_type: "auto" }, // "auto" supports both images and videos
+      { resource_type: "auto" },
       (error, result) => {
-        if (result) resolve(result);
-        else reject(error);
+        if (result) {
+          resolve(result);
+        } else {
+          reject(error);
+        }
       }
     );
+
     streamifier.createReadStream(buffer).pipe(stream);
   });
 };
@@ -31,7 +35,8 @@ export const showOrganisation = async (req, res) => {
       organisation,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Show Organisation Error:", error);
+
     res.status(500).send("Something went wrong");
   }
 };
@@ -60,6 +65,7 @@ export const addOrganisation = async (req, res) => {
 
     let imageUrl = "";
 
+    // Upload image
     if (req.file) {
       const result = await streamUpload(req.file.buffer);
       imageUrl = result.secure_url;
@@ -78,8 +84,9 @@ export const addOrganisation = async (req, res) => {
 
     res.redirect("/organisation");
   } catch (error) {
-    console.log(error);
-    console.log(req.body);
+    console.log("Add Organisation Error:", error);
+    console.log("Request Body:", req.body);
+
     res.status(500).send("Organisation Add Failed");
   }
 };
@@ -99,7 +106,8 @@ export const editOrganisation = async (req, res) => {
       organisation,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Edit Organisation Error:", error);
+
     res.status(500).send("Something went wrong");
   }
 };
@@ -125,28 +133,37 @@ export const updateOrganisation = async (req, res) => {
       return res.send("Organisation Member Not Found");
     }
 
+    // Keep old image if no new image is uploaded
     let imageUrl = organisation.imageUrl;
 
+    // Upload new image
     if (req.file) {
       const result = await streamUpload(req.file.buffer);
       imageUrl = result.secure_url;
     }
 
-    await Organisation.findByIdAndUpdate(req.params.id, {
-      category,
-      name,
-      designation,
-      address,
-      phone,
-      email,
-      fax,
-      imageUrl,
-    });
+    await Organisation.findByIdAndUpdate(
+      req.params.id,
+      {
+        category,
+        name,
+        designation,
+        address,
+        phone,
+        email,
+        fax,
+        imageUrl,
+      },
+      {
+        new: true,
+      }
+    );
 
     res.redirect("/organisation");
   } catch (error) {
-    console.log(error);
-    console.log(req.body);
+    console.log("Update Organisation Error:", error);
+    console.log("Request Body:", req.body);
+
     res.status(500).send("Organisation Update Failed");
   }
 };
@@ -156,14 +173,23 @@ export const updateOrganisation = async (req, res) => {
 // ===========================
 export const deleteOrganisation = async (req, res) => {
   try {
-    await Organisation.findByIdAndDelete(req.params.id);
+    const organisation = await Organisation.findByIdAndDelete(
+      req.params.id
+    );
+
+    if (!organisation) {
+      return res.status(404).json({
+        success: false,
+        message: "Organisation Member Not Found",
+      });
+    }
 
     res.json({
       success: true,
       message: "Organisation Deleted Successfully",
     });
   } catch (error) {
-    console.log(error);
+    console.log("Delete Organisation Error:", error);
 
     res.status(500).json({
       success: false,
@@ -192,7 +218,7 @@ export const getOrganisation = async (req, res) => {
       members,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Get Organisation Error:", error);
 
     res.status(500).json({
       success: false,
@@ -206,7 +232,9 @@ export const getOrganisation = async (req, res) => {
 // ===========================
 export const getOrganisationDetails = async (req, res) => {
   try {
-    const organisation = await Organisation.findById(req.params.id);
+    const organisation = await Organisation.findById(
+      req.params.id
+    );
 
     if (!organisation) {
       return res.status(404).json({
@@ -220,7 +248,7 @@ export const getOrganisationDetails = async (req, res) => {
       organisation,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Get Organisation Details Error:", error);
 
     res.status(500).json({
       success: false,
