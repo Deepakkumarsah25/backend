@@ -1,17 +1,27 @@
 import express from "express";
-import { protect } from "../middlewar/firebaseAuth.js";
-import { requestAgentVerification } from "../controllers/agentController.js";
+import { saveUser } from "../../controllers/user/userController.js";
+import {
+  sendDeleteOtp,
+  verifyDeleteOtp,
+  cancelDeletion,
+} from "../../controllers/user/deleteAccountController.js";
 
 const router = express.Router();
 
-/*
-  Mounted in server.js as:
-    app.use("/api/agent", agentRoutes);
+router.post("/api/user/save", saveUser);
+router.post(
+  "/api/user/delete/send-otp",
+  sendDeleteOtp
+);
 
-  Final paths:
-    POST /api/agent/request-verification   (logged-in user asks to become an agent)
-*/
+router.post(
+  "/api/user/delete/verify-otp",
+  verifyDeleteOtp
+);
 
-router.post("/request-verification", protect, requestAgentVerification);
+router.post(
+  "/api/user/delete/cancel",
+  cancelDeletion
+);
 
 export default router;
