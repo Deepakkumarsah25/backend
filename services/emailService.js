@@ -3,27 +3,22 @@ dotenv.config();
 
 import nodemailer from "nodemailer";
 
-
 /* =========================================================
-   SMTP CONFIG
-========================================================= */
+   SMTP CONFIGURATION
+   ========================================================= */
 
 const SMTP_HOST =
-  process.env.SMTP_HOST ||
-  "smtp.gmail.com";
+  process.env.SMTP_HOST || "smtp.gmail.com";
 
-const SMTP_PORT =
-  Number(
-    process.env.SMTP_PORT || 587
-  );
+const SMTP_PORT = Number(
+  process.env.SMTP_PORT || 587
+);
 
 const SMTP_USERNAME =
-  process.env.SMTP_USERNAME ||
-  "";
+  process.env.SMTP_USERNAME || "";
 
 const SMTP_PASSWORD =
-  process.env.SMTP_PASSWORD ||
-  "";
+  process.env.SMTP_PASSWORD || "";
 
 const SMTP_FROM_EMAIL =
   process.env.SMTP_FROM_EMAIL ||
@@ -31,42 +26,46 @@ const SMTP_FROM_EMAIL =
 
 
 /* =========================================================
-   LOG CONFIG
-========================================================= */
+   SMTP CONFIG LOG
+   ========================================================= */
 
 console.log(
   "=========================================="
 );
 
 console.log(
-  "EMAIL SERVICE"
+  "📧 EMAIL SERVICE INITIALIZING"
 );
 
 console.log(
-  "SMTP_HOST =",
+  "SMTP HOST:",
   SMTP_HOST
 );
 
 console.log(
-  "SMTP_PORT =",
+  "SMTP PORT:",
   SMTP_PORT
 );
 
 console.log(
-  "SMTP_USERNAME =",
-  SMTP_USERNAME || "NOT SET"
+  "SMTP USERNAME:",
+  SMTP_USERNAME
+    ? SMTP_USERNAME
+    : "❌ NOT SET"
 );
 
 console.log(
-  "SMTP_PASSWORD =",
+  "SMTP PASSWORD:",
   SMTP_PASSWORD
-    ? "SET"
-    : "NOT SET"
+    ? "✅ SET"
+    : "❌ NOT SET"
 );
 
 console.log(
-  "SMTP_FROM_EMAIL =",
-  SMTP_FROM_EMAIL || "NOT SET"
+  "SMTP FROM EMAIL:",
+  SMTP_FROM_EMAIL
+    ? SMTP_FROM_EMAIL
+    : "❌ NOT SET"
 );
 
 console.log(
@@ -75,89 +74,99 @@ console.log(
 
 
 /* =========================================================
-   VALIDATE CONFIG
-========================================================= */
+   SMTP CONFIG VALIDATION
+   ========================================================= */
 
-if (
-  !SMTP_USERNAME ||
-  !SMTP_PASSWORD
-) {
-
+if (!SMTP_USERNAME) {
   console.error(
-    "❌ SMTP username/password missing."
+    "❌ SMTP_USERNAME is missing."
   );
+}
 
+if (!SMTP_PASSWORD) {
+  console.error(
+    "❌ SMTP_PASSWORD is missing."
+  );
+}
+
+if (!SMTP_FROM_EMAIL) {
+  console.error(
+    "❌ SMTP_FROM_EMAIL is missing."
+  );
 }
 
 
 /* =========================================================
-   TRANSPORTER
-========================================================= */
+   CREATE SMTP TRANSPORTER
+   ========================================================= */
 
 const transporter =
   nodemailer.createTransport({
+    host: SMTP_HOST,
 
-    host:
-      SMTP_HOST,
-
-    port:
-      SMTP_PORT,
+    port: SMTP_PORT,
 
     secure:
       SMTP_PORT === 465,
 
     auth: {
-
-      user:
-        SMTP_USERNAME,
-
-      pass:
-        SMTP_PASSWORD,
-
+      user: SMTP_USERNAME,
+      pass: SMTP_PASSWORD,
     },
 
     tls: {
-
-      rejectUnauthorized:
-        false,
-
+      rejectUnauthorized: false,
     },
-
   });
 
 
 /* =========================================================
-   VERIFY SMTP
-========================================================= */
+   VERIFY SMTP CONNECTION
+   ========================================================= */
 
 transporter.verify(
-  (error, success) => {
+  (error) => {
 
     if (error) {
+
+      console.error(
+        "=========================================="
+      );
 
       console.error(
         "❌ SMTP CONNECTION FAILED"
       );
 
       console.error(
-        error
+        error.message
+      );
+
+      console.error(
+        "=========================================="
       );
 
     } else {
 
       console.log(
+        "=========================================="
+      );
+
+      console.log(
         "✅ SMTP SERVER READY"
       );
 
-    }
+      console.log(
+        "=========================================="
+      );
 
+    }
   }
 );
 
 
 /* =========================================================
    SEND EMAIL
-========================================================= */
+   ========================================================= */
 
 export const sendEmail = async (
   to,
@@ -167,68 +176,81 @@ export const sendEmail = async (
 
   try {
 
-    if (!to) {
+    /* -----------------------------------------------------
+       VALIDATE RECIPIENT
+    ----------------------------------------------------- */
 
+    if (!to) {
       throw new Error(
         "Recipient email is required."
       );
-
     }
 
-    if (!SMTP_USERNAME) {
 
+    /* -----------------------------------------------------
+       VALIDATE SMTP USERNAME
+    ----------------------------------------------------- */
+
+    if (!SMTP_USERNAME) {
       throw new Error(
         "SMTP_USERNAME is missing."
       );
-
     }
 
-    if (!SMTP_PASSWORD) {
 
+    /* -----------------------------------------------------
+       VALIDATE SMTP PASSWORD
+    ----------------------------------------------------- */
+
+    if (!SMTP_PASSWORD) {
       throw new Error(
         "SMTP_PASSWORD is missing."
       );
-
     }
 
 
+    /* -----------------------------------------------------
+       MAIL OPTIONS
+    ----------------------------------------------------- */
+
     const mailOptions = {
 
-      from:
-        SMTP_FROM_EMAIL,
+      from: SMTP_FROM_EMAIL,
 
-      to:
-        String(to).trim(),
+      to: String(to).trim(),
 
       subject:
         String(subject || ""),
 
       html:
         html || "",
-
     };
 
+
+    /* -----------------------------------------------------
+       EMAIL LOG
+    ----------------------------------------------------- */
 
     console.log(
       "------------------------------------------"
     );
 
     console.log(
-      "SENDING EMAIL"
+      "📨 SENDING EMAIL"
     );
 
     console.log(
-      "To:",
+      "TO:",
       mailOptions.to
     );
 
     console.log(
-      "Subject:",
+      "SUBJECT:",
       mailOptions.subject
     );
 
     console.log(
-      "From:",
+      "FROM:",
       mailOptions.from
     );
 
@@ -237,33 +259,45 @@ export const sendEmail = async (
     );
 
 
+    /* -----------------------------------------------------
+       SEND EMAIL
+    ----------------------------------------------------- */
+
     const info =
       await transporter.sendMail(
         mailOptions
       );
 
 
+    /* -----------------------------------------------------
+       SUCCESS LOG
+    ----------------------------------------------------- */
+
     console.log(
-      "✅ EMAIL SENT"
+      "=========================================="
     );
 
     console.log(
-      "Message ID:",
+      "✅ EMAIL SENT SUCCESSFULLY"
+    );
+
+    console.log(
+      "MESSAGE ID:",
       info.messageId
     );
 
     console.log(
-      "Accepted:",
+      "ACCEPTED:",
       info.accepted
     );
 
     console.log(
-      "Rejected:",
+      "REJECTED:",
       info.rejected
     );
 
     console.log(
-      "------------------------------------------"
+      "=========================================="
     );
 
 
@@ -271,21 +305,33 @@ export const sendEmail = async (
 
   } catch (error) {
 
+    /* -----------------------------------------------------
+       ERROR LOG
+    ----------------------------------------------------- */
+
+    console.error(
+      "=========================================="
+    );
+
     console.error(
       "❌ EMAIL SEND ERROR"
     );
 
     console.error(
-      "To:",
+      "TO:",
       to
     );
 
     console.error(
-      error
+      "ERROR:",
+      error.message
     );
 
+    console.error(
+      "=========================================="
+    );
+
+
     throw error;
-
   }
-
 };
