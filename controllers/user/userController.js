@@ -28,14 +28,7 @@ const formatCard = (user) => ({
  *******************************************************/
 export const saveUser = async (req, res) => {
   try {
-    const {
-      uid,
-      name,
-      email,
-      photoURL,
-      provider,
-      fcmToken,
-    } = req.body;
+    const { uid, name, email, photoURL, provider, fcmToken } = req.body;
 
     // ------------------------------------------
     // UID validation
@@ -88,8 +81,7 @@ export const saveUser = async (req, res) => {
       return res.json({
         success: true,
         deletionCancelled: true,
-        message:
-          "Account deletion cancelled because you logged in.",
+        message: "Account deletion cancelled because you logged in.",
         user: existingUser,
       });
     }
@@ -115,7 +107,7 @@ export const saveUser = async (req, res) => {
         new: true,
         upsert: true,
         setDefaultsOnInsert: true,
-      }
+      },
     );
 
     // ------------------------------------------
@@ -174,7 +166,7 @@ export const getMyCard = async (req, res) => {
         },
         {
           new: true,
-        }
+        },
       );
     }
 
@@ -211,13 +203,7 @@ export const getMyCard = async (req, res) => {
  *******************************************************/
 export const updateMyCard = async (req, res) => {
   try {
-    const {
-      name,
-      phone,
-      designation,
-      state,
-      district,
-    } = req.body;
+    const { name, phone, designation, state, district } = req.body;
 
     const update = {};
 
@@ -232,10 +218,7 @@ export const updateMyCard = async (req, res) => {
       update.phone = phone.trim();
     }
 
-    if (
-      typeof designation === "string" &&
-      designation.trim()
-    ) {
+    if (typeof designation === "string" && designation.trim()) {
       update.designation = designation.trim();
     }
 
@@ -251,9 +234,7 @@ export const updateMyCard = async (req, res) => {
     // Upload profile photo
     // ------------------------------------------
     if (req.file) {
-      const result = await uploadToCloudinary(
-        req.file.buffer
-      );
+      const result = await uploadToCloudinary(req.file.buffer);
 
       update.photoURL = result.secure_url;
     }
@@ -268,7 +249,7 @@ export const updateMyCard = async (req, res) => {
       },
       {
         new: true,
-      }
+      },
     );
 
     // ------------------------------------------
