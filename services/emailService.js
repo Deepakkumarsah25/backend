@@ -69,6 +69,10 @@ console.log(
 );
 
 console.log(
+  "SMTP IP FAMILY: IPv4"
+);
+
+console.log(
   "=========================================="
 );
 
@@ -109,6 +113,12 @@ const transporter =
     secure:
       SMTP_PORT === 465,
 
+    // ==========================================
+    // IMPORTANT FIX
+    // Force IPv4 instead of IPv6
+    // ==========================================
+    family: 4,
+
     auth: {
       user: SMTP_USERNAME,
       pass: SMTP_PASSWORD,
@@ -138,11 +148,13 @@ transporter.verify(
       );
 
       console.error(
+        "ERROR:",
         error.message
       );
 
       console.error(
         "=========================================="
+
       );
 
     } else {
