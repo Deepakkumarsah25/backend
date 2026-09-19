@@ -1,7 +1,21 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import dns from "node:dns";
 import nodemailer from "nodemailer";
+
+/* =========================================================
+   DNS CONFIGURATION
+   ========================================================= */
+
+// Render + Gmail SMTP IPv6 connection issue fix
+// Force Node.js to prefer IPv4 addresses.
+dns.setDefaultResultOrder("ipv4first");
+
+console.log(
+  "🌐 DNS RESULT ORDER: IPv4 FIRST"
+);
+
 
 /* =========================================================
    SMTP CONFIGURATION
@@ -69,7 +83,7 @@ console.log(
 );
 
 console.log(
-  "SMTP IP FAMILY: IPv4"
+  "SMTP IP FAMILY: IPv4 FIRST"
 );
 
 console.log(
@@ -113,12 +127,6 @@ const transporter =
     secure:
       SMTP_PORT === 465,
 
-    // ==========================================
-    // IMPORTANT FIX
-    // Force IPv4 instead of IPv6
-    // ==========================================
-    family: 4,
-
     auth: {
       user: SMTP_USERNAME,
       pass: SMTP_PASSWORD,
@@ -153,8 +161,12 @@ transporter.verify(
       );
 
       console.error(
-        "=========================================="
+        "CODE:",
+        error.code || "UNKNOWN"
+      );
 
+      console.error(
+        "=========================================="
       );
 
     } else {
@@ -337,6 +349,16 @@ export const sendEmail = async (
     console.error(
       "ERROR:",
       error.message
+    );
+
+    console.error(
+      "CODE:",
+      error.code || "UNKNOWN"
+    );
+
+    console.error(
+      "COMMAND:",
+      error.command || "UNKNOWN"
     );
 
     console.error(
