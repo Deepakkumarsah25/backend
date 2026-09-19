@@ -14,12 +14,18 @@ export const getNotifications = async (req, res) => {
 
     if (userId) {
 
-      filter = {
-        $or: [
-          { userId: userId },
-          { userId: null }
-        ]
-      };
+filter = {
+  $or: [
+    {
+      userId: userId,
+      deletedBy: { $ne: userId },
+    },
+    {
+      userId: null,
+      deletedBy: { $ne: userId },
+    },
+  ],
+};
 
     } else {
 
@@ -90,14 +96,20 @@ export const getUnreadCount = async (
 
     if (userId) {
 
-      filter = {
-        isRead: false,
+    filter = {
+      isRead: false,
 
-        $or: [
-          { userId: userId },
-          { userId: null }
-        ]
-      };
+      $or: [
+        {
+          userId: userId,
+          deletedBy: { $ne: userId },
+        },
+        {
+          userId: null,
+          deletedBy: { $ne: userId },
+        },
+      ],
+    };
 
     } else {
 
@@ -300,32 +312,40 @@ export const deleteNotification =
     try {
 
       const { id } = req.params;
+      const userId = req.user?._id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: "User not found",
+        });
+      }
 
       const notification =
-        await Notification.findByIdAndDelete(
-          id
+        await Notification.findByIdAndUpdate(
+          id,
+          {
+            $addToSet: {
+              deletedBy: userId,
+            },
+          },
+          {
+            new: true,
+          }
         );
 
       if (!notification) {
 
         return res.status(404).json({
-
           success: false,
-
-          message:
-            "Notification not found",
-
+          message: "Notification not found",
         });
 
       }
 
       res.status(200).json({
-
         success: true,
-
-        message:
-          "Notification deleted",
-
+        message: "Notification deleted",
       });
 
     } catch (error) {
@@ -336,12 +356,8 @@ export const deleteNotification =
       );
 
       res.status(500).json({
-
         success: false,
-
-        message:
-          "Failed to delete notification",
-
+        message: "Failed to delete notification",
       });
 
     }
