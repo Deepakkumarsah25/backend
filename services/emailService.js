@@ -1,47 +1,26 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import dns from "node:dns";
-import nodemailer from "nodemailer";
-
 /* =========================================================
-   DNS CONFIGURATION
-   ========================================================= */
+   BREVO EMAIL API CONFIGURATION
+========================================================= */
 
-// Render + Gmail SMTP IPv6 connection issue fix
-// Force Node.js to prefer IPv4 addresses.
-dns.setDefaultResultOrder("ipv4first");
+const BREVO_API_URL =
+  "https://api.brevo.com/v3/smtp/email";
 
-console.log(
-  "🌐 DNS RESULT ORDER: IPv4 FIRST"
-);
+const BREVO_API_KEY =
+  process.env.BREVO_API_KEY || "";
 
+const BREVO_FROM_EMAIL =
+  process.env.BREVO_FROM_EMAIL || "";
 
-/* =========================================================
-   SMTP CONFIGURATION
-   ========================================================= */
-
-const SMTP_HOST =
-  process.env.SMTP_HOST || "smtp.gmail.com";
-
-const SMTP_PORT = Number(
-  process.env.SMTP_PORT || 587
-);
-
-const SMTP_USERNAME =
-  process.env.SMTP_USERNAME || "";
-
-const SMTP_PASSWORD =
-  process.env.SMTP_PASSWORD || "";
-
-const SMTP_FROM_EMAIL =
-  process.env.SMTP_FROM_EMAIL ||
-  SMTP_USERNAME;
+const BREVO_FROM_NAME =
+  process.env.BREVO_FROM_NAME || "VIP Party";
 
 
 /* =========================================================
-   SMTP CONFIG LOG
-   ========================================================= */
+   CONFIG LOG
+========================================================= */
 
 console.log(
   "=========================================="
@@ -52,38 +31,31 @@ console.log(
 );
 
 console.log(
-  "SMTP HOST:",
-  SMTP_HOST
+  "EMAIL SERVICE: BREVO API"
 );
 
 console.log(
-  "SMTP PORT:",
-  SMTP_PORT
+  "BREVO API URL:",
+  BREVO_API_URL
 );
 
 console.log(
-  "SMTP USERNAME:",
-  SMTP_USERNAME
-    ? SMTP_USERNAME
-    : "❌ NOT SET"
-);
-
-console.log(
-  "SMTP PASSWORD:",
-  SMTP_PASSWORD
+  "BREVO API KEY:",
+  BREVO_API_KEY
     ? "✅ SET"
     : "❌ NOT SET"
 );
 
 console.log(
-  "SMTP FROM EMAIL:",
-  SMTP_FROM_EMAIL
-    ? SMTP_FROM_EMAIL
+  "BREVO FROM EMAIL:",
+  BREVO_FROM_EMAIL
+    ? BREVO_FROM_EMAIL
     : "❌ NOT SET"
 );
 
 console.log(
-  "SMTP IP FAMILY: IPv4 FIRST"
+  "BREVO FROM NAME:",
+  BREVO_FROM_NAME
 );
 
 console.log(
@@ -92,105 +64,29 @@ console.log(
 
 
 /* =========================================================
-   SMTP CONFIG VALIDATION
-   ========================================================= */
+   CONFIG VALIDATION
+========================================================= */
 
-if (!SMTP_USERNAME) {
+if (!BREVO_API_KEY) {
+
   console.error(
-    "❌ SMTP_USERNAME is missing."
+    "❌ BREVO_API_KEY is missing."
   );
+
 }
 
-if (!SMTP_PASSWORD) {
+if (!BREVO_FROM_EMAIL) {
+
   console.error(
-    "❌ SMTP_PASSWORD is missing."
+    "❌ BREVO_FROM_EMAIL is missing."
   );
+
 }
-
-if (!SMTP_FROM_EMAIL) {
-  console.error(
-    "❌ SMTP_FROM_EMAIL is missing."
-  );
-}
-
-
-/* =========================================================
-   CREATE SMTP TRANSPORTER
-   ========================================================= */
-
-const transporter =
-  nodemailer.createTransport({
-    host: SMTP_HOST,
-
-    port: SMTP_PORT,
-
-    secure:
-      SMTP_PORT === 465,
-
-    auth: {
-      user: SMTP_USERNAME,
-      pass: SMTP_PASSWORD,
-    },
-
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
-
-
-/* =========================================================
-   VERIFY SMTP CONNECTION
-   ========================================================= */
-
-transporter.verify(
-  (error) => {
-
-    if (error) {
-
-      console.error(
-        "=========================================="
-      );
-
-      console.error(
-        "❌ SMTP CONNECTION FAILED"
-      );
-
-      console.error(
-        "ERROR:",
-        error.message
-      );
-
-      console.error(
-        "CODE:",
-        error.code || "UNKNOWN"
-      );
-
-      console.error(
-        "=========================================="
-      );
-
-    } else {
-
-      console.log(
-        "=========================================="
-      );
-
-      console.log(
-        "✅ SMTP SERVER READY"
-      );
-
-      console.log(
-        "=========================================="
-      );
-
-    }
-  }
-);
 
 
 /* =========================================================
    SEND EMAIL
-   ========================================================= */
+========================================================= */
 
 export const sendEmail = async (
   to,
@@ -205,49 +101,73 @@ export const sendEmail = async (
     ----------------------------------------------------- */
 
     if (!to) {
+
       throw new Error(
         "Recipient email is required."
       );
+
     }
 
 
     /* -----------------------------------------------------
-       VALIDATE SMTP USERNAME
+       VALIDATE BREVO API KEY
     ----------------------------------------------------- */
 
-    if (!SMTP_USERNAME) {
+    if (!BREVO_API_KEY) {
+
       throw new Error(
-        "SMTP_USERNAME is missing."
+        "BREVO_API_KEY is missing."
       );
+
     }
 
 
     /* -----------------------------------------------------
-       VALIDATE SMTP PASSWORD
+       VALIDATE SENDER EMAIL
     ----------------------------------------------------- */
 
-    if (!SMTP_PASSWORD) {
+    if (!BREVO_FROM_EMAIL) {
+
       throw new Error(
-        "SMTP_PASSWORD is missing."
+        "BREVO_FROM_EMAIL is missing."
       );
+
     }
 
 
     /* -----------------------------------------------------
-       MAIL OPTIONS
+       EMAIL DATA
     ----------------------------------------------------- */
 
-    const mailOptions = {
+    const payload = {
 
-      from: SMTP_FROM_EMAIL,
+      sender: {
 
-      to: String(to).trim(),
+        name:
+          BREVO_FROM_NAME,
+
+        email:
+          BREVO_FROM_EMAIL,
+
+      },
+
+      to: [
+
+        {
+
+          email:
+            String(to).trim(),
+
+        },
+
+      ],
 
       subject:
         String(subject || ""),
 
-      html:
+      htmlContent:
         html || "",
+
     };
 
 
@@ -260,22 +180,22 @@ export const sendEmail = async (
     );
 
     console.log(
-      "📨 SENDING EMAIL"
+      "📨 SENDING EMAIL USING BREVO API"
     );
 
     console.log(
       "TO:",
-      mailOptions.to
+      payload.to[0].email
     );
 
     console.log(
       "SUBJECT:",
-      mailOptions.subject
+      payload.subject
     );
 
     console.log(
       "FROM:",
-      mailOptions.from
+      payload.sender.email
     );
 
     console.log(
@@ -284,17 +204,103 @@ export const sendEmail = async (
 
 
     /* -----------------------------------------------------
-       SEND EMAIL
+       SEND REQUEST
     ----------------------------------------------------- */
 
-    const info =
-      await transporter.sendMail(
-        mailOptions
+    const response =
+      await fetch(
+        BREVO_API_URL,
+        {
+
+          method:
+            "POST",
+
+          headers: {
+
+            accept:
+              "application/json",
+
+            "api-key":
+              BREVO_API_KEY,
+
+            "content-type":
+              "application/json",
+
+          },
+
+          body:
+            JSON.stringify(payload),
+
+        }
       );
 
 
     /* -----------------------------------------------------
-       SUCCESS LOG
+       READ RESPONSE
+    ----------------------------------------------------- */
+
+    const responseText =
+      await response.text();
+
+    let responseData = {};
+
+    try {
+
+      responseData =
+        responseText
+          ? JSON.parse(responseText)
+          : {};
+
+    } catch {
+
+      responseData = {
+
+        raw:
+          responseText,
+
+      };
+
+    }
+
+
+    /* -----------------------------------------------------
+       CHECK API ERROR
+    ----------------------------------------------------- */
+
+    if (!response.ok) {
+
+      console.error(
+        "=========================================="
+      );
+
+      console.error(
+        "❌ BREVO EMAIL API FAILED"
+      );
+
+      console.error(
+        "STATUS:",
+        response.status
+      );
+
+      console.error(
+        "RESPONSE:",
+        responseData
+      );
+
+      console.error(
+        "=========================================="
+      );
+
+      throw new Error(
+        responseData.message ||
+        `Brevo API failed with status ${response.status}`
+      );
+
+    }
+
+
+    /* -----------------------------------------------------
+       SUCCESS
     ----------------------------------------------------- */
 
     console.log(
@@ -306,18 +312,14 @@ export const sendEmail = async (
     );
 
     console.log(
+      "BREVO RESPONSE:",
+      responseData
+    );
+
+    console.log(
       "MESSAGE ID:",
-      info.messageId
-    );
-
-    console.log(
-      "ACCEPTED:",
-      info.accepted
-    );
-
-    console.log(
-      "REJECTED:",
-      info.rejected
+      responseData.messageId ||
+        "NOT PROVIDED"
     );
 
     console.log(
@@ -325,7 +327,7 @@ export const sendEmail = async (
     );
 
 
-    return info;
+    return responseData;
 
   } catch (error) {
 
@@ -352,20 +354,12 @@ export const sendEmail = async (
     );
 
     console.error(
-      "CODE:",
-      error.code || "UNKNOWN"
-    );
-
-    console.error(
-      "COMMAND:",
-      error.command || "UNKNOWN"
-    );
-
-    console.error(
       "=========================================="
     );
 
 
     throw error;
+
   }
+
 };
