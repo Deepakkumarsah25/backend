@@ -1,90 +1,115 @@
 import { messaging } from "../firebase/firebaseAdmin.js";
 import User from "../models/User.js";
 
-export const sendPushNotification = async (
+const stringifyData = (data = {}) =>
+  Object.keys(data).reduce((obj, key) => {
+    const value = data[key];
+    if (value !== undefined && value !== null) obj[key] = String(value);
+    return obj;
+  }, {});
+
+const buildMessage = ({ title, body, data = {}, token, tokens }) => ({
+  ...(token ? { token } : { tokens }),
+  notification: { title, body },
+  android: {
+    priority: "high",
+    notification: {
+      channelId: "vip-party",
+      sound: "default",
+    },
+  },
+  data: stringifyData(data),
+});
+
+// Targeted push: only one logged-in user/member.
+export const sendPushNotificationToUser = async ({
+  userId,
   title,
   body,
-  data = {}
-) => {
+  data = {},
+}) => {
   try {
-    // Get all users with valid FCM token
-    const users = await User.find({
-      notificationEnabled: true,
-      fcmToken: {
-        $exists: true,
-        $ne: "",
-      },
-    });
+    const user = await User.findById(userId).select(
+      "fcmToken notificationEnabled"
+    );
 
-    const tokens = users
-      .map((user) => user.fcmToken)
-      .filter(Boolean);
-
-    if (tokens.length === 0) {
-      console.log("❌ No FCM Tokens Found");
-      return;
+    if (!user?.notificationEnabled || !user?.fcmToken) {
+      console.log("ℹ️ No enabled FCM token for user:", userId);
+      return null;
     }
 
-    const message = {
-      tokens,
-
-      notification: {
+    const response = await messaging.send(
+      buildMessage({
         title,
         body,
-      },
+        data,
+        token: user.fcmToken,
+      })
+    );
 
-     android: {
-  priority: "high",
-  notification: {
-    channelId: "vip-party",
-    sound: "default",
-  },
-},
+    console.log("✅ Targeted FCM sent:", userId, response);
+    return response;
+  } catch (error) {
+    console.error("❌ Targeted Push Error:", error);
 
-      data: Object.keys(data).reduce((obj, key) => {
-        obj[key] = String(data[key]);
-        return obj;
-      }, {}),
-    };
+    if (
+      error?.code === "messaging/registration-token-not-registered"
+    ) {
+      await User.findByIdAndUpdate(userId, { $set: { fcmToken: "" } });
+    }
 
-    const response = await messaging.sendEachForMulticast(message);
+    return null;
+  }
+};
+
+// General push: logged-in users that have registered an FCM token.
+export const sendPushNotification = async (title, body, data = {}) => {
+  try {
+    const users = await User.find({
+      notificationEnabled: true,
+      fcmToken: { $exists: true, $ne: "" },
+    }).select("fcmToken");
+
+    const tokens = users.map((user) => user.fcmToken).filter(Boolean);
+
+    if (!tokens.length) {
+      console.log("❌ No FCM Tokens Found");
+      return null;
+    }
+
+    const response = await messaging.sendEachForMulticast(
+      buildMessage({ title, body, data, tokens })
+    );
 
     console.log("=================================");
     console.log("FCM Response");
-    console.log("=================================");
-    console.log("Success :", response.successCount);
-    console.log("Failure :", response.failureCount);
+    console.log("Success:", response.successCount);
+    console.log("Failure:", response.failureCount);
 
-  response.responses.forEach(async (res, index) => {
-  if (res.success) {
-    console.log(`✅ Token ${index + 1}: Success`);
-  } else {
-    console.log(`❌ Token ${index + 1}:`, res.error);
-
-    if (
-      res.error?.code ===
-      "messaging/registration-token-not-registered"
-    ) {
-      await User.updateOne(
-        {
-          fcmToken: tokens[index],
-        },
-        {
-          $set: {
-            fcmToken: "",
-          },
+    const invalidTokens = [];
+    response.responses.forEach((result, index) => {
+      if (!result.success) {
+        console.log(`❌ Token ${index + 1}:`, result.error);
+        if (
+          result.error?.code ===
+          "messaging/registration-token-not-registered"
+        ) {
+          invalidTokens.push(tokens[index]);
         }
-      );
+      }
+    });
 
-      console.log("🗑 Invalid token removed");
+    if (invalidTokens.length) {
+      await User.updateMany(
+        { fcmToken: { $in: invalidTokens } },
+        { $set: { fcmToken: "" } }
+      );
     }
-  }
-});
 
     console.log("=================================");
-
     return response;
   } catch (error) {
     console.error("Push Notification Error:", error);
+    return null;
   }
 };

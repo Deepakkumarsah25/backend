@@ -363,120 +363,153 @@
         }
       }
     </style>
-  </head>
 
+    <style>
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .stat {
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px;
+        min-height: 105px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      }
+      .stat .label {
+        color: #64748b;
+        font-size: 13px;
+        margin-bottom: 9px;
+      }
+      .stat .value {
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.3;
+        word-break: break-word;
+      }
+      .green {
+        color: #16a34a;
+      }
+      .blue {
+        color: #2563eb;
+      }
+      .nav-link {
+        display: inline-block;
+        background: #16a34a;
+        color: #fff !important;
+        text-decoration: none;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .refresh-btn {
+        border: 0;
+        background: #2563eb;
+        color: #fff;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .map-card {
+        background: #fff;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      }
+      .map-head {
+        padding: 15px 16px;
+        font-weight: 800;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      #map {
+        width: 100%;
+        height: 600px;
+      }
+      @media (max-width: 900px) {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        #map {
+          height: 500px;
+        }
+      }
+      @media (max-width: 520px) {
+        .container {
+          padding: 10px;
+        }
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
+        }
+        .stat {
+          padding: 12px;
+          min-height: 100px;
+        }
+        .stat .value {
+          font-size: 17px;
+        }
+        .nav-link,
+        .refresh-btn {
+          font-size: 12px;
+          padding: 9px 10px;
+        }
+        #map {
+          height: 430px;
+        }
+      }
+    </style>
+  </head>
   <body>
     <div class="topbar">
       <h1>🚗 VIP Party Live Route</h1>
-
       <p id="routeTitle"><%= route.routeName %></p>
     </div>
 
     <div class="container">
-      <!-- ================= STATS ================= -->
-
       <div class="stats">
         <div class="stat">
-          <div class="label">Total Members</div>
-
-          <div class="value blue" id="totalWorkers">0</div>
+          <div class="label">Live Speed</div>
+          <div class="value green" id="liveSpeed">0.0 km/h</div>
         </div>
 
         <div class="stat">
-          <div class="label">Nearby Members (10 km)</div>
-
-          <div class="value orange" id="nearbyWorkers">0</div>
+          <div class="label">Navigation</div>
+          <a
+            id="navigationBtn"
+            class="nav-link"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+            >🧭 Navigate</a
+          >
         </div>
 
         <div class="stat">
-          <div class="label">Email Sent</div>
-
-          <div class="value green" id="emailSent">0</div>
+          <div class="label">From → To</div>
+          <div class="value blue" id="journey">Loading...</div>
         </div>
 
         <div class="stat">
-          <div class="label">Email Remaining</div>
-
-          <div class="value red" id="emailRemaining">0</div>
+          <div class="label">Live Update</div>
+          <button type="button" class="refresh-btn" onclick="loadStatus()">
+            🔄 Refresh
+          </button>
         </div>
       </div>
 
-      <div class="layout">
-        <div>
-          <!-- ================= LIVE MAP ================= -->
-
-          <div class="card">
-            <div class="card-head">📍 Live Vehicle Location</div>
-
-            <div id="map"></div>
-
-            <div class="vehicle-box">
-              <div class="info">
-                <small> Status </small>
-
-                <strong id="vehicleStatus"> Waiting for driver GPS... </strong>
-              </div>
-
-              <div class="info">
-                <small> Speed </small>
-
-                <strong id="vehicleSpeed"> 0 km/h </strong>
-              </div>
-
-              <div class="info">
-                <small> Latitude </small>
-
-                <strong id="vehicleLat"> — </strong>
-              </div>
-
-              <div class="info">
-                <small> Longitude </small>
-
-                <strong id="vehicleLng"> — </strong>
-              </div>
-            </div>
-
-            <div class="last-update">
-              Last update:
-
-              <span id="lastUpdate"> — </span>
-            </div>
-
-            <div class="actions">
-              <a
-                id="navigationBtn"
-                href="#"
-                target="_blank"
-                class="btn btn-green"
-              >
-                🧭 Open Navigation
-              </a>
-
-              <button class="btn btn-blue" onclick="loadStatus()">
-                🔄 Refresh
-              </button>
-
-              <button class="btn btn-gray" onclick="copyCurrentLink()">
-                🔗 Copy Tracking Link
-              </button>
-            </div>
-          </div>
-
-          <!-- ================= ROUTE PATH ================= -->
-
-         
-        </div>
-
-        <!-- ================= WORKERS ================= -->
-
+      <div class="map-card">
+        <div class="map-head">📍 Live Vehicle Route</div>
+        <div id="map"></div>
+      </div>
     </div>
 
     <script>
       const ROUTE_ID = "<%= route._id %>";
-
-      /* =========================================================
-   MAP
-========================================================= */
 
       const map = L.map("map").setView([23.2599, 77.4126], 6);
 
@@ -485,246 +518,143 @@
         attribution: "&copy; OpenStreetMap contributors",
       }).addTo(map);
 
-      /* =========================================================
-   MARKERS
-========================================================= */
-
       let vehicleMarker = null;
-
-      let workerMarkers = {};
-
-      let routeLine = null;
-
-      /* Vehicle */
+      let plannedRouteLine = null;
+      let travelledRouteLine = null;
+      let travelledPoints = [];
+      let previousPosition = null;
+      let animationFrame = null;
+      let firstPosition = true;
 
       const vehicleIcon = L.divIcon({
         className: "",
-
         html: `
-
-<div style="
-width:32px;
-height:32px;
-background:#dc2626;
-border:3px solid #fff;
-border-radius:50%;
-box-shadow:
-0 0 0 4px
-rgba(220,38,38,.2);
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:17px;
-">
-🚗
-</div>
-
-`,
+        <div style="
+          width:38px;height:38px;background:#dc2626;
+          border:3px solid #fff;border-radius:50%;
+          box-shadow:0 0 0 4px rgba(220,38,38,.2),
+                     0 4px 12px rgba(0,0,0,.25);
+          display:flex;align-items:center;justify-content:center;
+          font-size:20px;
+        ">🚗</div>
+      `,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
       });
 
-      /* Nearby worker */
-
-      const workerNearIcon = L.divIcon({
-        className: "",
-
-        html: `
-
-<div style="
-width:20px;
-height:20px;
-background:#16a34a;
-border:3px solid #fff;
-border-radius:50%;
-box-shadow:
-0 2px 8px
-rgba(0,0,0,.25);
-">
-</div>
-
-`,
-      });
-
-      /* Normal worker */
-
-      const workerIcon = L.divIcon({
-        className: "",
-
-        html: `
-
-<div style="
-width:16px;
-height:16px;
-background:#2563eb;
-border:2px solid #fff;
-border-radius:50%;
-">
-</div>
-
-`,
-      });
-
-      /* =========================================================
-   ESCAPE HTML
-========================================================= */
-
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-
-          .replaceAll("<", "&lt;")
-
-          .replaceAll(">", "&gt;")
-
-          .replaceAll('"', "&quot;")
-
-          .replaceAll("'", "&#039;");
+      function validPoint(lat, lng) {
+        return (
+          Number.isFinite(Number(lat)) &&
+          Number.isFinite(Number(lng)) &&
+          !(Number(lat) === 0 && Number(lng) === 0)
+        );
       }
 
-      /* =========================================================
-   DATE
-========================================================= */
+      function updateNavigation(route) {
+        if (!validPoint(route.endLat, route.endLng)) return;
 
-      function formatDate(value) {
-        if (!value) {
-          return "—";
-        }
-
-        const date = new Date(value);
-
-        if (Number.isNaN(date.getTime())) {
-          return "—";
-        }
-
-        return date.toLocaleString();
+        document.getElementById("navigationBtn").href =
+          `https://www.google.com/maps/dir/?api=1&destination=${route.endLat},${route.endLng}&travelmode=driving`;
       }
 
-      /* =========================================================
-   ROUTE PATH
-========================================================= */
+      function animateVehicle(fromLat, fromLng, toLat, toLng) {
+        if (animationFrame) cancelAnimationFrame(animationFrame);
 
-      function renderRoutePath(route) {
-        const parts = [];
+        const start = performance.now();
+        const duration = 4500;
 
-        /* Start */
+        function frame(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const lat = fromLat + (toLat - fromLat) * progress;
+          const lng = fromLng + (toLng - fromLng) * progress;
 
-        if (
-          Number.isFinite(Number(route.startLat)) &&
-          Number.isFinite(Number(route.startLng))
-        ) {
-          parts.push({
-            type: "start",
+          if (vehicleMarker) vehicleMarker.setLatLng([lat, lng]);
 
-            name: route.startLocation || "Start Location",
-          });
+          if (progress < 1) {
+            animationFrame = requestAnimationFrame(frame);
+          }
         }
 
-        /* Waypoints */
+        animationFrame = requestAnimationFrame(frame);
+      }
 
-        (route.wayPointCoords || []).forEach((point) => {
-          parts.push({
-            type: "way",
+      function updateVehicle(route) {
+        if (!validPoint(route.currentLat, route.currentLng)) return;
 
-            name: point.name || "Waypoint",
-          });
-        });
+        const lat = Number(route.currentLat);
+        const lng = Number(route.currentLng);
 
-        /* End */
+        document.getElementById("liveSpeed").textContent =
+          `${Number(route.currentSpeed || 0).toFixed(1)} km/h`;
 
-        if (
-          Number.isFinite(Number(route.endLat)) &&
-          Number.isFinite(Number(route.endLng))
-        ) {
-          parts.push({
-            type: "end",
+        document.getElementById("journey").textContent =
+          `${route.startLocation || "Start"} → ${route.endLocation || "Destination"}`;
 
-            name: route.endLocation || "End Location",
-          });
-        }
+        updateNavigation(route);
 
-        if (!parts.length) {
-          document.getElementById("routePath").innerHTML =
-            "No route path available.";
+        if (!vehicleMarker) {
+          vehicleMarker = L.marker([lat, lng], { icon: vehicleIcon }).addTo(
+            map,
+          );
+          previousPosition = { lat, lng };
+          travelledPoints = [[lat, lng]];
 
+          travelledRouteLine = L.polyline(travelledPoints, {
+            color: "#16a34a",
+            weight: 7,
+            opacity: 0.95,
+          }).addTo(map);
+
+          map.setView([lat, lng], 13);
+          firstPosition = false;
           return;
         }
 
-        document.getElementById("routePath").innerHTML = parts
-          .map(
-            (item, index) => `
+        if (previousPosition.lat !== lat || previousPosition.lng !== lng) {
+          travelledPoints.push([lat, lng]);
 
-<div class="path-item">
+          if (travelledRouteLine) {
+            travelledRouteLine.setLatLngs(travelledPoints);
+          }
 
-<span
-class="dot ${item.type}">
-</span>
+          animateVehicle(previousPosition.lat, previousPosition.lng, lat, lng);
 
-<div>
+          previousPosition = { lat, lng };
 
-<strong>
-${index + 1}.
-${escapeHtml(item.name)}
-</strong>
-
-</div>
-
-</div>
-
-`,
-          )
-          .join("");
+          map.panTo([lat, lng], {
+            animate: true,
+            duration: 1,
+          });
+        }
       }
 
-      /* =========================================================
-   DRAW ROAD ROUTE
-========================================================= */
-
-      async function drawRoute(route) {
+      async function drawPlannedRoute(route) {
         const points = [];
 
-        /* Start */
-
-        if (
-          Number.isFinite(Number(route.startLat)) &&
-          Number.isFinite(Number(route.startLng))
-        ) {
+        if (validPoint(route.startLat, route.startLng)) {
           points.push({
             lat: Number(route.startLat),
-
             lng: Number(route.startLng),
           });
         }
 
-        /* Waypoints */
-
         (route.wayPointCoords || []).forEach((point) => {
           const lat = Number(point.lat);
-
           const lng = Number(point.lng ?? point.lon);
 
-          if (Number.isFinite(lat) && Number.isFinite(lng)) {
-            points.push({
-              lat,
-              lng,
-            });
+          if (validPoint(lat, lng)) {
+            points.push({ lat, lng });
           }
         });
 
-        /* End */
-
-        if (
-          Number.isFinite(Number(route.endLat)) &&
-          Number.isFinite(Number(route.endLng))
-        ) {
+        if (validPoint(route.endLat, route.endLng)) {
           points.push({
             lat: Number(route.endLat),
-
             lng: Number(route.endLng),
           });
         }
 
-        if (points.length < 2) {
-          return;
-        }
+        if (points.length < 2) return;
 
         const coordString = points
           .map((point) => `${point.lng},${point.lat}`)
@@ -737,237 +667,27 @@ ${escapeHtml(item.name)}
 
           const data = await response.json();
 
-          if (!data.routes || !data.routes.length) {
-            return;
-          }
+          if (!data.routes?.length) return;
 
           const latLngs = data.routes[0].geometry.coordinates.map((point) => [
             point[1],
             point[0],
           ]);
 
-          if (routeLine) {
-            map.removeLayer(routeLine);
+          if (plannedRouteLine) {
+            map.removeLayer(plannedRouteLine);
           }
 
-          routeLine = L.polyline(latLngs, {
-            color: "#2563eb",
-            weight: 6,
-            opacity: 0.8,
+          plannedRouteLine = L.polyline(latLngs, {
+            color: "#64748b",
+            weight: 5,
+            opacity: 0.55,
+            dashArray: "8 8",
           }).addTo(map);
         } catch (error) {
-          console.error("ROUTE DRAW ERROR:", error);
+          console.error("PLANNED ROUTE ERROR:", error);
         }
       }
-
-      /* =========================================================
-   WORKERS
-========================================================= */
-
-      function renderWorkers(workers) {
-        const container = document.getElementById("workers");
-
-        if (!workers.length) {
-          container.innerHTML = `
-
-<div style="
-padding:18px;
-color:#64748b;
-">
-
-No worker location found.
-
-</div>
-
-`;
-
-          return;
-        }
-
-        container.innerHTML = workers
-          .map((worker) => {
-            const location = [worker.village, worker.district]
-              .filter(Boolean)
-              .join(", ");
-
-            return `
-
-<div class="worker">
-
-<div class="worker-top">
-
-<div class="worker-name">
-
-${escapeHtml(worker.fullName)}
-
-</div>
-
-<span
-class="badge ${worker.nearby ? "badge-near" : "badge-far"}"
->
-
-${worker.nearby ? "NEAR" : "SAVED"}
-
-</span>
-
-</div>
-
-<div class="worker-meta">
-
-📍
-${escapeHtml(location || "Location saved")}
-
-<br>
-
-✉
-${escapeHtml(worker.email || "No email")}
-
-</div>
-
-<div class="email-state">
-
-${
-  worker.nearby && worker.emailSent
-    ? "✅ Email sent"
-    : worker.nearby
-      ? "⏳ Email pending"
-      : "— Outside 10 km"
-}
-
-</div>
-
-</div>
-
-`;
-          })
-          .join("");
-
-        /* Remove old markers */
-
-        Object.values(workerMarkers).forEach((marker) => {
-          map.removeLayer(marker);
-        });
-
-        workerMarkers = {};
-
-        /* Add worker markers */
-
-        workers.forEach((worker) => {
-          const lat = Number(worker.lat);
-
-          const lng = Number(worker.lng);
-
-          if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-            return;
-          }
-
-          const marker = L.marker([lat, lng], {
-            icon: worker.nearby ? workerNearIcon : workerIcon,
-          }).addTo(map);
-
-          marker.bindPopup(`
-
-<strong>
-${escapeHtml(worker.fullName)}
-</strong>
-
-<br>
-
-${escapeHtml(worker.email || "")}
-
-<br>
-
-${worker.nearby ? "🟢 Within 10 km" : "🔵 Saved worker location"}
-
-<br>
-
-${worker.emailSent ? "✅ Email sent" : "✉ Email pending"}
-
-`);
-
-          workerMarkers[worker._id] = marker;
-        });
-      }
-
-      /* =========================================================
-   UPDATE VEHICLE
-========================================================= */
-
-      function updateVehicle(route) {
-        if (
-          !Number.isFinite(Number(route.currentLat)) ||
-          !Number.isFinite(Number(route.currentLng))
-        ) {
-          document.getElementById("vehicleStatus").textContent =
-            "Waiting for driver GPS...";
-
-          return;
-        }
-
-        const lat = Number(route.currentLat);
-
-        const lng = Number(route.currentLng);
-
-        document.getElementById("vehicleStatus").textContent =
-          route.trackingEnabled ? "🟢 Live" : "🟡 Waiting";
-
-        document.getElementById("vehicleSpeed").textContent = `${Number(
-          route.currentSpeed || 0,
-        ).toFixed(1)} km/h`;
-
-        document.getElementById("vehicleLat").textContent = lat.toFixed(6);
-
-        document.getElementById("vehicleLng").textContent = lng.toFixed(6);
-
-        document.getElementById("lastUpdate").textContent = formatDate(
-          route.lastUpdated,
-        );
-
-        /* Vehicle marker */
-
-        if (!vehicleMarker) {
-          vehicleMarker = L.marker([lat, lng], {
-            icon: vehicleIcon,
-          }).addTo(map);
-        } else {
-          vehicleMarker.setLatLng([lat, lng]);
-        }
-
-        vehicleMarker.bindPopup(`
-
-<strong>
-🚗 VIP Party Vehicle
-</strong>
-
-<br>
-
-Speed:
-${Number(route.currentSpeed || 0).toFixed(1)}
-km/h
-
-<br>
-
-${lat.toFixed(6)},
-${lng.toFixed(6)}
-
-`);
-
-        map.setView([lat, lng], Math.max(map.getZoom(), 11));
-
-        /* Navigation */
-
-        if (
-          Number.isFinite(Number(route.endLat)) &&
-          Number.isFinite(Number(route.endLng))
-        ) {
-          document.getElementById("navigationBtn").href =
-            `https://www.google.com/maps/dir/?api=1&destination=${route.endLat},${route.endLng}&travelmode=driving`;
-        }
-      }
-
-      /* =========================================================
-   LOAD LIVE STATUS
-========================================================= */
 
       async function loadStatus() {
         try {
@@ -981,72 +701,20 @@ ${lng.toFixed(6)}
             throw new Error(data.message || "Unable to load tracking");
           }
 
-          /* Route title */
+          const route = data.route;
 
           document.getElementById("routeTitle").textContent =
-            `${data.route.routeName}
- •
-${data.route.status}`;
+            `${route.routeName} • ${route.status}`;
 
-          /* Stats */
+          updateVehicle(route);
 
-          document.getElementById("totalWorkers").textContent =
-            data.stats.totalWorkers;
-
-          document.getElementById("nearbyWorkers").textContent =
-            data.stats.nearbyWorkers;
-
-          document.getElementById("emailSent").textContent =
-            data.stats.emailSent;
-
-          document.getElementById("emailRemaining").textContent =
-            data.stats.emailRemaining;
-
-          /* Vehicle */
-
-          updateVehicle(data.route);
-
-          /* Workers */
-
-          renderWorkers(data.workers);
-
-          /* Route path */
-
-          renderRoutePath(data.route);
-
-          /* Road route */
-
-          await drawRoute(data.route);
+          await drawPlannedRoute(route);
         } catch (error) {
           console.error("TRACK STATUS ERROR:", error);
-
-          document.getElementById("vehicleStatus").textContent =
-            "Unable to load live status";
         }
       }
-
-      /* =========================================================
-   COPY CURRENT TRACKING LINK
-========================================================= */
-
-      function copyCurrentLink() {
-        const url = window.location.href;
-
-        if (navigator.clipboard && window.isSecureContext) {
-          navigator.clipboard
-            .writeText(url)
-            .then(() => alert("Tracking link copied."))
-            .catch(() => prompt("Copy tracking link:", url));
-        } else {
-          prompt("Copy tracking link:", url);
-        }
-      }
-
-      /* First load */
 
       loadStatus();
-
-      /* Live refresh every 5 sec */
 
       setInterval(loadStatus, 5000);
     </script>

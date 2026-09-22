@@ -316,6 +316,7 @@ export const addRoute = async (req, res) => {
       sentAt: null,
 
       emailSentWorkerIds: [],
+      notificationSentWorkerIds: [],
     });
 
     console.log("=================================");
@@ -344,7 +345,7 @@ export const addRoute = async (req, res) => {
 
         type: "route",
 
-        routeId: route._id,
+        relatedId: route._id,
       });
     } catch (notificationError) {
       console.error("ROUTE NOTIFICATION ERROR:", notificationError);
@@ -503,6 +504,7 @@ export const sendRoute = async (req, res) => {
     ========================================= */
 
     route.emailSentWorkerIds = [];
+    route.notificationSentWorkerIds = [];
 
     await route.save();
 

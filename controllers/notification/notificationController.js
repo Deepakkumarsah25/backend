@@ -1,364 +1,186 @@
+import mongoose from "mongoose";
 import Notification from "../../models/Notification.js";
+import User from "../../models/User.js";
 
+const resolveUser = async (req) => {
+  if (req.user?._id) return req.user;
 
-// =====================================================
-// GET ALL NOTIFICATIONS
-// =====================================================
+  const uid = req.headers["x-dev-uid"] || req.headers["x-user-uid"];
+  if (!uid) return null;
+
+  return User.findOne({ uid: String(uid) });
+};
+
+const getUserFilter = (userId) => ({
+  $or: [
+    { userId, deletedBy: { $ne: userId } },
+    { userId: null, deletedBy: { $ne: userId } },
+  ],
+});
 
 export const getNotifications = async (req, res) => {
   try {
+    const user = await resolveUser(req);
+    const userId = user?._id || null;
 
-    const userId = req.user?._id || null;
+    const filter = userId
+      ? getUserFilter(userId)
+      : { userId: null };
 
-    let filter;
+    const notifications = await Notification.find(filter)
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (userId) {
+    const unreadCount = notifications.filter((item) => !item.isRead).length;
 
-filter = {
-  $or: [
-    {
-      userId: userId,
-      deletedBy: { $ne: userId },
-    },
-    {
-      userId: null,
-      deletedBy: { $ne: userId },
-    },
-  ],
-};
-
-    } else {
-
-      filter = {
-        userId: null
-      };
-
-    }
-
-    const notifications =
-      await Notification.find(filter)
-        .sort({
-          createdAt: -1
-        })
-        .lean();
-
-    const unreadCount =
-      notifications.filter(
-        (item) => !item.isRead
-      ).length;
-
-    res.status(200).json({
-
+    return res.status(200).json({
       success: true,
-
       notifications,
-
       unreadCount,
-
     });
-
   } catch (error) {
-
-    console.error(
-      "Get Notifications Error:",
-      error
-    );
-
-    res.status(500).json({
-
+    console.error("Get Notifications Error:", error);
+    return res.status(500).json({
       success: false,
-
-      message:
-        "Failed to get notifications",
-
+      message: "Failed to get notifications",
     });
-
   }
 };
 
-
-
-// =====================================================
-// GET UNREAD COUNT
-// =====================================================
-
-export const getUnreadCount = async (
-  req,
-  res
-) => {
-
+export const getUnreadCount = async (req, res) => {
   try {
+    const user = await resolveUser(req);
+    const userId = user?._id || null;
 
-    const userId =
-      req.user?._id || null;
+    const filter = userId
+      ? { isRead: false, ...getUserFilter(userId) }
+      : { isRead: false, userId: null };
 
-    let filter;
+    const unreadCount = await Notification.countDocuments(filter);
 
-    if (userId) {
-
-    filter = {
-      isRead: false,
-
-      $or: [
-        {
-          userId: userId,
-          deletedBy: { $ne: userId },
-        },
-        {
-          userId: null,
-          deletedBy: { $ne: userId },
-        },
-      ],
-    };
-
-    } else {
-
-      filter = {
-        isRead: false,
-        userId: null
-      };
-
-    }
-
-    const unreadCount =
-      await Notification.countDocuments(
-        filter
-      );
-
-    res.status(200).json({
-
-      success: true,
-
-      unreadCount,
-
-    });
-
+    return res.status(200).json({ success: true, unreadCount });
   } catch (error) {
-
-    console.error(
-      "Unread Count Error:",
-      error
-    );
-
-    res.status(500).json({
-
+    console.error("Unread Count Error:", error);
+    return res.status(500).json({
       success: false,
-
-      message:
-        "Failed to get unread count",
-
+      message: "Failed to get unread count",
     });
-
   }
 };
 
+export const markNotificationRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await resolveUser(req);
+    const userId = user?._id || null;
 
-
-// =====================================================
-// MARK ONE NOTIFICATION AS READ
-// =====================================================
-
-export const markNotificationRead =
-  async (req, res) => {
-
-    try {
-
-      const { id } = req.params;
-
-      const notification =
-        await Notification.findByIdAndUpdate(
-
-          id,
-
-          {
-            $set: {
-              isRead: true
-            }
-          },
-
-          {
-            new: true
-          }
-
-        );
-
-      if (!notification) {
-
-        return res.status(404).json({
-
-          success: false,
-
-          message:
-            "Notification not found",
-
-        });
-
-      }
-
-      res.status(200).json({
-
-        success: true,
-
-        message:
-          "Notification marked as read",
-
-        notification,
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Mark Read Error:",
-        error
-      );
-
-      res.status(500).json({
-
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
         success: false,
-
-        message:
-          "Failed to mark notification",
-
+        message: "Invalid notification ID",
       });
-
     }
-  };
 
-
-
-// =====================================================
-// MARK ALL AS READ
-// =====================================================
-
-export const markAllNotificationsRead =
-  async (req, res) => {
-
-    try {
-
-      const userId =
-        req.user?._id || null;
-
-      let filter;
-
-      if (userId) {
-
-        filter = {
-          isRead: false,
-
-          $or: [
-            { userId: userId },
-            { userId: null }
-          ]
-        };
-
-      } else {
-
-        filter = {
-          isRead: false,
-          userId: null
-        };
-
-      }
-
-      await Notification.updateMany(
-
-        filter,
-
-        {
-          $set: {
-            isRead: true
-          }
+    const ownership = userId
+      ? {
+          _id: id,
+          $or: [{ userId }, { userId: null }],
         }
+      : { _id: id, userId: null };
 
-      );
+    const notification = await Notification.findOneAndUpdate(
+      ownership,
+      { $set: { isRead: true } },
+      { new: true }
+    );
 
-      res.status(200).json({
-
-        success: true,
-
-        message:
-          "All notifications marked as read",
-
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Mark All Read Error:",
-        error
-      );
-
-      res.status(500).json({
-
+    if (!notification) {
+      return res.status(404).json({
         success: false,
-
-        message: "Failed",
-
+        message: "Notification not found",
       });
-
     }
-  };
 
+    return res.status(200).json({
+      success: true,
+      message: "Notification marked as read",
+      notification,
+    });
+  } catch (error) {
+    console.error("Mark Read Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to mark notification",
+    });
+  }
+};
 
+export const markAllNotificationsRead = async (req, res) => {
+  try {
+    const user = await resolveUser(req);
+    const userId = user?._id || null;
 
-// =====================================================
-// DELETE NOTIFICATION
-// =====================================================
+    const filter = userId
+      ? { isRead: false, ...getUserFilter(userId) }
+      : { isRead: false, userId: null };
 
-export const deleteNotification =
-  async (req, res) => {
+    await Notification.updateMany(filter, { $set: { isRead: true } });
 
-    try {
+    return res.status(200).json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+  } catch (error) {
+    console.error("Mark All Read Error:", error);
+    return res.status(500).json({ success: false, message: "Failed" });
+  }
+};
 
-      const { id } = req.params;
-      const userId = req.user?._id;
+export const deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await resolveUser(req);
+    const userId = user?._id;
 
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: "User not found",
-        });
-      }
-
-      const notification =
-        await Notification.findByIdAndUpdate(
-          id,
-          {
-            $addToSet: {
-              deletedBy: userId,
-            },
-          },
-          {
-            new: true,
-          }
-        );
-
-      if (!notification) {
-
-        return res.status(404).json({
-          success: false,
-          message: "Notification not found",
-        });
-
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Notification deleted",
-      });
-
-    } catch (error) {
-
-      console.error(
-        "Delete Notification Error:",
-        error
-      );
-
-      res.status(500).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        message: "Failed to delete notification",
+        message: "User not found",
       });
-
     }
-  };
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid notification ID",
+      });
+    }
+
+    const notification = await Notification.findOneAndUpdate(
+      {
+        _id: id,
+        $or: [{ userId }, { userId: null }],
+      },
+      { $addToSet: { deletedBy: userId } },
+      { new: true }
+    );
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Notification deleted",
+    });
+  } catch (error) {
+    console.error("Delete Notification Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete notification",
+    });
+  }
+};

@@ -4,15 +4,15 @@ import Tracking from "../../models/Tracking.js";
 import Route from "../../models/Route.js";
 import Driver from "../../models/Driver.js";
 import Worker from "../../models/Worker.js";
+import User from "../../models/User.js";
 
-import {
-  findNearbyWorkers,
-} from "../../services/routeMatchingService.js";
+import { findNearbyWorkers } from "../../services/routeMatchingService.js";
 
-import {
-  sendEmail,
-} from "../../services/emailService.js";
+import { sendEmail } from "../../services/emailService.js";
 
+import { createMemberNotification } from "../../services/notificationService.js";
+
+import { sendPushNotificationToUser } from "../../services/pushNotificationService.js";
 
 /* =========================================================
    PUBLIC BASE URL
@@ -20,32 +20,23 @@ import {
 
 const getPublicBaseUrl = (req) => {
   return (
-    process.env.PUBLIC_BASE_URL ||
-    `${req.protocol}://${req.get("host")}`
+    process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`
   ).replace(/\/$/, "");
 };
-
 
 /* =========================================================
    TRACK URL
 ========================================================= */
 
-const buildTrackUrl = (
-  req,
-  routeId
-) => {
+const buildTrackUrl = (req, routeId) => {
   return `${getPublicBaseUrl(req)}/track/${routeId}`;
 };
-
 
 /* =========================================================
    GPS VALIDATION
 ========================================================= */
 
-const isValidGps = (
-  lat,
-  lng
-) => {
+const isValidGps = (lat, lng) => {
   const numericLat = Number(lat);
   const numericLng = Number(lng);
 
@@ -60,30 +51,16 @@ const isValidGps = (
   );
 };
 
-
 /* =========================================================
    WORKER COORDINATES
 ========================================================= */
 
-const getWorkerCoords = (
-  worker
-) => {
-  const lat = Number(
-    worker?.location?.lat ??
-    worker?.lat
-  );
+const getWorkerCoords = (worker) => {
+  const lat = Number(worker?.location?.lat ?? worker?.lat);
 
-  const lng = Number(
-    worker?.location?.lng ??
-    worker?.lng
-  );
+  const lng = Number(worker?.location?.lng ?? worker?.lng);
 
-  if (
-    !isValidGps(
-      lat,
-      lng
-    )
-  ) {
+  if (!isValidGps(lat, lng)) {
     return null;
   }
 
@@ -92,7 +69,6 @@ const getWorkerCoords = (
     lng,
   };
 };
-
 
 /* =========================================================
    WORKER EMAIL HTML
@@ -107,10 +83,7 @@ const buildWorkerEmailHtml = ({
   numericSpeed,
   trackUrl,
 }) => {
-
-  const endLocation =
-    route?.endLocation ||
-    "Destination";
+  const endLocation = route?.endLocation || "गंतव्य";
 
   return `
 <!DOCTYPE html>
@@ -200,64 +173,59 @@ const buildWorkerEmailHtml = ({
     <div class="header">
 
       <h1>
-        🚩 VIP Party Vehicle Alert
+        🚩 वीआईपी पार्टी वाहन सूचना
       </h1>
 
       <p>
-        VIP Party ka vehicle
-        aapke area ke paas
-        pahunch raha hai.
+        वीआईपी पार्टी का वाहन
+        आपके क्षेत्र के पास
+        पहुँच रहा है।
       </p>
 
     </div>
 
-
     <div class="content">
 
       <h2>
-        Namaskar
-        ${worker?.fullName || "Ji"},
+        नमस्कार
+        ${worker?.fullName || "जी"},
       </h2>
 
       <p>
-        VIP Party ka vehicle
-        aapke area ke 10 kilometer
-        ke dayre mein hai.
+        वीआईपी पार्टी का वाहन
+        आपके क्षेत्र के 10 किलोमीटर
+        के दायरे में है।
       </p>
 
       <p>
-        Kripya avashyak taiyari rakhein
-        aur aas-paas ke logon tak
-        karyakram ki jankari pahunchayein.
+        कृपया आवश्यक तैयारी रखें
+        और आसपास के लोगों तक
+        कार्यक्रम की जानकारी पहुँचाएँ।
       </p>
-
 
       <div class="info-box">
 
         <p>
-          <strong>Route:</strong>
-          ${route?.routeName || "VIP Party Route"}
+          <strong>मार्ग:</strong>
+          ${route?.routeName || "वीआईपी पार्टी मार्ग"}
         </p>
 
         <p>
-          <strong>Speed:</strong>
-          ${Number(
-            numericSpeed || 0
-          ).toFixed(2)} km/h
+          <strong>गति:</strong>
+          ${Number(numericSpeed || 0).toFixed(2)} किमी/घंटा
         </p>
 
         <p>
-          <strong>Destination:</strong>
+          <strong>गंतव्य:</strong>
           ${endLocation}
         </p>
 
         <p>
-          <strong>Time:</strong>
-          ${new Date().toLocaleString()}
+          <strong>समय:</strong>
+          ${new Date().toLocaleString("hi-IN")}
         </p>
 
       </div>
-
 
       <center>
 
@@ -267,7 +235,7 @@ const buildWorkerEmailHtml = ({
           target="_blank"
           rel="noopener noreferrer"
         >
-          📍 Open Live Tracking
+          📍 लाइव ट्रैकिंग देखें
         </a>
 
         <br>
@@ -275,26 +243,25 @@ const buildWorkerEmailHtml = ({
         <a
           class="btn btn-green"
           href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-            endLocation
+            endLocation,
           )}&travelmode=driving"
           target="_blank"
           rel="noopener noreferrer"
         >
-          🧭 Open Route Navigation
+          🧭 मार्ग नेविगेशन खोलें
         </a>
 
       </center>
 
     </div>
 
-
     <div class="footer">
 
-      VIP Party Tracking System
+      वीआईपी पार्टी लाइव ट्रैकिंग सिस्टम
 
       <br>
 
-      This is an automated notification.
+      यह एक स्वचालित सूचना है।
 
     </div>
 
@@ -305,6 +272,167 @@ const buildWorkerEmailHtml = ({
 `;
 };
 
+/* =========================================================
+   MEMBER MATCH + DETAILED APP NOTIFICATION
+
+   Worker is an admin/contact record. User is the logged-in
+   Firebase account. We match by email first, then phone.
+========================================================= */
+
+const findMemberUserForWorker = async (worker) => {
+  const email = String(worker?.email || "")
+    .trim()
+    .toLowerCase();
+
+  const phone = String(worker?.phone || "").trim();
+
+  if (email) {
+    const byEmail = await User.findOne({
+      email: {
+        $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+        $options: "i",
+      },
+    });
+
+    if (byEmail) return byEmail;
+  }
+
+  if (phone) {
+    const byPhone = await User.findOne({
+      phone,
+    });
+
+    if (byPhone) return byPhone;
+  }
+
+  return null;
+};
+
+const sendMemberAppNotification = async ({
+  worker,
+  route,
+  routeId,
+  speed,
+  trackUrl,
+  navigationUrl,
+}) => {
+  try {
+    const user = await findMemberUserForWorker(worker);
+
+    if (!user || !user.membershipId) {
+      return {
+        member: false,
+        userId: null,
+        notification: null,
+      };
+    }
+
+    const numericSpeed = Number(speed || 0);
+
+    const destination =
+      route?.endLocation || "Destination";
+
+    const title =
+      "🚗 VIP पार्टी वाहन अलर्ट";
+
+    const message =
+      "VIP पार्टी का वाहन आपके क्षेत्र से लगभग 10 किलोमीटर के दायरे में पहुँच चुका है।";
+
+    const notification =
+      await createMemberNotification({
+        userId: user._id,
+
+        title,
+
+        message,
+
+        type: "route",
+
+        relatedId: routeId,
+
+        actionType: "tracking",
+
+        deepLink: `/track/${routeId}`,
+
+        actionUrl: trackUrl,
+
+        metadata: {
+          workerName:
+            worker?.fullName || "",
+
+          routeName:
+            route?.routeName ||
+            "VIP Party Route",
+
+          speed: numericSpeed,
+
+          destination,
+
+          time: new Date().toISOString(),
+
+          trackUrl,
+
+          navigationUrl,
+        },
+      });
+
+    await sendPushNotificationToUser({
+      userId: user._id,
+
+      title,
+
+      body: message,
+
+      data: {
+        type: "route",
+
+        actionType: "tracking",
+
+        routeId: String(routeId),
+
+        deepLink: `/track/${routeId}`,
+
+        actionUrl: trackUrl,
+
+        title,
+
+        message,
+      },
+    });
+
+    console.log(
+      "✅ MEMBER APP NOTIFICATION SENT:",
+      {
+        worker: worker?.fullName,
+
+        userId: String(user._id),
+
+        membershipId: user.membershipId,
+      },
+    );
+
+    return {
+      member: true,
+
+      userId: user._id,
+
+      notification,
+    };
+  } catch (error) {
+    console.error(
+      "MEMBER APP NOTIFICATION ERROR:",
+      error,
+    );
+
+    return {
+      member: false,
+
+      userId: null,
+
+      notification: null,
+    };
+  }
+};
 
 /* =========================================================
    SEND EMAIL TO NEARBY WORKERS
@@ -317,84 +445,124 @@ const sendNearbyWorkerEmails = async ({
   nearbyWorkers,
   speed,
 }) => {
-
-  const sentIds =
-    new Set(
-      (
-        route.emailSentWorkerIds ||
-        []
-      ).map(
-        (id) =>
-          String(id)
-      )
-    );
+  const sentIds = new Set(
+    (route.emailSentWorkerIds || []).map(
+      (id) => String(id),
+    ),
+  );
 
   const trackUrl =
-    buildTrackUrl(
-      req,
-      routeId
-    );
+    buildTrackUrl(req, routeId);
 
   let emailSent = 0;
   let emailFailed = 0;
 
-  for (
-    const worker of nearbyWorkers
-  ) {
-
+  for (const worker of nearbyWorkers) {
     const workerId =
-      String(
-        worker._id
-      );
+      String(worker._id);
 
-    if (
-      sentIds.has(
-        workerId
-      )
-    ) {
+    if (sentIds.has(workerId)) {
       continue;
     }
 
-    if (
-      !worker.email
-    ) {
+    const trackUrlForMember =
+      buildTrackUrl(req, routeId);
+
+    const navigationUrlForMember =
+      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+        route?.endLocation ||
+          "Destination",
+      )}&travelmode=driving`;
+
+    const notificationAlreadySent =
+      (
+        route.notificationSentWorkerIds ||
+        []
+      ).some(
+        (id) =>
+          String(id) ===
+          String(worker._id),
+      );
+
+    let memberResult = {
+      member: false,
+    };
+
+    if (!notificationAlreadySent) {
+      memberResult =
+        await sendMemberAppNotification({
+          worker,
+
+          route,
+
+          routeId,
+
+          speed,
+
+          trackUrl:
+            trackUrlForMember,
+
+          navigationUrl:
+            navigationUrlForMember,
+        });
+
+      if (memberResult.member) {
+        await Route.findByIdAndUpdate(
+          routeId,
+          {
+            $addToSet: {
+              notificationSentWorkerIds:
+                worker._id,
+            },
+          },
+        );
+
+        if (
+          Array.isArray(
+            route.notificationSentWorkerIds,
+          )
+        ) {
+          route.notificationSentWorkerIds.push(
+            worker._id,
+          );
+        }
+      }
+    }
+
+    if (!worker.email) {
       console.log(
         "SKIP EMAIL - no email:",
-        worker.fullName
+        worker.fullName,
       );
 
       continue;
     }
 
     try {
-
       await sendEmail(
         worker.email,
 
-        "🚗 VIP Party Vehicle Alert",
+        "🚗 VIP पार्टी वाहन अलर्ट",
 
         buildWorkerEmailHtml({
           worker,
-          route,
-          numericSpeed: speed,
-          trackUrl,
-        })
-      );
 
+          route,
+
+          numericSpeed: speed,
+
+          trackUrl,
+        }),
+      );
 
       await Worker.findByIdAndUpdate(
         worker._id,
         {
-          lastAlertAt:
-            new Date(),
-        }
+          lastAlertAt: new Date(),
+        },
       );
 
-
-      sentIds.add(
-        workerId
-      );
-
+      sentIds.add(workerId);
 
       await Route.findByIdAndUpdate(
         routeId,
@@ -403,39 +571,35 @@ const sendNearbyWorkerEmails = async ({
             emailSentWorkerIds:
               worker._id,
           },
-        }
+        },
       );
-
 
       emailSent += 1;
 
       console.log(
         "✅ EMAIL SENT:",
-        worker.email
+        worker.email,
       );
-
     } catch (error) {
-
       emailFailed += 1;
 
       console.error(
         "❌ EMAIL SEND FAILED:",
-        worker.email
+        worker.email,
       );
 
-      console.error(
-        error
-      );
+      console.error(error);
     }
   }
 
   return {
     emailSent,
+
     emailFailed,
+
     sentIds,
   };
 };
-
 
 /* =========================================================
    TRACKING PAGE
@@ -443,180 +607,187 @@ const sendNearbyWorkerEmails = async ({
 
 export const trackingPage = async (
   req,
-  res
+  res,
 ) => {
-
   try {
-
-    const {
-      routeId,
-    } = req.params;
+    const { routeId } =
+      req.params;
 
     if (
       !mongoose.Types.ObjectId.isValid(
-        routeId
+        routeId,
       )
     ) {
       return res
         .status(400)
-        .send(
-          "Invalid Route ID"
-        );
+        .send("Invalid Route ID");
     }
 
     const route =
       await Route.findById(
-        routeId
+        routeId,
       ).lean();
 
     if (!route) {
       return res
         .status(404)
-        .send(
-          "Route Not Found"
-        );
+        .send("Route Not Found");
     }
 
     return res.render(
       "Tracking/track",
       {
         route,
-      }
+      },
     );
-
   } catch (error) {
-
     console.error(
       "TRACKING PAGE ERROR:",
-      error
+      error,
     );
 
     return res
       .status(500)
       .send(
-        "Tracking Page Error"
+        "Tracking Page Error",
       );
   }
 };
 
-
 /* =========================================================
    LIVE STATUS API
-
-   IMPORTANT:
-   Workers array public response me nahi bhej rahe.
 ========================================================= */
 
 export const trackingStatus = async (
   req,
-  res
+  res,
 ) => {
-
   try {
-
-    const {
-      routeId,
-    } = req.params;
+    const { routeId } =
+      req.params;
 
     if (
       !mongoose.Types.ObjectId.isValid(
-        routeId
+        routeId,
       )
     ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            "Invalid Route ID",
-        });
-    }
+      return res.status(400).json({
+        success: false,
 
+        message:
+          "Invalid Route ID",
+      });
+    }
 
     const route =
       await Route.findById(
-        routeId
+        routeId,
       ).lean();
 
     if (!route) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message:
-            "Route Not Found",
-        });
+      return res.status(404).json({
+        success: false,
+
+        message:
+          "Route Not Found",
+      });
     }
-
-
-    /* =========================================
-       FIND NEARBY WORKERS ONLY FOR COUNT
-       Not returned to frontend.
-    ========================================= */
 
     let nearbyWorkers = [];
 
     if (
       isValidGps(
         route.currentLat,
-        route.currentLng
+        route.currentLng,
       )
     ) {
+      try {
+        nearbyWorkers =
+          await findNearbyWorkers(
+            Number(route.currentLat),
 
-      nearbyWorkers =
-        await findNearbyWorkers(
-          Number(
-            route.currentLat
-          ),
-          Number(
-            route.currentLng
-          ),
-          10
+            Number(route.currentLng),
+
+            10,
+          );
+      } catch (workerError) {
+        console.error(
+          "TRACKING STATUS WORKER MATCH ERROR:",
+          workerError,
         );
+
+        nearbyWorkers = [];
+      }
     }
 
-
-    const sentIds =
-      new Set(
-        (
-          route.emailSentWorkerIds ||
-          []
-        ).map(
-          (id) =>
-            String(id)
+    const trackingHistory =
+      await Tracking.find({
+        routeId: route._id,
+      })
+        .sort({
+          createdAt: 1,
+          _id: 1,
+        })
+        .limit(1500)
+        .select(
+          "lat lng speed createdAt",
         )
-      );
+        .lean();
 
+    const history =
+      trackingHistory
+        .filter((point) =>
+          isValidGps(
+            point.lat,
+            point.lng,
+          ),
+        )
+        .map((point) => ({
+          lat: Number(point.lat),
+
+          lng: Number(point.lng),
+
+          speed: Number(
+            point.speed || 0,
+          ),
+
+          timestamp:
+            point.createdAt ||
+            null,
+        }));
+
+    const sentIds = new Set(
+      (
+        route.emailSentWorkerIds ||
+        []
+      ).map(
+        (id) => String(id),
+      ),
+    );
 
     const emailSentCount =
       nearbyWorkers.filter(
         (worker) =>
           sentIds.has(
-            String(
-              worker._id
-            )
-          )
+            String(worker._id),
+          ),
       ).length;
-
 
     const emailRemainingCount =
       Math.max(
         nearbyWorkers.length -
           emailSentCount,
-        0
+
+        0,
       );
 
-
     return res.json({
-
       success: true,
 
       route: {
-
-        _id:
-          String(
-            route._id
-          ),
+        _id: String(
+          route._id,
+        ),
 
         routeName:
           route.routeName,
@@ -659,11 +830,6 @@ export const trackingStatus = async (
           route.durationMin ||
           0,
 
-        /*
-          GPS frontend map ke liye
-          internal use me aa raha hai.
-        */
-
         currentLat:
           route.currentLat ??
           null,
@@ -682,16 +848,11 @@ export const trackingStatus = async (
         lastUpdated:
           route.updatedAt ||
           null,
-
       },
 
-
-      /*
-        Worker list REMOVE
-      */
+      history,
 
       stats: {
-
         totalWorkers:
           nearbyWorkers.length,
 
@@ -703,32 +864,23 @@ export const trackingStatus = async (
 
         emailRemaining:
           emailRemainingCount,
-
       },
-
     });
-
   } catch (error) {
-
     console.error(
       "TRACKING STATUS ERROR:",
-      error
+      error,
     );
 
-    return res
-      .status(500)
-      .json({
+    return res.status(500).json({
+      success: false,
 
-        success: false,
-
-        message:
-          error.message ||
-          "Tracking status failed",
-
-      });
+      message:
+        error.message ||
+        "Tracking status failed",
+    });
   }
 };
-
 
 /* =========================================================
    START TRACKING
@@ -736,79 +888,60 @@ export const trackingStatus = async (
 
 export const startTracking = async (
   req,
-  res
+  res,
 ) => {
-
   try {
-
-    const {
-      routeId,
-    } = req.params;
-
+    const { routeId } =
+      req.params;
 
     if (
       !mongoose.Types.ObjectId.isValid(
-        routeId
+        routeId,
       )
     ) {
+      return res.status(400).json({
+        success: false,
 
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            "Invalid Route ID",
-        });
+        message:
+          "Invalid Route ID",
+      });
     }
-
 
     const route =
       await Route.findById(
-        routeId
+        routeId,
       );
 
     if (!route) {
+      return res.status(404).json({
+        success: false,
 
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message:
-            "Route Not Found",
-        });
+        message:
+          "Route Not Found",
+      });
     }
 
-
     const startLat =
-      Number(
-        route.startLat
-      );
+      Number(route.startLat);
 
     const startLng =
-      Number(
-        route.startLng
-      );
-
+      Number(route.startLng);
 
     if (
       !isValidGps(
         startLat,
-        startLng
+        startLng,
       )
     ) {
+      return res.status(400).json({
+        success: false,
 
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message:
-            "Route start GPS is missing.",
-        });
+        message:
+          "Route start GPS is missing.",
+      });
     }
 
-
-    route.status =
-      "Running";
+    route.status = "Running";
 
     route.sentAt =
       route.sentAt ||
@@ -820,8 +953,7 @@ export const startTracking = async (
     route.currentLng =
       startLng;
 
-    route.currentSpeed =
-      0;
+    route.currentSpeed = 0;
 
     route.trackingEnabled =
       true;
@@ -829,104 +961,86 @@ export const startTracking = async (
     route.emailSentWorkerIds =
       [];
 
-
     await route.save();
-
 
     const selectedDriverId =
       route.driverId
-        ? String(
-            route.driverId
-          )
+        ? String(route.driverId)
         : null;
-
 
     if (
       selectedDriverId &&
       mongoose.Types.ObjectId.isValid(
-        selectedDriverId
+        selectedDriverId,
       )
     ) {
-
       await Driver.findByIdAndUpdate(
         selectedDriverId,
         {
-          currentLat:
-            startLat,
+          currentLat: startLat,
 
-          currentLng:
-            startLng,
+          currentLng: startLng,
 
-          speed:
-            0,
-        }
+          speed: 0,
+        },
       );
     }
 
-
     await Tracking.create({
-
-      routeId:
-        route._id,
+      routeId: route._id,
 
       driverId:
         selectedDriverId ||
         null,
 
-      lat:
-        startLat,
+      lat: startLat,
 
-      lng:
-        startLng,
+      lng: startLng,
 
-      speed:
-        0,
-
+      speed: 0,
     });
-
 
     const nearbyWorkers =
       await findNearbyWorkers(
         startLat,
         startLng,
-        10
+        10,
       );
-
 
     const emailResult =
       await sendNearbyWorkerEmails({
         req,
+
         route,
+
         routeId,
+
         nearbyWorkers,
+
         speed: 0,
       });
 
-
     const updatedRoute =
       await Route.findById(
-        routeId
+        routeId,
       ).lean();
-
 
     const sentCount =
       Number(
         updatedRoute
           ?.emailSentWorkerIds
-          ?.length || 0
+          ?.length || 0,
       );
-
 
     const emailRemaining =
       Math.max(
         nearbyWorkers.length -
           sentCount,
-        0
+
+        0,
       );
 
-
     return res.json({
-
       success: true,
 
       message:
@@ -943,8 +1057,7 @@ export const startTracking = async (
       currentLng:
         startLng,
 
-      currentSpeed:
-        0,
+      currentSpeed: 0,
 
       nearbyWorkers:
         nearbyWorkers.length,
@@ -960,64 +1073,50 @@ export const startTracking = async (
       trackUrl:
         buildTrackUrl(
           req,
-          routeId
+          routeId,
         ),
-
     });
-
   } catch (error) {
-
     console.error(
       "START TRACKING ERROR:",
-      error
+      error,
     );
 
-    return res
-      .status(500)
-      .json({
+    return res.status(500).json({
+      success: false,
 
-        success: false,
-
-        message:
-          error.message ||
-          "Unable to start tracking",
-
-      });
+      message:
+        error.message ||
+        "Unable to start tracking",
+    });
   }
 };
 
-
-/* =========================================================
-   LIVE GPS UPDATE
-========================================================= */
 /* =========================================================
    LIVE GPS UPDATE
 ========================================================= */
 
 export const updateTracking = async (
   req,
-  res
+  res,
 ) => {
-
   try {
-
     console.log(
-      "========================================="
+      "=========================================",
     );
 
     console.log(
-      "TRACKING API HIT"
+      "TRACKING API HIT",
     );
 
     console.log(
       "REQUEST BODY:",
-      req.body
+      req.body,
     );
 
     console.log(
-      "========================================="
+      "=========================================",
     );
-
 
     /* =========================================
        REQUEST DATA
@@ -1031,7 +1130,6 @@ export const updateTracking = async (
       speed,
     } = req.body;
 
-
     /* =========================================
        VALIDATE ROUTE ID
     ========================================= */
@@ -1039,23 +1137,16 @@ export const updateTracking = async (
     if (
       !routeId ||
       !mongoose.Types.ObjectId.isValid(
-        routeId
+        routeId,
       )
     ) {
+      return res.status(400).json({
+        success: false,
 
-      return res
-        .status(400)
-        .json({
-
-          success: false,
-
-          message:
-            "Valid routeId is required",
-
-        });
-
+        message:
+          "Valid routeId is required",
+      });
     }
-
 
     /* =========================================
        GPS
@@ -1070,198 +1161,60 @@ export const updateTracking = async (
     let numericSpeed =
       Number(speed);
 
-
     if (
       !Number.isFinite(
-        numericSpeed
+        numericSpeed,
       ) ||
       numericSpeed < 0
     ) {
-
       numericSpeed = 0;
-
     }
-
 
     if (
       !isValidGps(
         numericLat,
-        numericLng
+        numericLng,
       )
     ) {
+      return res.status(400).json({
+        success: false,
 
-      return res
-        .status(400)
-        .json({
-
-          success: false,
-
-          message:
-            "Valid latitude and longitude are required",
-
-        });
-
-    }
-
-
-    /* =========================================
-       IMPORTANT:
-       ACTIVE ROUTE HI FETCH KARO
-       
-       Completed / stopped route ko
-       GPS update nahi milega.
-    ========================================= */
-
-    const route =
-      await Route.findOne({
-
-        _id: routeId,
-
-        trackingEnabled: true,
-
-        status: "Running",
-
+        message:
+          "Valid latitude and longitude are required",
       });
-
-
-    /* =========================================
-       STOPPED ROUTE
-    ========================================= */
-
-    if (!route) {
-
-      console.warn(
-        "GPS UPDATE REJECTED - TRACKING STOPPED:",
-        routeId
-      );
-
-      return res
-        .status(409)
-        .json({
-
-          success: false,
-
-          stopped: true,
-
-          message:
-            "Tracking has been stopped",
-
-        });
-
     }
 
-
-    /*
-      IMPORTANT:
-
-      Yahan route ACTIVE hone ke baad
-      hi GPS save hoga.
-    */
-
-
     /* =========================================
-       DRIVER ID
-    ========================================= */
+       IMPORTANT FIX
 
-    const actualDriverId =
-      driverId ||
-      route.driverId ||
-      null;
+       Sabse pehle ACTIVE route ko atomically
+       update karo.
 
+       Sirf:
+         trackingEnabled: true
+         status: "Running"
 
-    /* =========================================
-       FINAL SAFETY CHECK
-       
-       Stop button aur GPS request ke beech
-       agar state change hui ho to dobara check.
-    ========================================= */
+       wala route update hoga.
 
-    const activeRoute =
-      await Route.findOne({
+       Stop ke baad:
+         trackingEnabled: false
+         status: "Completed"
 
-        _id: routeId,
-
-        trackingEnabled: true,
-
-        status: "Running",
-
-      });
-
-
-    if (!activeRoute) {
-
-      console.warn(
-        "GPS UPDATE REJECTED AFTER STOP:",
-        routeId
-      );
-
-      return res
-        .status(409)
-        .json({
-
-          success: false,
-
-          stopped: true,
-
-          message:
-            "Tracking has been stopped",
-
-        });
-
-    }
-
-
-    /* =========================================
-       SAVE TRACKING HISTORY
-    ========================================= */
-
-    await Tracking.create({
-
-      routeId:
-        activeRoute._id,
-
-      driverId:
-        actualDriverId,
-
-      lat:
-        numericLat,
-
-      lng:
-        numericLng,
-
-      speed:
-        numericSpeed,
-
-    });
-
-
-    /* =========================================
-       IMPORTANT:
-       Existing active route update
-
-       NOTE:
-       Is request ke andar route ko
-       dobara Running set karne ki
-       zarurat nahi hai.
+       hone ki wajah se ye query fail hogi.
     ========================================= */
 
     const updatedRoute =
       await Route.findOneAndUpdate(
-
         {
           _id: routeId,
 
-          trackingEnabled:
-            true,
+          trackingEnabled: true,
 
-          status:
-            "Running",
-
+          status: "Running",
         },
 
         {
           $set: {
-
             currentLat:
               numericLat,
 
@@ -1270,45 +1223,77 @@ export const updateTracking = async (
 
             currentSpeed:
               numericSpeed,
-
           },
-
         },
 
         {
           new: true,
-        }
-
+        },
       );
 
-
     /* =========================================
-       STOP HONE KE BAAD RACE CONDITION
+       STOPPED ROUTE
     ========================================= */
 
     if (!updatedRoute) {
-
       console.warn(
-        "GPS UPDATE LOST RACE WITH STOP:",
-        routeId
+        "GPS UPDATE REJECTED - TRACKING STOPPED:",
+        routeId,
       );
 
+      return res.status(409).json({
+        success: false,
 
-      return res
-        .status(409)
-        .json({
+        stopped: true,
 
-          success: false,
-
-          stopped: true,
-
-          message:
-            "Tracking has been stopped",
-
-        });
-
+        message:
+          "Tracking has been stopped",
+      });
     }
 
+    /* =========================================
+       DRIVER ID
+    ========================================= */
+
+    const actualDriverId =
+      driverId ||
+      updatedRoute.driverId ||
+      null;
+
+    /* =========================================
+       SAVE TRACKING HISTORY
+
+       Route active hone ke baad hi history
+       create hogi.
+    ========================================= */
+
+    let trackingRecord =
+      null;
+
+    try {
+      trackingRecord =
+        await Tracking.create({
+          routeId:
+            updatedRoute._id,
+
+          driverId:
+            actualDriverId,
+
+          lat:
+            numericLat,
+
+          lng:
+            numericLng,
+
+          speed:
+            numericSpeed,
+        });
+    } catch (trackingError) {
+      console.error(
+        "TRACKING HISTORY SAVE ERROR:",
+        trackingError,
+      );
+    }
 
     /* =========================================
        DRIVER UPDATE
@@ -1317,19 +1302,14 @@ export const updateTracking = async (
     if (
       actualDriverId &&
       mongoose.Types.ObjectId.isValid(
-        String(
-          actualDriverId
-        )
+        String(actualDriverId),
       )
     ) {
-
       await Driver.findByIdAndUpdate(
-
         actualDriverId,
 
         {
           $set: {
-
             currentLat:
               numericLat,
 
@@ -1338,156 +1318,224 @@ export const updateTracking = async (
 
             speed:
               numericSpeed,
-
           },
-
-        }
-
+        },
       );
-
     }
 
+    /* =========================================
+       STOP CHECK BEFORE WORKERS
+    ========================================= */
+
+    let currentRoute =
+      await Route.findOne({
+        _id: routeId,
+
+        trackingEnabled: true,
+
+        status: "Running",
+      });
+
+    if (!currentRoute) {
+      console.warn(
+        "GPS UPDATE STOPPED BEFORE WORKER PROCESS:",
+        routeId,
+      );
+
+      if (
+        trackingRecord?._id
+      ) {
+        await Tracking
+          .findByIdAndDelete(
+            trackingRecord._id,
+          )
+          .catch(() => {});
+      }
+
+      return res.status(409).json({
+        success: false,
+
+        stopped: true,
+
+        message:
+          "Tracking has been stopped",
+      });
+    }
 
     /* =========================================
        NEARBY WORKERS
     ========================================= */
 
-    const nearbyWorkers =
-      await findNearbyWorkers(
+    let nearbyWorkers = [];
 
-        numericLat,
+    try {
+      nearbyWorkers =
+        await findNearbyWorkers(
+          numericLat,
 
-        numericLng,
+          numericLng,
 
-        10
+          10,
+        );
 
+      console.log(
+        "Nearby Workers:",
+        nearbyWorkers.length,
+      );
+    } catch (workerError) {
+      console.error(
+        "NEARBY WORKER MATCH ERROR:",
+        workerError,
       );
 
-
-    console.log(
-      "Nearby Workers:",
-      nearbyWorkers.length
-    );
-
+      nearbyWorkers = [];
+    }
 
     /* =========================================
-       EMAIL
+       STOP CHECK BEFORE EMAIL
     ========================================= */
 
-    const emailResult =
-      await sendNearbyWorkerEmails({
+    currentRoute =
+      await Route.findOne({
+        _id: routeId,
 
-        req,
+        trackingEnabled: true,
 
-        route:
-          updatedRoute,
-
-        routeId,
-
-        nearbyWorkers,
-
-        speed:
-          numericSpeed,
-
+        status: "Running",
       });
 
+    if (!currentRoute) {
+      console.warn(
+        "GPS UPDATE STOPPED BEFORE EMAIL:",
+        routeId,
+      );
+
+      if (
+        trackingRecord?._id
+      ) {
+        await Tracking
+          .findByIdAndDelete(
+            trackingRecord._id,
+          )
+          .catch(() => {});
+      }
+
+      return res.status(409).json({
+        success: false,
+
+        stopped: true,
+
+        message:
+          "Tracking has been stopped",
+      });
+    }
 
     /* =========================================
-       FINAL ROUTE
+       EMAIL / MEMBER NOTIFICATION
+    ========================================= */
+
+    let emailResult = {
+      emailSent: 0,
+
+      emailFailed: 0,
+    };
+
+    if (
+      nearbyWorkers.length > 0
+    ) {
+      emailResult =
+        await sendNearbyWorkerEmails({
+          req,
+
+          route:
+            currentRoute,
+
+          routeId,
+
+          nearbyWorkers,
+
+          speed:
+            numericSpeed,
+        });
+    }
+
+    /* =========================================
+       FINAL ROUTE CHECK
     ========================================= */
 
     const finalRoute =
-      await Route.findById(
-        routeId
-      ).lean();
-
-
-    /*
-      Agar Stop request parallel me aa gayi
-      ho to response me latest status check karo.
-    */
+      await Route.findOne({
+        _id: routeId,
+      }).lean();
 
     if (
       !finalRoute ||
-      finalRoute.trackingEnabled !== true ||
-      finalRoute.status !== "Running"
+      finalRoute.trackingEnabled !==
+        true ||
+      finalRoute.status !==
+        "Running"
     ) {
-
       console.warn(
         "GPS UPDATE FINISHED AFTER STOP:",
-        routeId
+        routeId,
       );
 
+      return res.status(409).json({
+        success: false,
 
-      return res
-        .status(409)
-        .json({
+        stopped: true,
 
-          success: false,
-
-          stopped: true,
-
-          message:
-            "Tracking has been stopped",
-
-        });
-
+        message:
+          "Tracking has been stopped",
+      });
     }
 
-
     /* =========================================
-       SENT EMAIL IDs
+       SENT EMAIL IDS
     ========================================= */
 
     const sentIds =
       new Set(
-
         (
           finalRoute
             .emailSentWorkerIds ||
           []
-
         ).map(
-
           (id) =>
-            String(id)
-
-        )
-
+            String(id),
+        ),
       );
-
 
     const emailSent =
       nearbyWorkers.filter(
-
         (worker) =>
           sentIds.has(
             String(
-              worker._id
-            )
-          )
-
+              worker._id,
+            ),
+          ),
       ).length;
-
 
     const emailRemaining =
       Math.max(
-
         nearbyWorkers.length -
           emailSent,
 
-        0
-
+        0,
       );
-
 
     /* =========================================
        SUCCESS
     ========================================= */
 
     return res.json({
-
       success: true,
+
+      currentLat:
+        numericLat,
+
+      currentLng:
+        numericLng,
 
       currentSpeed:
         numericSpeed,
@@ -1502,46 +1550,39 @@ export const updateTracking = async (
 
       emailRemaining,
 
+      trackingEnabled:
+        true,
+
+      status:
+        "Running",
+
       trackUrl:
         buildTrackUrl(
           req,
-          routeId
+          routeId,
         ),
-
     });
-
-
   } catch (error) {
-
     console.error(
-      "========================================="
+      "=========================================",
     );
 
     console.error(
-      "TRACKING UPDATE ERROR"
+      "TRACKING UPDATE ERROR",
     );
+
+    console.error(error);
 
     console.error(
-      error
+      "=========================================",
     );
 
-    console.error(
-      "========================================="
-    );
+    return res.status(500).json({
+      success: false,
 
-
-    return res
-      .status(500)
-      .json({
-
-        success: false,
-
-        message:
-          error.message ||
-          "Tracking update failed",
-
-      });
-
+      message:
+        error.message ||
+        "Tracking update failed",
+    });
   }
-
 };
