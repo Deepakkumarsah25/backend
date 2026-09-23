@@ -1,163 +1,669 @@
-/* 🌐 Global Top Navbar Styles */
+/* =========================================================
+   VIP ADMIN HEADER
+========================================================= */
+
+:root {
+    --header-height: 72px;
+
+    --header-bg: #ffffff;
+
+    --primary-blue: #0b4ea2;
+    --primary-dark: #083d80;
+
+    --text-dark: #1c2b3a;
+    --text-muted: #7a8795;
+
+    --border-color: #e9edf3;
+
+    --header-shadow: 0 3px 18px rgba(0, 0, 0, 0.06);
+
+    --header-transition: 0.25s ease;
+}
+
+
+/* =========================================================
+   GLOBAL NAVBAR
+========================================================= */
+
 .global-navbar {
-    width: 100%;
-    height: 70px;
-    background-color: #f1e3e3 ;
-    border-bottom: 1px solid #000000;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+
+    width: calc(100% - 270px);
+
+    height: var(--header-height);
+
     position: fixed;
+
     top: 0;
-    z-index: 1000; /* Sidebar aur main content ke upar float karne ke liye */
+    right: 0;
+
+    z-index: 9000;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
     box-sizing: border-box;
+
+    padding: 0 24px;
+
+    background: var(--header-bg);
+
+    border-bottom: 1px solid var(--border-color);
+
+    box-shadow: var(--header-shadow);
+
+    transition:
+        width var(--header-transition);
 }
 
-/* Left Section Branded Area */
+
+/* =========================================================
+   LEFT SECTION
+========================================================= */
+
 .header-left {
+
     display: flex;
+
     align-items: center;
-    gap: 10px;
-  
+
+    gap: 12px;
+
+    min-width: 0;
 }
 
-.header-left img {
-    height: 50px;
-    width: 50px;
-    margin-left: 30px;
-    margin-top: 10px;
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.logo-icon-box {
+
+    width: 43px;
+    height: 43px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 11px;
+
+    background: #f5f8fd;
+
+    border: 1px solid #e7edf6;
+
+    overflow: hidden;
+}
+
+
+.logo-icon-box img {
+
+    width: 36px;
+    height: 36px;
+
     object-fit: contain;
-    border-radius: var(--radius-sm);
+
+    display: block;
 }
 
-.header-left .brand-text {
-    font-size: 22px;
+
+/* =========================================================
+   BRAND TEXT
+========================================================= */
+
+.header-brand-text {
+
+    min-width: 0;
+}
+
+
+.header-brand-text h2 {
+
+    margin: 0;
+
+    color: #1c1c71;
+
+    font-size: 18px;
+
+    line-height: 1.2;
+
     font-weight: 700;
-    color: #1e2229;
-    padding-left: 30px;
+
+    white-space: nowrap;
 }
 
-.header-left .brand-text .dot {
-    color: #e88d72; /* Image Matching Soft Coral Accent */
+
+.header-brand-text h2 span {
+
+    color: #666c11;
 }
 
-.header-left .page-context {
-    font-size: 13px;
-    color: #9496a1;
-    font-weight: 400;
+
+.header-brand-text p {
+
+    margin: 3px 0 0;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+
+    font-weight: 500;
+
+    letter-spacing: 0.3px;
 }
 
-/* Right Section Actions and Profile Area */
+
+/* =========================================================
+   RIGHT SECTION
+========================================================= */
+
 .header-right {
+
     display: flex;
+
     align-items: center;
-    gap: 25px;
+
+    gap: 18px;
+
+    min-width: 0;
 }
 
-/* Search engine layout on navbar */
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
 .global-search {
+
     position: relative;
+
     width: 240px;
 }
 
+
 .global-search i {
+
     position: absolute;
-    left: 12px;
+
+    left: 14px;
+
     top: 50%;
+
     transform: translateY(-50%);
-    color: #9496a1;
+
+    color: #8b97a6;
+
     font-size: 13px;
+
+    pointer-events: none;
 }
+
 
 .global-search input {
+
     width: 100%;
-    padding: 8px 12px 8px 35px;
-    border-radius: 15px;
-    border: 1px solid #eef0f5;
-    background-color: #f8f9fc;
+
+    height: 40px;
+
+    box-sizing: border-box;
+
+    padding: 0 14px 0 38px;
+
+    border-radius: 10px;
+
+    border: 1px solid var(--border-color);
+
+    background: #f7f9fc;
+
+    color: var(--text-dark);
+
     outline: none;
+
+    font-family: inherit;
+
     font-size: 13px;
-    transition: all 0.2s ease;
+
+    transition:
+        border-color var(--header-transition),
+        background var(--header-transition),
+        box-shadow var(--header-transition);
 }
+
+
+.global-search input::placeholder {
+
+    color: #9aa5b1;
+}
+
 
 .global-search input:focus {
-    border-color: #e88d72;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(232, 141, 114, 0.1);
+
+    background: #ffffff;
+
+    border-color: rgba(11, 78, 162, 0.45);
+
+    box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.08);
 }
 
-/* Control Badges (Bell & Gear) */
-.action-badges {
+
+/* =========================================================
+   HEADER ACTIONS
+========================================================= */
+
+.header-actions {
+
     display: flex;
+
     align-items: center;
-    gap: 18px;
-    color: #2d3142;
-    font-size: 16px;
+
+    gap: 7px;
 }
 
-.badge-icon {
+
+.header-action-btn {
+
     position: relative;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid transparent;
+
+    border-radius: 10px;
+
+    background: transparent;
+
+    color: #586575;
+
+    font-size: 16px;
+
     cursor: pointer;
-    transition: color 0.2s ease;
+
+    transition:
+        background var(--header-transition),
+        color var(--header-transition),
+        border-color var(--header-transition);
 }
 
-.badge-icon:hover {
-    color: #e88d72;
+
+.header-action-btn:hover {
+
+    color: var(--primary-blue);
+
+    background: #f2f6fc;
+
+    border-color: #e5edf8;
 }
+
+
+/* =========================================================
+   NOTIFICATION DOT
+========================================================= */
 
 .notification-indicator {
+
     position: absolute;
-    top: -2px;
-    right: -2px;
-    width: 6px;
-    height: 6px;
-    background-color: #e88d72;
+
+    top: 8px;
+    right: 8px;
+
+    width: 7px;
+    height: 7px;
+
     border-radius: 50%;
-    border: 1px solid #ffffff;
+
+    background: #e53935;
+
+    border: 2px solid #ffffff;
+
+    box-sizing: content-box;
 }
 
-/* Identity User Box */
+
+/* =========================================================
+   ADMIN PROFILE
+========================================================= */
+
 .user-meta-header {
+
+    min-height: 44px;
+
     display: flex;
+
     align-items: center;
-    gap: 12px;
-    border-left: 1px solid #eaeaea;
-    padding-left: 20px;
+
+    gap: 10px;
+
+    padding-left: 16px;
+
+    border-left: 1px solid var(--border-color);
+
+    cursor: pointer;
 }
+
+
+/* =========================================================
+   AVATAR
+========================================================= */
 
 .header-avatar {
-    width: 36px;
-    height: 36px;
+
+    width: 38px;
+    height: 38px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff3f0;
+
+    background: linear-gradient(
+        135deg,
+        #0b4ea2,
+        #1769c2
+    );
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    box-shadow: 0 3px 10px rgba(11, 78, 162, 0.2);
 }
 
-.identity-text h6 {
+
+/* =========================================================
+   IDENTITY
+========================================================= */
+
+.identity-text {
+
+    display: flex;
+
+    flex-direction: column;
+
+    min-width: 0;
+}
+
+
+.identity-text strong {
+
+    color: var(--text-dark);
+
     font-size: 13px;
-    font-weight: 600;
-    color: #2d3142;
-    margin-right: 50px;
-    
 
+    font-weight: 700;
+
+    line-height: 1.3;
+
+    white-space: nowrap;
 }
 
-.identity-text p {
-    font-size: 11px;
-    color: #9496a1;
-    margin: 0;
+
+.identity-text span {
+
+    margin-top: 2px;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+
+    line-height: 1.2;
+
+    white-space: nowrap;
 }
 
-/* 📱 Responsive Mobile Adjustments */
-@media (max-width: 768px) {
+
+.profile-arrow {
+
+    color: #8b97a6;
+
+    font-size: 10px;
+
+    margin-left: 2px;
+}
+
+
+/* =========================================================
+   DESKTOP SIDEBAR COLLAPSED
+========================================================= */
+
+body.sidebar-collapsed .global-navbar {
+
+    width: calc(100% - 78px);
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+
     .global-navbar {
-        padding: 0 15px;
+
+        width: calc(100% - 270px);
+
+        padding: 0 18px;
     }
-    .global-search, .page-context, .identity-text {
-        display: none; /* Mobile screen par extra text aur search bar ko wrap/hide kiya */
+
+
+    .global-search {
+
+        width: 190px;
     }
+
+
+    .header-right {
+
+        gap: 10px;
+    }
+
+
+    .identity-text {
+
+        display: none;
+    }
+
+
+    .profile-arrow {
+
+        display: none;
+    }
+
+}
+
+
+/* =========================================================
+   SIDEBAR MOBILE
+========================================================= */
+
+@media (max-width: 992px) {
+
+    .global-navbar {
+
+        width: 100%;
+
+        height: 68px;
+
+        padding: 0 18px 0 72px;
+    }
+
+
+    .header-mobile-space {
+
+        display: block;
+    }
+
+
+    .header-brand-text h2 {
+
+        font-size: 16px;
+    }
+
+
+    .header-brand-text p {
+
+        display: none;
+    }
+
+
+    .global-search {
+
+        width: 180px;
+    }
+
+
     .user-meta-header {
-        border-left: none;
+
+        border-left: 0;
+
         padding-left: 0;
     }
+
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+
+    .global-navbar {
+
+        padding: 0 12px 0 65px;
+    }
+
+
+    .header-left {
+
+        gap: 8px;
+    }
+
+
+    .logo-icon-box {
+
+        width: 38px;
+        height: 38px;
+
+        border-radius: 9px;
+    }
+
+
+    .logo-icon-box img {
+
+        width: 31px;
+        height: 31px;
+    }
+
+
+    .header-brand-text h2 {
+
+        font-size: 14px;
+    }
+
+
+    .global-search {
+
+        display: none;
+    }
+
+
+    .header-actions {
+
+        gap: 2px;
+    }
+
+
+    .header-action-btn {
+
+        width: 37px;
+        height: 37px;
+    }
+
+
+    .header-avatar {
+
+        width: 36px;
+        height: 36px;
+    }
+
+
+    .identity-text,
+    .profile-arrow {
+
+        display: none;
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 420px) {
+
+    .global-navbar {
+
+        padding-left: 62px;
+    }
+
+
+    .header-brand-text h2 {
+
+        font-size: 13px;
+    }
+
+
+    .header-actions {
+
+        margin-left: auto;
+    }
+
+
+    .header-action-btn {
+
+        width: 34px;
+        height: 34px;
+
+        font-size: 14px;
+    }
+
+
+    .header-avatar {
+
+        width: 34px;
+        height: 34px;
+
+        font-size: 13px;
+    }
+
+}
+
+
+/* =========================================================
+   EXTRA SMALL
+========================================================= */
+
+@media (max-width: 350px) {
+
+    .header-brand-text {
+
+        display: none;
+    }
+
 }
