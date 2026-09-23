@@ -51,12 +51,40 @@ body{
     background:var(--bg);
     color:var(--ink);
     -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
 }
 
 .feedback-page{
-    padding:32px;
-    max-width:1440px;
-    margin:0 auto;
+    width: calc(100% - 270px);
+    min-height: 100vh;
+    margin-left: 270px;
+    padding: 104px 32px 32px;
+    max-width: none;
+    margin-right: 0;
+    transition: margin-left .25s ease, width .25s ease;
+}
+
+body.sidebar-collapsed .feedback-page{
+    width: calc(100% - 78px);
+    margin-left: 78px;
+}
+
+@media (max-width: 992px){
+    .feedback-page,
+    body.sidebar-collapsed .feedback-page{
+        width: 100%;
+        margin-left: 0;
+        padding: 92px 20px 28px;
+    }
+}
+
+@media (max-width: 600px){
+    .feedback-page,
+    body.sidebar-collapsed .feedback-page{
+        width: 100%;
+        margin-left: 0;
+        padding: 86px 14px 22px;
+    }
 }
 
 /* ===================== HEADER ===================== */
@@ -549,7 +577,29 @@ tbody tr:hover{ background:var(--surface-alt); }
 }
 
 @media (max-width:720px){
-    .feedback-page{ padding:16px; }
+    .feedback-page{ padding-left:14px; padding-right:14px; }
+
+    .page-header{
+        align-items:flex-start;
+        gap:14px;
+    }
+
+    .brand{
+        min-width:0;
+    }
+
+    .brand h1{
+        font-size:19px;
+    }
+
+    .brand p{
+        font-size:12px;
+    }
+
+    .refresh-btn{
+        padding:10px 13px;
+        font-size:13px;
+    }
 
     .page-header{ flex-wrap:wrap; }
     .brand h1{ font-size:19px; }
@@ -624,6 +674,13 @@ button:focus-visible, input:focus-visible{
 </head>
 
 <body>
+
+<!-- Common Admin Sidebar -->
+<%- include('../common/sidebar') %>
+
+<!-- Common Admin Header -->
+<%- include('../common/header') %>
+
 <div class="feedback-page">
 
     <!-- HEADER -->
