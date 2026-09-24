@@ -46,7 +46,7 @@ import grievanceRoutes, {
 } from "./routes/Grievance/Grievanceroutes.js";
 
 import Volunteer from "./models/Volunteer.js";
-
+import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -192,7 +192,7 @@ app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
 
 app.use("/api", searchRoutes);
-
+app.use("/api", mediaRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api", vipLiveRoute);

@@ -16,18 +16,17 @@ export const optionalAuth = async (req, res, next) => {
       return next();
     }
 
-    const updateData = { $setOnInsert: { uid } };
+const updateData = { $setOnInsert: { uid } };
 
-    const setFields = {};
-    if (req.headers["x-dev-name"]) setFields.name = req.headers["x-dev-name"];
-    if (req.headers["x-dev-email"]) setFields.email = req.headers["x-dev-email"];
-    if (req.headers["x-dev-phone"]) setFields.phone = req.headers["x-dev-phone"];
-    if (req.headers["x-dev-photo"]) setFields.photoURL = req.headers["x-dev-photo"];
+const setFields = {};
+if (req.headers["x-dev-name"]) setFields.name = req.headers["x-dev-name"];
+if (req.headers["x-dev-email"]) setFields.email = req.headers["x-dev-email"];
+if (req.headers["x-dev-phone"]) setFields.phone = req.headers["x-dev-phone"];
+if (req.headers["x-dev-photo"]) setFields.photoURL = req.headers["x-dev-photo"];
 
-    if (Object.keys(setFields).length > 0) {
-      updateData.$set = setFields;
-    }
-
+if (Object.keys(setFields).length > 0) {
+  updateData.$set = setFields;
+}
     try {
       req.user = await User.findOneAndUpdate({ uid }, updateData, {
         returnDocument: "after",

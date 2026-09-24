@@ -1,6 +1,11 @@
 import News from "../../models/news/News.js";
 import cloudinary from "../../config/cloudinary.js";
 
+import {
+  getMediaVersion,
+  bumpMediaVersion,
+} from "../../utils/mediaVersion.js";
+
 /* =====================================================
    CLOUDINARY BUFFER UPLOAD
 ===================================================== */
@@ -55,25 +60,12 @@ const getYoutubeId = (url = "") => {
 
 /* =====================================================
    FILE HELPER
-   IMPORTANT:
-   multer.fields() => req.files OBJECT hota hai
 ===================================================== */
 
 const getFile = (files, fieldName) => {
   if (!files) {
     return null;
   }
-
-  /*
-   * multer.fields()
-   *
-   * Example:
-   * {
-   *   coverImage: [file],
-   *   images: [file, file],
-   *   video: [file]
-   * }
-   */
 
   if (!Array.isArray(files)) {
     const field = files[fieldName];
@@ -88,10 +80,6 @@ const getFile = (files, fieldName) => {
 
     return field;
   }
-
-  /*
-   * multer.array() / multer.any()
-   */
 
   return (
     files.find(
@@ -112,17 +100,9 @@ const getFiles = (files, fieldName) => {
     return [];
   }
 
-  /*
-   * multer.fields()
-   */
-
   if (!Array.isArray(files)) {
     return files[fieldName] || [];
   }
-
-  /*
-   * multer.array() / multer.any()
-   */
 
   return files.filter(
     (file) =>
@@ -209,7 +189,6 @@ export const addNews = async (req, res) => {
       req.files
     );
 
-
     const {
       title,
       description,
@@ -225,49 +204,26 @@ export const addNews = async (req, res) => {
       displayOrder,
     } = req.body;
 
-
-    /* =================================================
-       VALIDATE TITLE
-    ================================================= */
-
     if (!title || !title.trim()) {
       return res.status(400).send(
         "News title is required"
       );
     }
 
-
-    /* =================================================
-       VARIABLES
-    ================================================= */
-
     let coverImage = "";
-
     let coverImagePublicId = "";
 
     const images = [];
 
     let videoUrl = "";
-
     let videoPublicId = "";
-
-
-    /* =================================================
-       COVER IMAGE
-    ================================================= */
 
     const coverFile = getFile(
       req.files,
       "coverImage"
     );
 
-
     if (coverFile) {
-
-      console.log(
-        "Uploading Cover Image..."
-      );
-
       const result =
         await uploadBuffer(
           coverFile.buffer,
@@ -279,24 +235,12 @@ export const addNews = async (req, res) => {
           }
         );
 
-
       coverImage =
         result.secure_url;
 
       coverImagePublicId =
         result.public_id;
-
-
-      console.log(
-        "Cover Uploaded:",
-        coverImage
-      );
     }
-
-
-    /* =================================================
-       MULTIPLE IMAGES
-    ================================================= */
 
     const imageFiles =
       getFiles(
@@ -304,15 +248,7 @@ export const addNews = async (req, res) => {
         "images"
       );
 
-
-    console.log(
-      "Additional Images:",
-      imageFiles.length
-    );
-
-
     for (const file of imageFiles) {
-
       const result =
         await uploadBuffer(
           file.buffer,
@@ -324,7 +260,6 @@ export const addNews = async (req, res) => {
           }
         );
 
-
       images.push({
         url:
           result.secure_url,
@@ -334,24 +269,13 @@ export const addNews = async (req, res) => {
       });
     }
 
-
-    /* =================================================
-       UPLOADED VIDEO
-    ================================================= */
-
     const videoFile =
       getFile(
         req.files,
         "video"
       );
 
-
     if (videoFile) {
-
-      console.log(
-        "Uploading Video..."
-      );
-
       const result =
         await uploadBuffer(
           videoFile.buffer,
@@ -364,79 +288,43 @@ export const addNews = async (req, res) => {
           }
         );
 
-
       videoUrl =
         result.secure_url;
 
       videoPublicId =
         result.public_id;
-
-
-      console.log(
-        "Video Uploaded:",
-        videoUrl
-      );
     }
 
-
-    /* =================================================
-       YOUTUBE
-    ================================================= */
-
     let youtubeId = "";
-
 
     if (
       videoType === "youtube" &&
       youtubeUrl
     ) {
-
       youtubeId =
         getYoutubeId(
           youtubeUrl
         );
 
-
       if (!youtubeId) {
-
         return res.status(400).send(
           "Invalid YouTube URL"
         );
       }
-
-
-      console.log(
-        "YouTube ID:",
-        youtubeId
-      );
     }
-
-
-    /* =================================================
-       FINAL VIDEO TYPE
-    ================================================= */
 
     let finalVideoType = "none";
 
     if (videoFile) {
-
       finalVideoType =
         "uploaded";
-
     } else if (youtubeId) {
-
       finalVideoType =
         "youtube";
     }
 
-
-    /* =================================================
-       SAVE NEWS
-    ================================================= */
-
     const news =
       await News.create({
-
         title:
           title.trim(),
 
@@ -455,82 +343,59 @@ export const addNews = async (req, res) => {
 
         images,
 
-
         videoType:
           finalVideoType,
-
 
         youtubeUrl:
           finalVideoType === "youtube"
             ? youtubeUrl.trim()
             : "",
 
-
         youtubeId,
-
 
         videoUrl,
 
         videoPublicId,
-
 
         date:
           date
             ? new Date(date)
             : new Date(),
 
-
         location:
           location || "",
 
-
         author:
           author || "VIP Party",
-
 
         active:
           active === "on" ||
           active === "true",
 
-
         featured:
           featured === "on" ||
           featured === "true",
 
-
         displayOrder:
           Number(displayOrder) || 0,
-
       });
 
+    await bumpMediaVersion(
+      "news"
+    );
 
     console.log(
       "NEWS CREATED:",
       news._id
     );
 
-
-    console.log(
-      "VIDEO TYPE:",
-      finalVideoType
-    );
-
-
-    console.log(
-      "YOUTUBE ID:",
-      youtubeId
-    );
-
-
     res.redirect("/news");
 
   } catch (error) {
-
     console.log(
       "ADD NEWS ERROR:",
       error
     );
-
 
     res.status(500).send(
       error.message ||
@@ -548,24 +413,19 @@ export const editNewsPage = async (
   req,
   res
 ) => {
-
   try {
-
     const news =
       await News.findById(
         req.params.id
       );
 
-
     if (!news) {
-
       return res
         .status(404)
         .send(
           "News Not Found"
         );
     }
-
 
     res.render(
       "news/editNews",
@@ -575,12 +435,10 @@ export const editNewsPage = async (
     );
 
   } catch (error) {
-
     console.log(
       "EDIT PAGE ERROR:",
       error
     );
-
 
     res.status(500).send(
       "Error Loading News"
@@ -597,48 +455,19 @@ export const editNews = async (
   req,
   res
 ) => {
-
   try {
-
-    console.log(
-      "================================"
-    );
-
-    console.log(
-      "NEWS UPDATE STARTED"
-    );
-
-    console.log(
-      "NEWS ID:",
-      req.params.id
-    );
-
-    console.log(
-      "BODY:",
-      req.body
-    );
-
-    console.log(
-      "FILES:",
-      req.files
-    );
-
-
     const news =
       await News.findById(
         req.params.id
       );
 
-
     if (!news) {
-
       return res
         .status(404)
         .send(
           "News Not Found"
         );
     }
-
 
     const {
       title,
@@ -655,60 +484,40 @@ export const editNews = async (
       displayOrder,
     } = req.body;
 
-
-    /* =================================================
-       BASIC DATA
-    ================================================= */
-
     news.title =
       title?.trim() ||
       news.title;
 
-
     news.description =
       description || "";
-
 
     news.content =
       content || "";
 
-
     news.category =
       category || "General";
 
-
     if (date) {
-
       news.date =
         new Date(date);
     }
 
-
     news.location =
       location || "";
 
-
     news.author =
       author || "VIP Party";
-
 
     news.active =
       active === "on" ||
       active === "true";
 
-
     news.featured =
       featured === "on" ||
       featured === "true";
 
-
     news.displayOrder =
       Number(displayOrder) || 0;
-
-
-    /* =================================================
-       NEW COVER IMAGE
-    ================================================= */
 
     const coverFile =
       getFile(
@@ -716,33 +525,21 @@ export const editNews = async (
         "coverImage"
       );
 
-
     if (coverFile) {
-
-      console.log(
-        "Replacing Cover Image..."
-      );
-
-
       if (
         news.coverImagePublicId
       ) {
-
         try {
-
           await cloudinary.uploader.destroy(
             news.coverImagePublicId
           );
-
         } catch (error) {
-
           console.log(
             "OLD COVER DELETE ERROR:",
             error
           );
         }
       }
-
 
       const result =
         await uploadBuffer(
@@ -756,19 +553,12 @@ export const editNews = async (
           }
         );
 
-
       news.coverImage =
         result.secure_url;
-
 
       news.coverImagePublicId =
         result.public_id;
     }
-
-
-    /* =================================================
-       ADD MORE IMAGES
-    ================================================= */
 
     const imageFiles =
       getFiles(
@@ -776,11 +566,9 @@ export const editNews = async (
         "images"
       );
 
-
     for (
       const file of imageFiles
     ) {
-
       const result =
         await uploadBuffer(
           file.buffer,
@@ -793,22 +581,14 @@ export const editNews = async (
           }
         );
 
-
       news.images.push({
-
         url:
           result.secure_url,
 
         publicId:
           result.public_id,
-
       });
     }
-
-
-    /* =================================================
-       NEW UPLOADED VIDEO
-    ================================================= */
 
     const videoFile =
       getFile(
@@ -816,20 +596,11 @@ export const editNews = async (
         "video"
       );
 
-
     if (videoFile) {
-
-      console.log(
-        "Replacing Video..."
-      );
-
-
       if (
         news.videoPublicId
       ) {
-
         try {
-
           await cloudinary.uploader.destroy(
             news.videoPublicId,
             {
@@ -837,16 +608,13 @@ export const editNews = async (
                 "video",
             }
           );
-
         } catch (error) {
-
           console.log(
             "OLD VIDEO DELETE ERROR:",
             error
           );
         }
       }
-
 
       const result =
         await uploadBuffer(
@@ -860,59 +628,40 @@ export const editNews = async (
           }
         );
 
-
       news.videoType =
         "uploaded";
-
 
       news.videoUrl =
         result.secure_url;
 
-
       news.videoPublicId =
         result.public_id;
-
 
       news.youtubeUrl =
         "";
 
-
       news.youtubeId =
         "";
-    }
 
-
-    /* =================================================
-       CHANGE TO YOUTUBE
-    ================================================= */
-
-    else if (
+    } else if (
       videoType === "youtube" &&
       youtubeUrl
     ) {
-
       const newYoutubeId =
         getYoutubeId(
           youtubeUrl
         );
 
-
       if (!newYoutubeId) {
-
         return res.status(400).send(
           "Invalid YouTube URL"
         );
       }
 
-
-      /* Delete old uploaded video */
-
       if (
         news.videoPublicId
       ) {
-
         try {
-
           await cloudinary.uploader.destroy(
             news.videoPublicId,
             {
@@ -920,9 +669,7 @@ export const editNews = async (
                 "video",
             }
           );
-
         } catch (error) {
-
           console.log(
             "OLD VIDEO DELETE ERROR:",
             error
@@ -930,42 +677,28 @@ export const editNews = async (
         }
       }
 
-
       news.videoType =
         "youtube";
-
 
       news.youtubeUrl =
         youtubeUrl.trim();
 
-
       news.youtubeId =
         newYoutubeId;
-
 
       news.videoUrl =
         "";
 
-
       news.videoPublicId =
         "";
-    }
 
-
-    /* =================================================
-       REMOVE VIDEO
-    ================================================= */
-
-    else if (
+    } else if (
       videoType === "none"
     ) {
-
       if (
         news.videoPublicId
       ) {
-
         try {
-
           await cloudinary.uploader.destroy(
             news.videoPublicId,
             {
@@ -973,9 +706,7 @@ export const editNews = async (
                 "video",
             }
           );
-
         } catch (error) {
-
           console.log(
             "VIDEO DELETE ERROR:",
             error
@@ -983,52 +714,42 @@ export const editNews = async (
         }
       }
 
-
       news.videoType =
         "none";
-
 
       news.youtubeUrl =
         "";
 
-
       news.youtubeId =
         "";
 
-
       news.videoUrl =
         "";
-
 
       news.videoPublicId =
         "";
     }
 
-
-    /* =================================================
-       SAVE
-    ================================================= */
-
     await news.save();
 
+    await bumpMediaVersion(
+      "news"
+    );
 
     console.log(
       "NEWS UPDATED:",
       news._id
     );
 
-
     res.redirect(
       "/news"
     );
 
   } catch (error) {
-
     console.log(
       "EDIT NEWS ERROR:",
       error
     );
-
 
     res.status(500).send(
       error.message ||
@@ -1036,8 +757,6 @@ export const editNews = async (
     );
   }
 };
-
-
 /* =====================================================
    DELETE NEWS
 ===================================================== */
@@ -1046,17 +765,13 @@ export const deleteNews = async (
   req,
   res
 ) => {
-
   try {
-
     const news =
       await News.findById(
         req.params.id
       );
 
-
     if (!news) {
-
       return res
         .status(404)
         .send(
@@ -1064,23 +779,14 @@ export const deleteNews = async (
         );
     }
 
-
-    /* =================================================
-       COVER IMAGE
-    ================================================= */
-
     if (
       news.coverImagePublicId
     ) {
-
       try {
-
         await cloudinary.uploader.destroy(
           news.coverImagePublicId
         );
-
       } catch (error) {
-
         console.log(
           "COVER DELETE ERROR:",
           error
@@ -1088,25 +794,15 @@ export const deleteNews = async (
       }
     }
 
-
-    /* =================================================
-       GALLERY IMAGES
-    ================================================= */
-
     for (
       const image of news.images || []
     ) {
-
       if (image.publicId) {
-
         try {
-
           await cloudinary.uploader.destroy(
             image.publicId
           );
-
         } catch (error) {
-
           console.log(
             "IMAGE DELETE ERROR:",
             error
@@ -1115,17 +811,10 @@ export const deleteNews = async (
       }
     }
 
-
-    /* =================================================
-       VIDEO
-    ================================================= */
-
     if (
       news.videoPublicId
     ) {
-
       try {
-
         await cloudinary.uploader.destroy(
           news.videoPublicId,
           {
@@ -1133,9 +822,7 @@ export const deleteNews = async (
               "video",
           }
         );
-
       } catch (error) {
-
         console.log(
           "VIDEO DELETE ERROR:",
           error
@@ -1143,27 +830,23 @@ export const deleteNews = async (
       }
     }
 
-
-    /* =================================================
-       DATABASE DELETE
-    ================================================= */
-
     await News.findByIdAndDelete(
       req.params.id
     );
 
+    await bumpMediaVersion(
+      "news"
+    );
 
     res.redirect(
       "/news"
     );
 
   } catch (error) {
-
     console.log(
       "DELETE NEWS ERROR:",
       error
     );
-
 
     res.status(500).send(
       error.message
@@ -1180,17 +863,13 @@ export const toggleNewsStatus = async (
   req,
   res
 ) => {
-
   try {
-
     const news =
       await News.findById(
         req.params.id
       );
 
-
     if (!news) {
-
       return res
         .status(404)
         .send(
@@ -1198,25 +877,24 @@ export const toggleNewsStatus = async (
         );
     }
 
-
     news.active =
       !news.active;
 
-
     await news.save();
 
+    await bumpMediaVersion(
+      "news"
+    );
 
     res.redirect(
       "/news"
     );
 
   } catch (error) {
-
     console.log(
       "STATUS ERROR:",
       error
     );
-
 
     res.status(500).send(
       error.message
@@ -1233,17 +911,13 @@ export const toggleNewsFeatured = async (
   req,
   res
 ) => {
-
   try {
-
     const news =
       await News.findById(
         req.params.id
       );
 
-
     if (!news) {
-
       return res
         .status(404)
         .send(
@@ -1251,25 +925,24 @@ export const toggleNewsFeatured = async (
         );
     }
 
-
     news.featured =
       !news.featured;
 
-
     await news.save();
 
+    await bumpMediaVersion(
+      "news"
+    );
 
     res.redirect(
       "/news"
     );
 
   } catch (error) {
-
     console.log(
       "FEATURED ERROR:",
       error
     );
-
 
     res.status(500).send(
       error.message
@@ -1286,13 +959,10 @@ export const updateNewsOrder = async (
   req,
   res
 ) => {
-
   try {
-
     const {
       displayOrder,
     } = req.body;
-
 
     await News.findByIdAndUpdate(
       req.params.id,
@@ -1304,26 +974,25 @@ export const updateNewsOrder = async (
       }
     );
 
+    await bumpMediaVersion(
+      "news"
+    );
 
     res.redirect(
       "/news"
     );
 
   } catch (error) {
-
     console.log(
       "ORDER ERROR:",
       error
     );
-
 
     res.status(500).send(
       error.message
     );
   }
 };
-
-
 /* =====================================================
    MOBILE API - ALL NEWS
 ===================================================== */
@@ -1332,49 +1001,108 @@ export const getNewsApi = async (
   req,
   res
 ) => {
-
   try {
+    const page = Math.max(
+      parseInt(
+        req.query.page
+      ) || 1,
+      1
+    );
 
-    const news =
-      await News.find({
-        active: true,
-      })
+    const limit = Math.min(
+      parseInt(
+        req.query.limit
+      ) || 5,
+      30
+    );
+
+    const skip =
+      (page - 1) * limit;
+
+    const filter = {
+      active: true,
+    };
+
+    const [
+      news,
+      total,
+    ] = await Promise.all([
+      News.find(filter)
         .sort({
           featured: -1,
           displayOrder: 1,
           date: -1,
           createdAt: -1,
+          _id: -1,
         })
-        .lean();
+        .skip(skip)
+        .limit(limit)
+        .lean(),
 
+      News.countDocuments(
+        filter
+      ),
+    ]);
 
-    res.json({
+    const hasMore =
+      skip + news.length <
+      total;
 
+    return res.json({
       success: true,
-
-      count:
-        news.length,
-
-      data:
-        news,
-
+      count: news.length,
+      total,
+      page,
+      limit,
+      hasMore,
+      data: news,
     });
 
   } catch (error) {
-
     console.log(
       "GET NEWS API ERROR:",
       error
     );
 
-
-    res.status(500).json({
-
+    return res.status(500).json({
       success: false,
-
       message:
         "Failed to load news",
+    });
+  }
+};
 
+
+/* =====================================================
+   MOBILE API - NEWS VERSION
+===================================================== */
+
+export const getNewsVersion = async (
+  req,
+  res
+) => {
+  try {
+    const version =
+      await getMediaVersion(
+        "news"
+      );
+
+    return res.json({
+      success: true,
+      version:
+        String(version),
+    });
+
+  } catch (error) {
+    console.log(
+      "GET NEWS VERSION ERROR:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to load news version",
     });
   }
 };
@@ -1388,39 +1116,25 @@ export const getNewsByIdApi = async (
   req,
   res
 ) => {
-
   try {
-
     const news =
       await News.findOne({
-
         _id:
           req.params.id,
 
         active:
           true,
-
       }).lean();
 
-
     if (!news) {
-
       return res
         .status(404)
         .json({
-
           success: false,
-
           message:
             "News Not Found",
-
         });
     }
-
-
-    /* =================================================
-       INCREASE VIEWS
-    ================================================= */
 
     await News.findByIdAndUpdate(
       req.params.id,
@@ -1431,31 +1145,22 @@ export const getNewsByIdApi = async (
       }
     );
 
-
     res.json({
-
       success: true,
-
       data:
         news,
-
     });
 
   } catch (error) {
-
     console.log(
       "GET NEWS BY ID ERROR:",
       error
     );
 
-
     res.status(500).json({
-
       success: false,
-
       message:
         "Failed to load news",
-
     });
   }
 };
@@ -1469,33 +1174,24 @@ export const getRelatedNewsApi = async (
   req,
   res
 ) => {
-
   try {
-
     const current =
       await News.findById(
         req.params.id
       );
 
-
     if (!current) {
-
       return res
         .status(404)
         .json({
-
           success: false,
-
           message:
             "News Not Found",
-
         });
     }
 
-
     const related =
       await News.find({
-
         active:
           true,
 
@@ -1506,23 +1202,18 @@ export const getRelatedNewsApi = async (
 
         category:
           current.category,
-
       })
         .sort({
-
           featured:
             -1,
 
           date:
             -1,
-
         })
         .limit(6)
         .lean();
 
-
     res.json({
-
       success: true,
 
       count:
@@ -1530,24 +1221,18 @@ export const getRelatedNewsApi = async (
 
       data:
         related,
-
     });
 
   } catch (error) {
-
     console.log(
       "RELATED NEWS ERROR:",
       error
     );
 
-
     res.status(500).json({
-
       success: false,
-
       message:
         "Failed to load related news",
-
     });
   }
 };

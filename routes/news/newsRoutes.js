@@ -13,6 +13,7 @@ import {
   toggleNewsFeatured,
   updateNewsOrder,
   getNewsApi,
+  getNewsVersion,
   getNewsByIdApi,
   getRelatedNewsApi,
 } from "../../controllers/news/newsController.js";
@@ -106,13 +107,18 @@ router.get(
 );
 
 router.get(
-  "/api/news/:id",
-  getNewsByIdApi
+  "/api/news/version",
+  getNewsVersion
 );
 
 router.get(
   "/api/news/related/:id",
   getRelatedNewsApi
+);
+
+router.get(
+  "/api/news/:id",
+  getNewsByIdApi
 );
 
 export default router;

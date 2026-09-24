@@ -1,57 +1,79 @@
 import express from "express";
 
 import {
-getVideos,
-getVideoById,
-getRelatedVideos,
-createVideo,
-updateVideo,
-deleteVideo,
-
+  getVideosVersion,
+  getVideos,
+  getVideoById,
+  getRelatedVideos,
+  createVideo,
+  updateVideo,
+  deleteVideo,
 } from "../controllers/videogalleryController.js";
 
+const router =
+  express.Router();
 
-const router = express.Router();
+/* ===========================================
+   Version
+=========================================== */
 
-
-// get all videos
-router.get("/videos", getVideos);
-
-
-// IMPORTANT: related route upar rakho
 router.get(
-"/videos/related/:id",
-getRelatedVideos
+  "/videos/version",
+  getVideosVersion
 );
 
+/* ===========================================
+   Get All
+=========================================== */
 
-// single video
 router.get(
-"/videos/:id",
-getVideoById
+  "/videos",
+  getVideos
 );
 
+/* ===========================================
+   Related
+=========================================== */
 
-// create
+router.get(
+  "/videos/related/:id",
+  getRelatedVideos
+);
+
+/* ===========================================
+   Single
+=========================================== */
+
+router.get(
+  "/videos/:id",
+  getVideoById
+);
+
+/* ===========================================
+   Create
+=========================================== */
+
 router.post(
-"/videos",
-createVideo
+  "/videos",
+  createVideo
 );
 
+/* ===========================================
+   Update
+=========================================== */
 
-// update
 router.put(
-"/videos/:id",
-updateVideo
+  "/videos/:id",
+  updateVideo
 );
 
+/* ===========================================
+   Delete
+=========================================== */
 
-// delete
 router.delete(
-"/videos/:id",
-deleteVideo
+  "/videos/:id",
+  deleteVideo
 );
-
-
 
 export default router;

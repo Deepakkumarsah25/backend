@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   getAlbums,
+  getAlbumsVersion,
   getAlbumById,
   getRelatedAlbums,
   createAlbum,
@@ -11,22 +12,57 @@ import {
 
 const router = express.Router();
 
-// get all albums
-router.get("/albums", getAlbums);
+/* ===========================================
+   Albums Version
+=========================================== */
 
-// IMPORTANT: related route upar rakho
-router.get("/albums/related/:id", getRelatedAlbums);
+router.get(
+  "/albums/version",
+  getAlbumsVersion
+);
 
-// single album
-router.get("/albums/:id", getAlbumById);
+/* ===========================================
+   Albums
+=========================================== */
 
-// create
-router.post("/albums", createAlbum);
+router.get(
+  "/albums",
+  getAlbums
+);
 
-// update
-router.put("/albums/:id", updateAlbum);
+/* IMPORTANT: related route upar rakho */
 
-// delete
-router.delete("/albums/:id", deleteAlbum);
+router.get(
+  "/albums/related/:id",
+  getRelatedAlbums
+);
+
+/* Single album */
+
+router.get(
+  "/albums/:id",
+  getAlbumById
+);
+
+/* Create */
+
+router.post(
+  "/albums",
+  createAlbum
+);
+
+/* Update */
+
+router.put(
+  "/albums/:id",
+  updateAlbum
+);
+
+/* Delete */
+
+router.delete(
+  "/albums/:id",
+  deleteAlbum
+);
 
 export default router;
