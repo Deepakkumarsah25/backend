@@ -24,24 +24,18 @@ export const loginAdmin = async (req, res) => {
   }
 };
 
-
 export const dashboard = async (req, res) => {
-  const banners = await Banner.find()
-    .sort({ createdAt: -1 });
+  const banners = await Banner.find().sort({ createdAt: -1 });
 
   res.render("dashboard", { banners });
 };
 
 export const addBanner = async (req, res) => {
   try {
-
     console.log(req.files);
 
     for (const file of req.files) {
-
-      const result = await cloudinary.uploader.upload(
-        file.path
-      );
+      const result = await cloudinary.uploader.upload(file.path);
 
       await Banner.create({
         imageUrl: result.secure_url,
@@ -49,7 +43,6 @@ export const addBanner = async (req, res) => {
     }
 
     res.redirect("/bainar");
-
   } catch (error) {
     console.log(error);
     res.status(500).send("Upload Failed");
@@ -58,24 +51,19 @@ export const addBanner = async (req, res) => {
 
 export const deleteBanner = async (req, res) => {
   try {
-
-    await Banner.findByIdAndDelete(
-      req.params.id
-    );
+    await Banner.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
-      message: "Banner deleted"
+      message: "Banner deleted",
     });
-
   } catch (error) {
-
     console.log(error);
 
     res.status(500).json({
       success: false,
-      message: "Delete failed"
-    });    
+      message: "Delete failed",
+    });
   }
 };
 
@@ -99,4 +87,25 @@ export const createAdmin = async (req, res) => {
     console.log(error);
     res.status(500).send("Error Creating Admin");
   }
+};
+
+export const logoutAdmin = (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.log("Logout Error:", err);
+      return res.status(500).send("Logout Failed");
+    }
+
+    res.clearCookie("connect.sid");
+
+    // Browser ko old admin pages cache nahi karne dena
+    res.set({
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    });
+
+    // Login page
+    return res.redirect("/");
+  });
 };

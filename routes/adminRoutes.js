@@ -7,6 +7,7 @@ import {
   createAdmin,
   dashboard,
   addBanner,
+  logoutAdmin,
   deleteBanner,
 } from "../controllers/adminController.js";
 
@@ -50,66 +51,95 @@ router.get("/create-admin", (req, res) => res.sendStatus(404));
 
 router.post("/login", loginAdmin);
 
+/* =========================================
+   LOGOUT
+========================================= */
 
-router.get("/dashboard", requireAdmin, dashboard);
+router.get(
+  "/logout",
+  requireAdmin,
+  logoutAdmin
+);
+
+router.get(
+  "/dashboard",
+  requireAdmin,
+  dashboard
+);
 
 /* =========================================
    VIP LIVE
 ========================================= */
 
-router.get("/vip-live", requireAdmin, (req, res) => {
-  res.render("viplive");
-});
+router.get(
+  "/vip-live",
+  requireAdmin,
+  (req, res) => {
+    res.render("viplive");
+  }
+);
 
 /* =========================================
    VIDEO GALLERY
 ========================================= */
 
-router.get("/video_gallery", requireAdmin, async (req, res) => {
-  try {
-    const videos = await Video.find().sort({
-      createdAt: -1,
-    });
+router.get(
+  "/video_gallery",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const videos = await Video.find().sort({
+        createdAt: -1,
+      });
 
-    res.render("video_gallery", {
-      videos,
-    });
-  } catch (error) {
-    console.log(error);
+      res.render("video_gallery", {
+        videos,
+      });
+    } catch (error) {
+      console.log(error);
 
-    res.render("video_gallery", {
-      videos: [],
-    });
+      res.render("video_gallery", {
+        videos: [],
+      });
+    }
   }
-});
+);
 
 /* =========================================
    ALBUM
 ========================================= */
 
-router.get("/album", requireAdmin, async (req, res) => {
-  try {
-    const albums = await Album.find().sort({
-      createdAt: -1,
-    });
+router.get(
+  "/album",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const albums = await Album.find().sort({
+        createdAt: -1,
+      });
 
-    res.render("album", {
-      albums,
-    });
-  } catch (error) {
-    console.log(error);
+      res.render("album", {
+        albums,
+      });
+    } catch (error) {
+      console.log(error);
 
-    res.render("album", {
-      albums: [],
-    });
+      res.render("album", {
+        albums: [],
+      });
+    }
   }
-});
+);
 
 /* =========================================
    JOIN MEMBER
 ========================================= */
 
-router.get("/joinmember", requireAdmin, renderJoinAdminPage);
+router.get(
+  "/joinmember",
+  requireAdmin,
+  renderJoinAdminPage
+);
 
 router.get(
   "/joinmember/data",

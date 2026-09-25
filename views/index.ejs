@@ -5,175 +5,1037 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>VIP Admin Login</title>
+<title>VIP Admin | Secure Login</title>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+  rel="stylesheet"
+>
 
 <style>
 
+/* =====================================================
+   RESET
+===================================================== */
+
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, Helvetica, sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+:root{
+  --primary:#0b4ea2;
+  --primary-dark:#073875;
+  --primary-light:#eaf3ff;
+
+  --text:#172033;
+  --text-light:#667085;
+  --muted:#98a2b3;
+
+  --border:#e4e9f0;
+  --background:#f4f7fb;
+
+  --white:#ffffff;
+
+  --success:#12b76a;
+}
+
+html,
+body{
+  width:100%;
+  min-height:100%;
 }
 
 body{
+  min-height:100vh;
 
-height:100vh;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    Helvetica,
+    sans-serif;
 
-display:flex;
+  background:
+    radial-gradient(
+      circle at 5% 5%,
+      rgba(11,78,162,.12),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 95% 95%,
+      rgba(21,101,192,.10),
+      transparent 28%
+    ),
+    var(--background);
 
-justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-align-items:center;
+  padding:30px;
 
-background:linear-gradient(135deg,#0B4EA2,#1565c0);
+  color:var(--text);
 
+  overflow-x:hidden;
 }
 
-.login-card{
+/* =====================================================
+   BACKGROUND DECORATION
+===================================================== */
 
-width:380px;
+.background-shape{
+  position:fixed;
 
-background:#fff;
+  border-radius:50%;
 
-border-radius:18px;
+  pointer-events:none;
 
-padding:40px;
+  filter:blur(1px);
 
-box-shadow:0 20px 60px rgba(0,0,0,.2);
-
+  z-index:0;
 }
 
-.logo{
+.shape-one{
+  width:320px;
+  height:320px;
 
-width:70px;
+  top:-170px;
+  left:-130px;
 
-height:70px;
-
-margin:auto;
-
-border-radius:50%;
-
-background:#0B4EA2;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-color:#fff;
-
-font-size:30px;
-
-margin-bottom:20px;
-
+  background:rgba(11,78,162,.08);
 }
 
-h2{
+.shape-two{
+  width:400px;
+  height:400px;
 
-text-align:center;
+  right:-190px;
+  bottom:-210px;
 
-margin-bottom:8px;
-
-color:#0B4EA2;
-
+  background:rgba(21,101,192,.07);
 }
 
-p{
+.shape-three{
+  width:100px;
+  height:100px;
 
-text-align:center;
+  right:18%;
+  top:8%;
 
-color:#777;
-
-margin-bottom:30px;
-
+  border:1px solid rgba(11,78,162,.08);
 }
+
+/* =====================================================
+   MAIN CARD
+===================================================== */
+
+.login-container{
+
+  position:relative;
+
+  z-index:2;
+
+  width:100%;
+  max-width:1080px;
+
+  min-height:650px;
+
+  display:grid;
+
+  grid-template-columns:47% 53%;
+
+  background:rgba(255,255,255,.94);
+
+  border:1px solid rgba(255,255,255,.9);
+
+  border-radius:28px;
+
+  overflow:hidden;
+
+  box-shadow:
+    0 35px 90px rgba(25,45,75,.13),
+    0 8px 25px rgba(25,45,75,.05);
+
+  backdrop-filter:blur(15px);
+}
+
+/* =====================================================
+   LEFT PANEL
+===================================================== */
+
+.brand-panel{
+
+  position:relative;
+
+  padding:48px;
+
+  color:#fff;
+
+  display:flex;
+
+  flex-direction:column;
+
+  justify-content:space-between;
+
+  overflow:hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      #062f65 0%,
+      #0b4ea2 48%,
+      #1769c8 100%
+    );
+}
+
+/* decorative circles */
+
+.brand-panel::before{
+
+  content:"";
+
+  position:absolute;
+
+  width:420px;
+  height:420px;
+
+  border-radius:50%;
+
+  top:-230px;
+  right:-190px;
+
+  border:1px solid rgba(255,255,255,.12);
+
+  box-shadow:
+    0 0 0 35px rgba(255,255,255,.025),
+    0 0 0 70px rgba(255,255,255,.018);
+}
+
+.brand-panel::after{
+
+  content:"";
+
+  position:absolute;
+
+  width:300px;
+  height:300px;
+
+  border-radius:50%;
+
+  bottom:-190px;
+  left:-150px;
+
+  background:rgba(255,255,255,.045);
+}
+
+/* =====================================================
+   BRAND TOP
+===================================================== */
+
+.brand-top{
+
+  position:relative;
+
+  z-index:2;
+
+  display:flex;
+
+  align-items:center;
+
+  gap:13px;
+}
+
+.brand-logo{
+
+  width:52px;
+  height:52px;
+
+  border-radius:15px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  background:rgba(255,255,255,.12);
+
+  border:1px solid rgba(255,255,255,.2);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.15);
+
+  font-size:21px;
+}
+
+.brand-title{
+
+  font-size:20px;
+
+  font-weight:700;
+
+  letter-spacing:.2px;
+}
+
+.brand-label{
+
+  margin-top:4px;
+
+  font-size:10px;
+
+  text-transform:uppercase;
+
+  letter-spacing:1.5px;
+
+  color:rgba(255,255,255,.6);
+}
+
+/* =====================================================
+   LEFT CONTENT
+===================================================== */
+
+.brand-content{
+
+  position:relative;
+
+  z-index:2;
+
+  margin-top:40px;
+}
+
+.welcome-label{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:7px;
+
+  padding:7px 11px;
+
+  border-radius:20px;
+
+  background:rgba(255,255,255,.09);
+
+  border:1px solid rgba(255,255,255,.12);
+
+  color:rgba(255,255,255,.8);
+
+  font-size:11px;
+
+  font-weight:600;
+
+  margin-bottom:20px;
+}
+
+.welcome-dot{
+
+  width:6px;
+  height:6px;
+
+  border-radius:50%;
+
+  background:#72e0aa;
+
+  box-shadow:
+    0 0 0 4px rgba(114,224,170,.12);
+}
+
+.brand-content h1{
+
+  font-size:43px;
+
+  line-height:1.13;
+
+  letter-spacing:-1px;
+
+  margin-bottom:19px;
+}
+
+.brand-content h1 span{
+
+  color:#a7d0ff;
+}
+
+.brand-description{
+
+  max-width:390px;
+
+  color:rgba(255,255,255,.7);
+
+  font-size:14px;
+
+  line-height:1.8;
+}
+
+/* =====================================================
+   FEATURES
+===================================================== */
+
+.feature-list{
+
+  position:relative;
+
+  z-index:2;
+
+  display:grid;
+
+  gap:12px;
+
+  margin-top:32px;
+}
+
+.feature{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  color:rgba(255,255,255,.8);
+
+  font-size:12px;
+}
+
+.feature-icon{
+
+  width:30px;
+  height:30px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border-radius:9px;
+
+  background:rgba(255,255,255,.08);
+
+  color:#b9d9ff;
+
+  font-size:11px;
+}
+
+/* =====================================================
+   BRAND FOOTER
+===================================================== */
+
+.brand-footer{
+
+  position:relative;
+
+  z-index:2;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  gap:20px;
+
+  padding-top:25px;
+
+  border-top:1px solid rgba(255,255,255,.1);
+}
+
+.security{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:9px;
+
+  color:rgba(255,255,255,.65);
+
+  font-size:11px;
+}
+
+.security-icon{
+
+  width:32px;
+  height:32px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border-radius:9px;
+
+  background:rgba(255,255,255,.08);
+
+  color:#a7d0ff;
+}
+
+.version{
+
+  color:rgba(255,255,255,.4);
+
+  font-size:10px;
+}
+
+/* =====================================================
+   RIGHT PANEL
+===================================================== */
+
+.login-panel{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  padding:60px 70px;
+
+  background:#fff;
+}
+
+.login-content{
+
+  width:100%;
+
+  max-width:390px;
+}
+
+/* =====================================================
+   LOGIN HEADER
+===================================================== */
+
+.login-icon{
+
+  width:58px;
+  height:58px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border-radius:17px;
+
+  background:var(--primary-light);
+
+  color:var(--primary);
+
+  font-size:23px;
+
+  margin-bottom:23px;
+
+  box-shadow:
+    0 8px 20px rgba(11,78,162,.08);
+}
+
+.login-header h2{
+
+  font-size:30px;
+
+  line-height:1.2;
+
+  letter-spacing:-.5px;
+
+  margin-bottom:9px;
+
+  color:var(--text);
+}
+
+.login-header p{
+
+  color:var(--text-light);
+
+  font-size:13px;
+
+  line-height:1.7;
+
+  margin-bottom:31px;
+}
+
+/* =====================================================
+   FORM
+===================================================== */
 
 .input-group{
 
-margin-bottom:18px;
-
+  margin-bottom:20px;
 }
 
 .input-group label{
 
-display:block;
+  display:flex;
 
-margin-bottom:8px;
+  align-items:center;
 
-font-size:14px;
+  justify-content:space-between;
 
-font-weight:bold;
+  margin-bottom:8px;
 
+  color:#344054;
+
+  font-size:12px;
+
+  font-weight:650;
+
+  letter-spacing:.1px;
+}
+
+.input-wrapper{
+
+  position:relative;
+}
+
+.input-icon{
+
+  position:absolute;
+
+  left:16px;
+  top:50%;
+
+  transform:translateY(-50%);
+
+  color:#98a2b3;
+
+  font-size:14px;
+
+  pointer-events:none;
+
+  transition:.2s;
 }
 
 .input-group input{
 
-width:100%;
+  width:100%;
 
-padding:13px;
+  height:54px;
 
-border:1px solid #ddd;
+  padding:0 48px;
 
-border-radius:10px;
+  border:1px solid var(--border);
 
-font-size:15px;
+  border-radius:12px;
 
-outline:none;
+  outline:none;
 
-transition:.3s;
+  background:#fafbfd;
 
+  color:var(--text);
+
+  font-size:13px;
+
+  transition:
+    border .2s,
+    box-shadow .2s,
+    background .2s;
+}
+
+.input-group input::placeholder{
+
+  color:#aab3c0;
+}
+
+.input-group input:hover{
+
+  border-color:#c8d0dc;
 }
 
 .input-group input:focus{
 
-border-color:#0B4EA2;
+  background:#fff;
 
-box-shadow:0 0 8px rgba(11,78,162,.2);
+  border-color:var(--primary);
 
+  box-shadow:
+    0 0 0 4px rgba(11,78,162,.08);
 }
 
-button{
+.input-group input:focus + .input-icon{
 
-width:100%;
-
-padding:14px;
-
-background:#0B4EA2;
-
-color:#fff;
-
-border:none;
-
-border-radius:10px;
-
-font-size:16px;
-
-cursor:pointer;
-
-transition:.3s;
-
+  color:var(--primary);
 }
 
-button:hover{
+/* =====================================================
+   PASSWORD TOGGLE
+===================================================== */
 
-background:#083d80;
+.password-toggle{
 
+  position:absolute;
+
+  right:12px;
+
+  top:50%;
+
+  transform:translateY(-50%);
+
+  width:32px;
+  height:32px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  border:0;
+
+  border-radius:8px;
+
+  background:transparent;
+
+  color:#98a2b3;
+
+  cursor:pointer;
+
+  transition:.2s;
 }
 
-.footer{
+.password-toggle:hover{
 
-margin-top:20px;
+  background:#f1f5fa;
 
-text-align:center;
+  color:var(--primary);
+}
 
-font-size:13px;
+/* =====================================================
+   LOGIN BUTTON
+===================================================== */
 
-color:#999;
+.login-button{
 
+  position:relative;
+
+  width:100%;
+
+  height:54px;
+
+  margin-top:7px;
+
+  border:0;
+
+  border-radius:12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0b4ea2,
+      #1769c8
+    );
+
+  color:#fff;
+
+  font-size:13px;
+
+  font-weight:650;
+
+  letter-spacing:.15px;
+
+  cursor:pointer;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:10px;
+
+  overflow:hidden;
+
+  box-shadow:
+    0 12px 25px rgba(11,78,162,.2);
+
+  transition:
+    transform .2s,
+    box-shadow .2s;
+}
+
+.login-button::before{
+
+  content:"";
+
+  position:absolute;
+
+  top:0;
+  left:-100%;
+
+  width:60%;
+  height:100%;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,.18),
+      transparent
+    );
+
+  transition:.6s;
+}
+
+.login-button:hover{
+
+  transform:translateY(-2px);
+
+  box-shadow:
+    0 16px 32px rgba(11,78,162,.25);
+}
+
+.login-button:hover::before{
+
+  left:130%;
+}
+
+.login-button:active{
+
+  transform:translateY(0);
+}
+
+.login-button i{
+
+  font-size:13px;
+}
+
+/* =====================================================
+   BOTTOM SECURITY
+===================================================== */
+
+.login-bottom{
+
+  margin-top:28px;
+
+  padding-top:21px;
+
+  border-top:1px solid #edf0f4;
+
+  text-align:center;
+}
+
+.login-bottom-text{
+
+  color:#98a2b3;
+
+  font-size:10.5px;
+
+  line-height:1.6;
+}
+
+.login-bottom-text strong{
+
+  color:#667085;
+}
+
+.security-badges{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  gap:17px;
+
+  margin-top:13px;
+}
+
+.security-badge{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:5px;
+
+  color:#98a2b3;
+
+  font-size:10px;
+}
+
+.security-badge i{
+
+  color:var(--primary);
+
+  font-size:10px;
+}
+
+/* =====================================================
+   RESPONSIVE TABLET
+===================================================== */
+
+@media(max-width:900px){
+
+  body{
+    padding:20px;
+  }
+
+  .login-container{
+
+    max-width:600px;
+
+    grid-template-columns:1fr;
+
+    min-height:auto;
+  }
+
+  .brand-panel{
+
+    min-height:330px;
+
+    padding:36px;
+  }
+
+  .brand-content{
+
+    margin-top:35px;
+  }
+
+  .brand-content h1{
+
+    font-size:34px;
+  }
+
+  .brand-description{
+
+    max-width:500px;
+  }
+
+  .feature-list{
+
+    display:none;
+  }
+
+  .brand-footer{
+
+    margin-top:35px;
+  }
+
+  .login-panel{
+
+    padding:45px 40px;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE MOBILE
+===================================================== */
+
+@media(max-width:520px){
+
+  body{
+
+    padding:10px;
+
+    align-items:flex-start;
+  }
+
+  .login-container{
+
+    margin:10px 0;
+
+    border-radius:21px;
+  }
+
+  .brand-panel{
+
+    min-height:225px;
+
+    padding:26px;
+  }
+
+  .brand-logo{
+
+    width:44px;
+    height:44px;
+
+    border-radius:12px;
+  }
+
+  .brand-title{
+
+    font-size:17px;
+  }
+
+  .brand-label{
+
+    font-size:8px;
+  }
+
+  .brand-content{
+
+    margin-top:27px;
+  }
+
+  .welcome-label{
+
+    margin-bottom:14px;
+  }
+
+  .brand-content h1{
+
+    font-size:27px;
+
+    letter-spacing:-.6px;
+
+    margin-bottom:0;
+  }
+
+  .brand-description{
+
+    display:none;
+  }
+
+  .brand-footer{
+
+    display:none;
+  }
+
+  .login-panel{
+
+    padding:32px 23px;
+  }
+
+  .login-icon{
+
+    width:52px;
+    height:52px;
+
+    font-size:20px;
+
+    margin-bottom:18px;
+  }
+
+  .login-header h2{
+
+    font-size:26px;
+  }
+
+  .login-header p{
+
+    margin-bottom:25px;
+  }
+
+  .input-group input{
+
+    height:52px;
+  }
+
+  .login-button{
+
+    height:52px;
+  }
+
+  .security-badges{
+
+    gap:10px;
+  }
 }
 
 </style>
@@ -182,62 +1044,370 @@ color:#999;
 
 <body>
 
-<div class="login-card">
 
-<div class="logo">
+<!-- BACKGROUND -->
 
-<i class="fa-solid fa-user-shield"></i>
+<div class="background-shape shape-one"></div>
+<div class="background-shape shape-two"></div>
+<div class="background-shape shape-three"></div>
+
+
+<!-- MAIN LOGIN -->
+
+<div class="login-container">
+
+
+  <!-- =================================================
+       BRAND PANEL
+  ================================================== -->
+
+  <section class="brand-panel">
+
+
+    <!-- BRAND -->
+
+    <div class="brand-top">
+
+      <div class="brand-logo">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+
+      <div>
+
+        <div class="brand-title">
+          VIP Admin
+        </div>
+
+        <div class="brand-label">
+          Management Portal
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- CONTENT -->
+
+    <div class="brand-content">
+
+      <div class="welcome-label">
+
+        <span class="welcome-dot"></span>
+
+        Secure Administration
+
+      </div>
+
+
+      <h1>
+        Everything you need,
+        <span>in one place.</span>
+      </h1>
+
+
+      <p class="brand-description">
+        Access your administrative workspace and manage
+        your platform through a secure and centralized
+        control panel.
+      </p>
+
+
+      <div class="feature-list">
+
+        <div class="feature">
+
+          <span class="feature-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </span>
+
+          Centralized dashboard management
+
+        </div>
+
+
+        <div class="feature">
+
+          <span class="feature-icon">
+            <i class="fa-solid fa-shield-halved"></i>
+          </span>
+
+          Protected administrator access
+
+        </div>
+
+
+        <div class="feature">
+
+          <span class="feature-icon">
+            <i class="fa-solid fa-bolt"></i>
+          </span>
+
+          Fast and efficient workflow
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- FOOTER -->
+
+    <div class="brand-footer">
+
+      <div class="security">
+
+        <span class="security-icon">
+          <i class="fa-solid fa-lock"></i>
+        </span>
+
+        <span>
+          Secure administrator session
+        </span>
+
+      </div>
+
+      <span class="version">
+        ADMIN PORTAL
+      </span>
+
+    </div>
+
+  </section>
+
+
+  <!-- =================================================
+       LOGIN PANEL
+  ================================================== -->
+
+  <section class="login-panel">
+
+    <div class="login-content">
+
+
+      <!-- HEADER -->
+
+      <div class="login-header">
+
+        <div class="login-icon">
+
+          <i class="fa-solid fa-user-shield"></i>
+
+        </div>
+
+
+        <h2>
+          Welcome back
+        </h2>
+
+
+        <p>
+          Sign in with your administrator credentials
+          to continue to the dashboard.
+        </p>
+
+      </div>
+
+
+      <!-- =================================================
+           LOGIN FORM
+           BACKEND UNCHANGED
+      ================================================== -->
+
+      <form action="/login" method="POST">
+
+
+        <!-- EMAIL -->
+
+        <div class="input-group">
+
+          <label for="email">
+            Email Address
+          </label>
+
+
+          <div class="input-wrapper">
+
+            <i class="fa-regular fa-envelope input-icon"></i>
+
+
+            <input
+              id="email"
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              autocomplete="email"
+              required
+            >
+
+          </div>
+
+        </div>
+
+
+        <!-- PASSWORD -->
+
+        <div class="input-group">
+
+          <label for="password">
+            Password
+          </label>
+
+
+          <div class="input-wrapper">
+
+            <i class="fa-solid fa-lock input-icon"></i>
+
+
+            <input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              autocomplete="current-password"
+              required
+            >
+
+
+            <button
+              type="button"
+              class="password-toggle"
+              id="passwordToggle"
+              aria-label="Show password"
+            >
+
+              <i class="fa-regular fa-eye"></i>
+
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- LOGIN -->
+
+        <button
+          type="submit"
+          class="login-button"
+          id="loginButton"
+        >
+
+          <i class="fa-solid fa-right-to-bracket"></i>
+
+          <span>
+            Sign In to Dashboard
+          </span>
+
+        </button>
+
+
+      </form>
+
+
+      <!-- BOTTOM -->
+
+      <div class="login-bottom">
+
+        <div class="login-bottom-text">
+
+          © 2026 <strong>VIP Admin Dashboard</strong>
+          · Authorized Access Only
+
+        </div>
+
+
+        <div class="security-badges">
+
+          <span class="security-badge">
+
+            <i class="fa-solid fa-shield-halved"></i>
+
+            Secure Login
+
+          </span>
+
+
+          <span class="security-badge">
+
+            <i class="fa-solid fa-lock"></i>
+
+            Protected Session
+
+          </span>
+
+
+          <span class="security-badge">
+
+            <i class="fa-solid fa-circle-check"></i>
+
+            Verified Access
+
+          </span>
+
+        </div>
+
+      </div>
+
+
+    </div>
+
+  </section>
 
 </div>
 
-<h2>VIP Admin Panel</h2>
 
-<p>Sign in to continue</p>
+<script>
 
-<form action="/login" method="POST">
+/* =====================================================
+   PASSWORD SHOW / HIDE
+===================================================== */
 
-<div class="input-group">
+const passwordInput =
+  document.getElementById("password");
 
-<label>Email</label>
+const passwordToggle =
+  document.getElementById("passwordToggle");
 
-<input
-type="email"
-name="email"
-placeholder="Enter email"
-required>
 
-</div>
+passwordToggle.addEventListener("click", function(){
 
-<div class="input-group">
+  const icon =
+    this.querySelector("i");
 
-<label>Password</label>
 
-<input
-type="password"
-name="password"
-placeholder="Enter password"
-required>
+  if(passwordInput.type === "password"){
 
-</div>
+    passwordInput.type = "text";
 
-<button type="submit">
+    icon.classList.remove("fa-eye");
 
-<i class="fa-solid fa-right-to-bracket"></i>
+    icon.classList.add("fa-eye-slash");
 
-Login
+    this.setAttribute(
+      "aria-label",
+      "Hide password"
+    );
 
-</button>
+  }else{
 
-</form>
+    passwordInput.type = "password";
 
-<div class="footer">
+    icon.classList.remove("fa-eye-slash");
 
-© 2026 VIP Admin Dashboard
+    icon.classList.add("fa-eye");
 
-</div>
+    this.setAttribute(
+      "aria-label",
+      "Show password"
+    );
 
-</div>
+  }
+
+});
+
+</script>
 
 </body>
-
 </html>
