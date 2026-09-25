@@ -1,7 +1,7 @@
 import cmsRoutes from "./cmsRoutes.js";
 import express from "express";
 import upload from "../middlewar/upload.js";
-import { requireAdmin } from "../middlewar/adminAuth.js";
+
 import {
   loginAdmin,
   createAdmin,
@@ -20,6 +20,7 @@ import {
 
 import Video from "../models/videogallery.js";
 import Album from "../models/Album.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 /* =========================================
    DELETE ACCOUNT CONTROLLER
@@ -45,83 +46,135 @@ router.get("/", (req, res) => {
    ADMIN
 ========================================= */
 
-router.get("/create-admin", createAdmin);
+// Public admin creation is disabled; provisioning must be done out of band.
+router.get("/create-admin", (req, res) => res.sendStatus(404));
 
 router.post("/login", loginAdmin);
 
-router.get("/dashboard", requireAdmin, dashboard);
+/* =========================================
+   LOGOUT
+========================================= */
+
+router.get(
+  "/logout",
+  requireAdmin,
+  logoutAdmin
+);
+
+router.get(
+  "/dashboard",
+  requireAdmin,
+  dashboard
+);
 
 /* =========================================
    VIP LIVE
 ========================================= */
 
-router.get("/vip-live", requireAdmin, (req, res) => {
-  res.render("viplive");
-});
+router.get(
+  "/vip-live",
+  requireAdmin,
+  (req, res) => {
+    res.render("viplive");
+  }
+);
 
 /* =========================================
    VIDEO GALLERY
 ========================================= */
 
-router.get("/video_gallery", async (req, res) => {
-  try {
-    const videos = await Video.find().sort({
-      createdAt: -1,
-    });
+router.get(
+  "/video_gallery",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const videos = await Video.find().sort({
+        createdAt: -1,
+      });
 
-    res.render("video_gallery", {
-      videos,
-    });
-  } catch (error) {
-    console.log(error);
+      res.render("video_gallery", {
+        videos,
+      });
+    } catch (error) {
+      console.log(error);
 
-    res.render("video_gallery", {
-      videos: [],
-    });
+      res.render("video_gallery", {
+        videos: [],
+      });
+    }
   }
-});
+);
 
 /* =========================================
    ALBUM
 ========================================= */
 
-router.get("/album", async (req, res) => {
-  try {
-    const albums = await Album.find().sort({
-      createdAt: -1,
-    });
+router.get(
+  "/album",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const albums = await Album.find().sort({
+        createdAt: -1,
+      });
 
-    res.render("album", {
-      albums,
-    });
-  } catch (error) {
-    console.log(error);
+      res.render("album", {
+        albums,
+      });
+    } catch (error) {
+      console.log(error);
 
-    res.render("album", {
-      albums: [],
-    });
+      res.render("album", {
+        albums: [],
+      });
+    }
   }
-});
+);
 
 /* =========================================
    JOIN MEMBER
 ========================================= */
 
-router.get("/joinmember", renderJoinAdminPage);
+router.get(
+  "/joinmember",
+  requireAdmin,
+  renderJoinAdminPage
+);
 
-router.get("/joinmember/data", getAllJoinApplications);
+router.get(
+  "/joinmember/data",
+  requireAdmin,
+  getAllJoinApplications
+);
 
-router.get("/joinmember/:id", getJoinApplicationById);
+router.get(
+  "/joinmember/:id",
+  requireAdmin,
+  getJoinApplicationById
+);
 
-router.delete("/joinmember/:id", deleteJoinApplication);
+router.delete(
+  "/joinmember/:id",
+  requireAdmin,
+  deleteJoinApplication
+);
 
 /* =========================================
    BANNER
 ========================================= */
 
-router.post("/banner/add", upload.array("banner", 20), addBanner);
+router.post(
+  "/banner/add",
+  requireAdmin,
+  upload.array("banner", 20),
+  addBanner
+);
 
-router.delete("/banner/delete/:id", deleteBanner);
+router.delete(
+  "/banner/delete/:id",
+  requireAdmin,
+  deleteBanner
+);
 
 /* =========================================
    CONTACT US
@@ -129,16 +182,35 @@ router.delete("/banner/delete/:id", deleteBanner);
 
 import * as contactController from "../controllers/admin/contactController.js";
 
-router.get("/admin/contact", contactController.renderContactPage);
+router.get(
+  "/admin/contact",
+  requireAdmin,
+  contactController.renderContactPage
+);
 
-router.post("/admin/contact/update", contactController.updateContactInfo);
+router.post(
+  "/admin/contact/update",
+  requireAdmin,
+  contactController.updateContactInfo
+);
 
-router.post("/admin/contact/office/add", contactController.addOffice);
+router.post(
+  "/admin/contact/office/add",
+  requireAdmin,
+  contactController.addOffice
+);
 
-router.post("/admin/contact/office/edit/:id", contactController.editOffice);
+router.post(
+  "/admin/contact/office/edit/:id",
+  requireAdmin,
+  contactController.editOffice
+);
 
-router.post("/admin/contact/office/delete/:id", contactController.deleteOffice);
-router.get("/logout", logoutAdmin);
+router.post(
+  "/admin/contact/office/delete/:id",
+  requireAdmin,
+  contactController.deleteOffice
+);
 
 /* =========================================
    DELETE ACCOUNT
@@ -150,25 +222,40 @@ router.get("/logout", logoutAdmin);
    /admin/delete-accounts
 */
 
-router.get("/admin/delete-accounts", renderDeleteAccountPage);
+router.get(
+  "/admin/delete-accounts",
+  requireAdmin,
+  renderDeleteAccountPage
+);
 
 /*
    Admin permanently deletes account
    Firebase Auth + MongoDB
 */
 
-router.post("/admin/delete-account/:id", adminDeleteAccount);
+router.post(
+  "/admin/delete-account/:id",
+  requireAdmin,
+  adminDeleteAccount
+);
 
 /*
    Admin cancels deletion request
 */
 
-router.post("/admin/delete-account/cancel/:id", adminCancelDeleteAccount);
+router.post(
+  "/admin/delete-account/cancel/:id",
+  requireAdmin,
+  adminCancelDeleteAccount
+);
 
 /* =========================================
    CMS
 ========================================= */
 
-router.use("/cms", cmsRoutes);
+router.use(
+  "/cms",
+  cmsRoutes
+);
 
 export default router;

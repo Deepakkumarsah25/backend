@@ -1,9 +1,10 @@
 import express from "express";
 import Banner from "../../models/Banner.js";
+import { requireAdmin } from "../../middlewar/requireAdmin.js";
 
 const router = express.Router();
 
-router.get("/bainar", async (req, res) => {
+router.get("/bainar", requireAdmin, async (req, res) => {
   const banners = await Banner.find().sort({ createdAt: -1 });
 
   res.render("LiveUpdatesBanners/banners", {

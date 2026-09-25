@@ -1,65 +1,22 @@
 import User from "../../models/User.js";
 import { sendEmail } from "../../services/emailService.js";
+import { randomInt } from "node:crypto";
+import { getBearerToken, verifyFirebaseToken } from "../../middlewar/firebaseAuth.js";
 
-import {
-  getApps,
-  initializeApp,
-  cert,
-} from "firebase-admin/app";
-
-import { getAuth } from "firebase-admin/auth";
-
+const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
 const OTP_EXPIRY = 10 * 60 * 1000;
+const OTP_SEND_COOLDOWN = 60 * 1000;
+const MAX_OTP_ATTEMPTS = 5;
 
-// =====================================================
-// FIREBASE ADMIN INITIALIZATION
-// =====================================================
-
-let firebaseApp;
-
-const getFirebaseAdminApp = () => {
-  if (firebaseApp) {
-    return firebaseApp;
-  }
-
-  const apps = getApps();
-
-  if (apps.length > 0) {
-    firebaseApp = apps[0];
-    return firebaseApp;
-  }
-
-  let privateKey = process.env.FIREBASE_PRIVATE_KEY || "";
-
-  privateKey = privateKey.replace(/\\n/g, "\n");
-
-  firebaseApp = initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey,
-    }),
-  });
-
-  console.log(
-    "Firebase Admin initialized for user account deletion"
-  );
-
-  return firebaseApp;
-};
-
-
-// =====================================================
+// ============================================
 // SEND DELETE ACCOUNT OTP
-// =====================================================
-
+// ============================================
 export const sendDeleteOtp = async (req, res) => {
   try {
-    const { uid } = req.body;
+    const uid = req.user?.uid;
 
     console.log("================================");
     console.log("SEND DELETE OTP");
-    console.log("UID:", uid);
     console.log("================================");
 
     if (!uid) {
@@ -67,6 +24,20 @@ export const sendDeleteOtp = async (req, res) => {
         success: false,
         message: "User UID is required",
       });
+    }
+
+    const auth = getBearerToken(req);
+    let verifiedEmail;
+    try {
+      const decodedToken = auth.error ? null : await verifyFirebaseToken(auth.token);
+      if (decodedToken?.uid === uid && decodedToken.email_verified === true && typeof decodedToken.email === "string") {
+        verifiedEmail = decodedToken.email.trim().toLowerCase();
+      }
+    } catch {
+      return res.status(401).json({ success: false, message: "Authentication could not be verified." });
+    }
+    if (!verifiedEmail) {
+      return res.status(403).json({ success: false, message: "A verified email address is required to request account deletion." });
     }
 
     // Find user in MongoDB
@@ -81,41 +52,44 @@ export const sendDeleteOtp = async (req, res) => {
       });
     }
 
-    console.log("User found:", user.email);
+    console.log("User found for account deletion request.");
 
-    if (!user.email) {
-      return res.status(400).json({
+    // Six-digit OTP generated with cryptographically secure randomness.
+    const otp = String(randomInt(100000, 1000000));
+    const now = new Date();
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        $or: [
+          { deleteOtpLastSentAt: null },
+          { deleteOtpLastSentAt: { $exists: false } },
+          { deleteOtpLastSentAt: { $lte: new Date(now.getTime() - OTP_SEND_COOLDOWN) } },
+        ],
+      },
+      {
+        $set: {
+          email: verifiedEmail,
+          deleteOtp: otp,
+          deleteOtpExpiry: new Date(now.getTime() + OTP_EXPIRY),
+          deleteOtpAttempts: 0,
+          deleteOtpLastSentAt: now,
+        },
+      },
+      { new: true },
+    );
+    if (!updatedUser) {
+      return res.status(429).json({
         success: false,
-        message: "No email found for this account",
+        message: "Please wait before requesting another OTP.",
       });
     }
-
-    // ============================================
-    // GENERATE 4 DIGIT OTP
-    // ============================================
-
-    const otp = Math.floor(
-      1000 + Math.random() * 9000
-    ).toString();
-
-    console.log("Generated OTP:", otp);
-
-    // Save OTP
-    user.deleteOtp = otp;
-
-    // OTP valid for 10 minutes
-    user.deleteOtpExpiry = new Date(
-      Date.now() + OTP_EXPIRY
-    );
-
-    await user.save();
 
     // ============================================
     // SEND EMAIL
     // ============================================
 
     await sendEmail(
-      user.email,
+      verifiedEmail,
       "VIP Party - Account Deletion OTP",
       `
         <!DOCTYPE html>
@@ -196,7 +170,7 @@ export const sendDeleteOtp = async (req, res) => {
                     color:#222222;
                   "
                 >
-                  Hello ${user.name || "User"},
+                  Hello ${updatedUser.name || "User"},
                 </h2>
 
                 <p
@@ -302,12 +276,7 @@ export const sendDeleteOtp = async (req, res) => {
 
           </body>
         </html>
-      `,
-    );
-
-    console.log(
-      "OTP email sent successfully to:",
-      user.email
+      `
     );
 
     return res.status(200).json({
@@ -316,15 +285,19 @@ export const sendDeleteOtp = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("================================");
+    console.error(
+      "================================"
+    );
 
     console.error(
       "SEND DELETE OTP ERROR:"
     );
 
-    console.error(error);
+    console.error(error?.message || "Unexpected error");
 
-    console.error("================================");
+    console.error(
+      "================================"
+    );
 
     return res.status(500).json({
       success: false,
@@ -338,30 +311,156 @@ export const sendDeleteOtp = async (req, res) => {
 };
 
 
-// =====================================================
+// ============================================
 // VERIFY DELETE ACCOUNT OTP
-// PERMANENT DELETE
-// =====================================================
-
+// ============================================
 export const verifyDeleteOtp = async (req, res) => {
   try {
-    const { uid, otp } = req.body;
+    const uid = req.user?.uid;
+    const { otp } = req.body;
 
     console.log("================================");
-    console.log("VERIFY DELETE OTP + PERMANENT DELETE");
-    console.log("UID:", uid);
+    console.log("VERIFY DELETE OTP");
     console.log("================================");
 
-    if (!uid || !otp) {
+    if (!uid) {
       return res.status(400).json({
         success: false,
-        message: "UID and OTP are required",
+        message: "Authenticated user is required",
       });
     }
 
-    // ============================================
-    // FIND MONGODB USER
-    // ============================================
+    // Find user
+    const user = await User.findOne({ uid });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (!user.deleteOtp || !user.deleteOtpExpiry) {
+      return res.status(400).json({ success: false, message: "No active OTP. Please request a new one." });
+    }
+
+    const now = new Date();
+    if (now > user.deleteOtpExpiry) {
+      await User.updateOne(
+        { _id: user._id, deleteOtp: user.deleteOtp, deleteOtpExpiry: { $lte: now } },
+        { $set: { deleteOtp: "", deleteOtpExpiry: null, deleteOtpAttempts: 0 } },
+      );
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired. Please request a new one.",
+      });
+    }
+
+    const submittedOtp = typeof otp === "string" ? otp.trim() : String(otp ?? "");
+    if (/^\d{6}$/.test(submittedOtp) && user.deleteOtp === submittedOtp) {
+      const deletionDate = new Date(Date.now() + TEN_DAYS);
+      const consumedUser = await User.findOneAndUpdate(
+        {
+          _id: user._id,
+          deleteOtp: submittedOtp,
+          deleteOtpExpiry: { $gt: new Date() },
+          deleteOtpAttempts: { $lt: MAX_OTP_ATTEMPTS },
+        },
+        {
+          $set: {
+            deletionRequested: true,
+            deletionDate,
+            deleteOtp: "",
+            deleteOtpExpiry: null,
+            deleteOtpAttempts: 0,
+          },
+        },
+        { new: true },
+      );
+      if (consumedUser) {
+        return res.status(200).json({
+          success: true,
+          message: "Account deletion request submitted successfully",
+          deletionDate: consumedUser.deletionDate,
+        });
+      }
+      return res.status(400).json({ success: false, message: "OTP is invalid, expired, or already used." });
+    }
+
+    const attemptResult = await User.updateOne(
+      {
+        _id: user._id,
+        deleteOtp: user.deleteOtp,
+        deleteOtpExpiry: { $gt: new Date() },
+        deleteOtpAttempts: { $lt: MAX_OTP_ATTEMPTS },
+      },
+      { $inc: { deleteOtpAttempts: 1 } },
+    );
+    if (!attemptResult.modifiedCount) {
+      return res.status(429).json({
+        success: false,
+        message: "Too many incorrect attempts or OTP no longer active. Please request a new OTP.",
+      });
+    }
+    const updatedUser = await User.findById(user._id).select("deleteOtpAttempts");
+    const attemptsExhausted = updatedUser.deleteOtpAttempts >= MAX_OTP_ATTEMPTS;
+    if (attemptsExhausted) {
+      await User.updateOne(
+        {
+          _id: user._id,
+          deleteOtp: user.deleteOtp,
+          deleteOtpAttempts: { $gte: MAX_OTP_ATTEMPTS },
+        },
+        { $set: { deleteOtp: "", deleteOtpExpiry: null, deleteOtpAttempts: 0 } },
+      );
+    }
+    return res.status(attemptsExhausted ? 429 : 400).json({
+        success: false,
+        message: attemptsExhausted
+          ? "Too many incorrect attempts. Please request a new OTP."
+          : "Invalid OTP",
+    });
+
+  } catch (error) {
+    console.error(
+      "================================"
+    );
+
+    console.error(
+      "VERIFY DELETE OTP ERROR:"
+    );
+
+    console.error(error?.message || "Unexpected error");
+
+    console.error(
+      "================================"
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Verification failed",
+    });
+  }
+};
+
+
+// ============================================
+// CANCEL ACCOUNT DELETION
+// ============================================
+export const cancelDeletion = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+
+    console.log("================================");
+    console.log("CANCEL ACCOUNT DELETION");
+    console.log("================================");
+
+    if (!uid) {
+      return res.status(400).json({
+        success: false,
+        message: "User UID is required",
+      });
+    }
 
     const user = await User.findOne({ uid });
 
@@ -372,240 +471,14 @@ export const verifyDeleteOtp = async (req, res) => {
       });
     }
 
-    // ============================================
-    // CHECK OTP
-    // ============================================
-
-    if (
-      user.deleteOtp !==
-      String(otp).trim()
-    ) {
-      console.log("Invalid OTP");
-
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP",
-      });
-    }
-
-    // ============================================
-    // CHECK OTP EXPIRY
-    // ============================================
-
-    if (
-      !user.deleteOtpExpiry ||
-      new Date() > user.deleteOtpExpiry
-    ) {
-      console.log("OTP expired");
-
-      user.deleteOtp = "";
-      user.deleteOtpExpiry = null;
-
-      await user.save();
-
-      return res.status(400).json({
-        success: false,
-        message: "OTP expired",
-      });
-    }
-
-    console.log("OTP VERIFIED");
-    console.log("User:", user.name);
-    console.log("Email:", user.email);
-    console.log("Firebase UID:", user.uid);
-
-    // =================================================
-    // 1. DELETE FIREBASE AUTH USER
-    // =================================================
-
-    try {
-      const auth =
-        getAuth(
-          getFirebaseAdminApp()
-        );
-
-      try {
-        await auth.deleteUser(
-          user.uid
-        );
-
-        console.log(
-          "Firebase Auth user deleted:",
-          user.uid
-        );
-
-      } catch (firebaseError) {
-        console.error(
-          "Firebase delete error:",
-          firebaseError
-        );
-
-        // Firebase user already deleted
-        if (
-          firebaseError?.code ===
-          "auth/user-not-found"
-        ) {
-          console.log(
-            "Firebase user was already deleted."
-          );
-
-        } else {
-          return res.status(500).json({
-            success: false,
-            message:
-              "Firebase account deletion failed",
-          });
-        }
-      }
-
-    } catch (firebaseInitError) {
-      console.error(
-        "Firebase Admin initialization/deletion error:",
-        firebaseInitError
-      );
-
-      return res.status(500).json({
-        success: false,
-        message:
-          "Firebase account deletion failed",
-      });
-    }
-
-    // =================================================
-    // 2. DELETE MONGODB USER
-    // =================================================
-
-    const mongoDeleteResult =
-      await User.deleteOne({
-        _id: user._id,
-      });
-
-    if (
-      mongoDeleteResult.deletedCount !== 1
-    ) {
-      console.error(
-        "MongoDB delete failed. deletedCount:",
-        mongoDeleteResult.deletedCount
-      );
-
-      return res.status(500).json({
-        success: false,
-        message:
-          "MongoDB account deletion failed",
-      });
-    }
-
-    console.log(
-      "MongoDB user deleted:",
-      user.email
-    );
-
-    // =================================================
-    // DELETE COMPLETE
-    // =================================================
-
-    console.log(
-      "================================"
-    );
-
-    console.log(
-      "ACCOUNT DELETE COMPLETE"
-    );
-
-    console.log(
-      "================================"
-    );
-
-    return res.status(200).json({
-      success: true,
-      deleted: true,
-      message:
-        "Account deleted successfully",
-    });
-
-  } catch (error) {
-
-    console.error(
-      "================================"
-    );
-
-    console.error(
-      "PERMANENT ACCOUNT DELETE ERROR:"
-    );
-
-    console.error(error);
-
-    console.error(
-      "================================"
-    );
-
-    return res.status(500).json({
-      success: false,
-      message:
-        "Account deletion failed",
-    });
-  }
-};
-
-
-// =====================================================
-// CANCEL ACCOUNT DELETION
-// =====================================================
-
-export const cancelDeletion = async (
-  req,
-  res
-) => {
-
-  try {
-
-    const { uid } = req.body;
-
-    console.log(
-      "================================"
-    );
-
-    console.log(
-      "CANCEL ACCOUNT DELETION"
-    );
-
-    console.log(
-      "UID:",
-      uid
-    );
-
-    console.log(
-      "================================"
-    );
-
-    if (!uid) {
-
-      return res.status(400).json({
-        success: false,
-        message:
-          "User UID is required",
-      });
-    }
-
-    const user =
-      await User.findOne({ uid });
-
-    if (!user) {
-
-      return res.status(404).json({
-        success: false,
-        message:
-          "User not found",
-      });
-    }
-
-    // Cancel scheduled deletion
+    // Cancel deletion
     user.deletionRequested = false;
     user.deletionDate = null;
 
-    // Clear OTP
+    // Clear OTP data
     user.deleteOtp = "";
     user.deleteOtpExpiry = null;
+    user.deleteOtpAttempts = 0;
 
     await user.save();
 
@@ -615,12 +488,10 @@ export const cancelDeletion = async (
 
     return res.status(200).json({
       success: true,
-      message:
-        "Account deletion cancelled",
+      message: "Account deletion cancelled",
     });
 
   } catch (error) {
-
     console.error(
       "================================"
     );
@@ -637,8 +508,7 @@ export const cancelDeletion = async (
 
     return res.status(500).json({
       success: false,
-      message:
-        "Cancel failed",
+      message: "Cancel failed",
     });
   }
 };

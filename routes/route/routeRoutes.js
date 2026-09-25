@@ -7,6 +7,7 @@ import {
   sendRoute,
   stopTrackingRoute,
 } from "../../controllers/route/routeController.js";
+import { requireAdmin } from "../../middlewar/requireAdmin.js";
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ const router = express.Router();
 
 router.get(
   "/route",
+  requireAdmin,
   getRoutePage
 );
 
@@ -25,6 +27,7 @@ router.get(
 
 router.post(
   "/route/add",
+  requireAdmin,
   addRoute
 );
 
@@ -34,6 +37,7 @@ router.post(
 
 router.get(
   "/route/delete/:id",
+  requireAdmin,
   deleteRoute
 );
 
@@ -43,11 +47,13 @@ router.get(
 
 router.get(
   "/route/send/:id",
+  requireAdmin,
   sendRoute
 );
 
 router.post(
   "/route/send/:id",
+  requireAdmin,
   sendRoute
 );
 
@@ -57,6 +63,7 @@ router.post(
 
 router.post(
   "/route/stop/:id",
+  requireAdmin,
   stopTrackingRoute
 );
 

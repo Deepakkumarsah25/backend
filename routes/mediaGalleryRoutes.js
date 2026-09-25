@@ -1,5 +1,6 @@
 import express from "express";
 import upload from "../middlewar/upload.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 import {
   renderMediaGallery,
@@ -16,11 +17,12 @@ const router = express.Router();
 ========================== */
 
 // Admin Page
-router.get("/mediagallery", renderMediaGallery);
+router.get("/mediagallery", requireAdmin, renderMediaGallery);
 
 // Add
 router.post(
   "/mediagallery/add",
+  requireAdmin,
   upload.single("image"),
   addMedia
 );
@@ -28,6 +30,7 @@ router.post(
 // Update
 router.post(
   "/mediagallery/update/:id",
+  requireAdmin,
   upload.single("image"),
   updateMedia
 );
@@ -35,6 +38,7 @@ router.post(
 // Delete
 router.get(
   "/mediagallery/delete/:id",
+  requireAdmin,
   deleteMedia
 );
 

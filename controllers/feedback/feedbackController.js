@@ -7,19 +7,16 @@ import mongoose from "mongoose";
 
 export const createFeedback = async (req, res) => {
   try {
-    const {
-      uid,
-      name,
-      email,
-      rating,
-      message,
-    } = req.body;
+    const { rating, message } = req.body;
+    const uid = req.user?.uid;
+    const name = req.user?.name;
+    const email = req.user?.email;
 
     // -----------------------------
     // VALIDATION
     // -----------------------------
 
-    if (!uid) {
+    if (!req.user?._id || !uid) {
       return res.status(400).json({
         success: false,
         message: "User UID is required.",
@@ -40,7 +37,7 @@ export const createFeedback = async (req, res) => {
       });
     }
 
-    if (!rating) {
+    if (rating === undefined || rating === null || rating === "") {
       return res.status(400).json({
         success: false,
         message: "Please select a rating.",
@@ -50,6 +47,7 @@ export const createFeedback = async (req, res) => {
     const numericRating = Number(rating);
 
     if (
+      !Number.isInteger(numericRating) ||
       numericRating < 1 ||
       numericRating > 5
     ) {
@@ -59,11 +57,15 @@ export const createFeedback = async (req, res) => {
       });
     }
 
-    if (!message || !message.trim()) {
+    if (typeof message !== "string" || !message.trim()) {
       return res.status(400).json({
         success: false,
         message: "Feedback message is required.",
       });
+    }
+
+    if (message.length > 1000) {
+      return res.status(400).json({ success: false, message: "Feedback message must be 1000 characters or fewer." });
     }
 
     // -----------------------------
@@ -71,7 +73,7 @@ export const createFeedback = async (req, res) => {
     // -----------------------------
 
     const feedback = await Feedback.create({
-      uid: uid.trim(),
+      uid,
       name: name.trim(),
       email: email.trim().toLowerCase(),
       rating: numericRating,

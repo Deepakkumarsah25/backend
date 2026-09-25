@@ -34,7 +34,7 @@ export const sendPushNotificationToUser = async ({
     );
 
     if (!user?.notificationEnabled || !user?.fcmToken) {
-      console.log("ℹ️ No enabled FCM token for user:", userId);
+      console.log("No enabled FCM token for user.");
       return null;
     }
 
@@ -47,10 +47,10 @@ export const sendPushNotificationToUser = async ({
       })
     );
 
-    console.log("✅ Targeted FCM sent:", userId, response);
+    console.log("Targeted FCM sent.");
     return response;
   } catch (error) {
-    console.error("❌ Targeted Push Error:", error);
+    console.error("Targeted push failed:", error?.code || "unknown error");
 
     if (
       error?.code === "messaging/registration-token-not-registered"
@@ -89,7 +89,7 @@ export const sendPushNotification = async (title, body, data = {}) => {
     const invalidTokens = [];
     response.responses.forEach((result, index) => {
       if (!result.success) {
-        console.log(`❌ Token ${index + 1}:`, result.error);
+        console.log(`Push delivery failed for recipient ${index + 1}:`, result.error?.code || "unknown error");
         if (
           result.error?.code ===
           "messaging/registration-token-not-registered"
@@ -109,7 +109,7 @@ export const sendPushNotification = async (title, body, data = {}) => {
     console.log("=================================");
     return response;
   } catch (error) {
-    console.error("Push Notification Error:", error);
+    console.error("Push notification failed:", error?.code || "unknown error");
     return null;
   }
 };

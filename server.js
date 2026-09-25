@@ -1,12 +1,13 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import express from "express";
 import mongoose from "mongoose";
 import session from "express-session";
 import cors from "cors";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
+import corsOptions from "./config/corsOptions.js";
 
 /* =========================================================
    ROUTES
@@ -46,7 +47,7 @@ import grievanceRoutes, {
 } from "./routes/Grievance/Grievanceroutes.js";
 
 import Volunteer from "./models/Volunteer.js";
-
+import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -91,12 +92,7 @@ app.use(
    CORS
 ========================================================= */
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 /* =========================================================
    SECURITY / GEOLOCATION POLICY
@@ -120,17 +116,21 @@ app.use((req, res, next) => {
    SESSION
 ========================================================= */
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(
   session({
     secret:
-      process.env.SESSION_SECRET || "vipparty",
+      process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
 
     resave: false,
 
     saveUninitialized: false,
 
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "lax",
     },
@@ -192,7 +192,7 @@ app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
 
 app.use("/api", searchRoutes);
-
+app.use("/api", mediaRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api", vipLiveRoute);
@@ -435,9 +435,9 @@ app.use(
     return res.status(500).json({
       success: false,
 
-      message:
-        error.message ||
-        "Internal Server Error",
+      message: process.env.NODE_ENV === "production"
+        ? "Internal Server Error"
+        : error.message || "Internal Server Error",
     });
   }
 );
