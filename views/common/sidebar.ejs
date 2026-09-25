@@ -1,382 +1,542 @@
 <head>
+  <!-- Font Awesome -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+  />
+
+  <!-- Sidebar CSS -->
   <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
-<!-- Sidebar toggle (mobile/tablet) -->
+
+<!-- Mobile Sidebar Toggle -->
 <button
   class="sidebar-toggle-btn"
   id="sidebarToggle"
-  aria-label="Toggle Navigation"
+  aria-label="Open navigation"
+  type="button"
 >
   <span></span>
   <span></span>
   <span></span>
 </button>
+
+<!-- Mobile Backdrop -->
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
-<!-- Main Sidebar (Enhanced Professional) -->
-<aside class="educare-fixed-sidebar dark-theme" id="responsiveSidebar">
+<!-- =========================
+     MAIN SIDEBAR
+========================= -->
+<aside class="educare-fixed-sidebar" id="responsiveSidebar">
+  <!-- Brand -->
   <div class="sidebar-brand-panel">
-    <h2 class="sidebar-master-title">Control Panel</h2>
-    <button class="sidebar-mobile-close" id="sidebarClose">
-      <i class="fas fa-times"></i>
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <span>V</span>
+      </div>
+
+      <div class="sidebar-brand-text">
+        <h2>VIP Admin</h2>
+        <span>Control Panel</span>
+      </div>
+    </div>
+
+    <button
+      class="sidebar-mobile-close"
+      id="sidebarClose"
+      type="button"
+      aria-label="Close navigation"
+    >
+      <i class="fa-solid fa-xmark"></i>
     </button>
   </div>
 
+  <!-- =========================
+       SIDEBAR CONTENT
+  ========================== -->
   <div class="sidebar-scrollable-content">
-    <div class="sidebar-menu-group">
-      <ul class="group-links-list">
-        <li>
-          <a href="/admin/delete-accounts" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-user-xmark"></i>
-            </span>
+    <ul class="sidebar-menu">
+      <!-- =========================
+           DASHBOARD
+      ========================== -->
+      <li class="sidebar-item">
+        <a href="/dashboard" class="sidebar-link direct-link">
+          <span class="sidebar-icon">
+            <i class="fa-solid fa-house"></i>
+          </span>
 
-            <span class="link-text"> Delete Account </span>
-          </a>
-        </li>
-        <li>
-          <a
-            href="/dashboard"
-            class="sidebar-link-item active"
-            data-category="category"
-          >
-            <span class="link-icon-marker"
-              ><i class="fa-solid fa-tachograph-digital"></i
-            ></span>
-            <span class="link-text">Dashboard</span>
-          </a>
-        </li>
-        <li>
-          <a href="/vip-live" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-tower-broadcast"></i>
-            </span>
-            <span class="link-text">VIP Live</span>
-          </a>
-        </li>
+          <span class="sidebar-text"> Dashboard </span>
+        </a>
+      </li>
 
-        <li>
-          <a href="/video_gallery" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-video"></i>
-            </span>
-            <span class="link-text">Video gallery</span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/album" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-images"></i>
-            </span>
-            <span class="link-text">Photo gallery</span>
-          </a>
-        </li>
-
-        <!-- ================================================= -->
-        <!-- NEWS MANAGEMENT -->
-        <!-- ================================================= -->
-
-        <li>
-          <a href="/news" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-newspaper"></i>
-            </span>
-
-            <span class="link-text"> News Management </span>
-          </a>
-        </li>
-
-        <!-- ================================================= -->
-        <!-- EVENTS MANAGEMENT -->
-        <!-- ================================================= -->
-
-        <li>
-          <a href="/admin/events" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-calendar-days"></i>
-            </span>
-
-            <span class="link-text"> Events Management </span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/joinmember" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-images"></i>
-            </span>
-            <span class="link-text">Join Member</span>
-          </a>
-        </li>
-        <li>
-          <a href="/AdminAgent" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-images"></i>
-            </span>
-            <span class="link-text">Admin Agent </span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/mediagallery" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-photo-film"></i>
-            </span>
-            <span class="link-text">Media Gallery</span>
-          </a>
-        </li>
-        <li>
-          <a href="/joinmember" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-images"></i>
-            </span>
-            <span class="link-text">Join Member</span>
-          </a>
-        </li>
-
-        <!-- ================================================= -->
-        <!-- GRIEVANCE MANAGEMENT -->
-        <!-- ================================================= -->
-
-        <li>
-          <a href="/grievances" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </span>
-
-            <span class="link-text"> Grievance Management </span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/AdminAgent" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-images"></i>
-            </span>
-            <span class="link-text">Admin Agent </span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/mediagallery" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-photo-film"></i>
-            </span>
-            <span class="link-text">Media Gallery</span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/organisation" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-sitemap"></i>
-            </span>
-            <span class="link-text">Organisation</span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/leadership" class="sidebar-link-item">
-            <span class="link-icon-marker">
+      <!-- =========================
+           PEOPLE & ORGANISATION
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
               <i class="fa-solid fa-users"></i>
             </span>
-            <span class="link-text">Leadership</span>
-          </a>
-        </li>
 
-        <li>
-          <a href="/morcha" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-flag"></i>
-            </span>
-            <span class="link-text">Morcha / Wings</span>
-          </a>
-        </li>
+            <span class="sidebar-text"> People & Organisation </span>
+          </span>
 
-        <li>
-          <a href="/scroller" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-images"></i>
-            </span>
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
 
-            <span class="link-text"> Update Banner Scroller </span>
-          </a>
-        </li>
-        <li>
-          <a href="/organisation" class="sidebar-link-item">
-            <span class="link-icon-marker">
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/member">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Add Member</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/workerlist">
+              <i class="fa-solid fa-users"></i>
+              <span>Member List</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/leadership">
+              <i class="fa-solid fa-user-tie"></i>
+              <span>Leadership</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/organisation">
               <i class="fa-solid fa-sitemap"></i>
-            </span>
-            <span class="link-text">Organisation</span>
-          </a>
-        </li>
+              <span>Organisation</span>
+            </a>
+          </li>
 
-        <li>
-          <a href="/scroller" class="sidebar-link-item">
-            <span class="link-icon-marker">
+          <li>
+            <a href="/morcha">
+              <i class="fa-solid fa-flag"></i>
+              <span>Morcha / Wings</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           TRANSPORT
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-car-side"></i>
+            </span>
+
+            <span class="sidebar-text"> Transport </span>
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/driver">
+              <i class="fa-solid fa-car"></i>
+              <span>Driver Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/driverlist">
+              <i class="fa-solid fa-list"></i>
+              <span>Driver List</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/route">
+              <i class="fa-solid fa-route"></i>
+              <span>Route Management</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           MEDIA RESOURCES
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-photo-film"></i>
+            </span>
+
+            <span class="sidebar-text"> Media Resources </span>
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/mediagallery">
+              <i class="fa-solid fa-photo-film"></i>
+              <span>Media Gallery</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/album">
               <i class="fa-solid fa-images"></i>
+              <span>Photo Gallery</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/video_gallery">
+              <i class="fa-solid fa-video"></i>
+              <span>Video Gallery</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/vip-live">
+              <i class="fa-solid fa-tower-broadcast"></i>
+              <span>VIP Live</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           CONTENT MANAGEMENT
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-pen-to-square"></i>
             </span>
 
-            <span class="link-text"> Update Banner Scroller </span>
-          </a>
-        </li>
+            <span class="sidebar-text"> Content Management </span>
+          </span>
 
-        <li>
-          <a href="/cms" class="sidebar-link-item">
-            <span class="link-icon-marker">
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/news">
+              <i class="fa-solid fa-newspaper"></i>
+              <span>News Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/events">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Events Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/scroller">
+              <i class="fa-solid fa-scroll"></i>
+              <span>Update Banner Scroller</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/cms">
               <i class="fa-solid fa-file-pen"></i>
-            </span>
-            <span class="link-text"> About VIP (CMS) </span>
-          </a>
-        </li>
-        <li>
-          <a href="/bainar" class="sidebar-link-item">
-            <span class="link-icon-marker"
-              ><i class="fa-solid fa-house-flag"></i
-            ></span>
-            <span class="link-text">Live Updates Bainar </span>
-          </a>
-        </li>
+              <span>About VIP (CMS)</span>
+            </a>
+          </li>
 
-        <li>
-          <a href="/member" class="sidebar-link-item" id="coursesLink">
-            <span class="link-icon-marker"
-              ><i class="fas fa-file-alt"></i
-            ></span>
-            <span class="link-text">Add Member</span>
-          </a>
-        </li>
+          <li>
+            <a href="/bainar">
+              <i class="fa-solid fa-house-flag"></i>
+              <span>Live Updates Bainar</span>
+            </a>
+          </li>
+        </ul>
+      </li>
 
-        <li>
-          <a href="/workerlist" class="sidebar-link-item" data-category="ebook">
-            <span class="link-icon-marker"
-              ><i class="fas fa-book-open"></i
-            ></span>
-            <span class="link-text">Member List</span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/route" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fas fa-route"></i>
+      <!-- =========================
+           USER MANAGEMENT
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-user-gear"></i>
             </span>
 
-            <span class="link-text"> Route Management </span>
-          </a>
-        </li>
+            <span class="sidebar-text"> User Management </span>
+          </span>
 
-        <li>
-          <a href="/driver" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fas fa-car"></i>
-            </span>
-            <span class="link-text"> Driver Management </span>
-          </a>
-        </li>
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
 
-        <li>
-          <a href="/driverlist" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fas fa-car-side"></i>
-            </span>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/joinmember">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Join Member</span>
+            </a>
+          </li>
 
-            <span class="link-text"> Driver List </span>
-          </a>
-        </li>
-        <li>
-          <a href="#" class="sidebar-link-item" data-category="test">
-            <span class="link-icon-marker"
-              ><i class="fas fa-chart-line"></i
-            ></span>
-            <span class="link-text">Models</span>
-          </a>
-        </li>
-
-        <li>
-          <a href="#" class="sidebar-link-item" data-category="qp">
-            <span class="link-icon-marker"
-              ><i class="fa-solid fa-hand-holding-dollar"></i
-            ></span>
-            <span class="link-text">Lottery</span>
-          </a>
-        </li>
-
-        <li>
-          <a href="/admin/contact" class="sidebar-link-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-address-book"></i>
-            </span>
-            <span class="link-text"> Contact </span>
-          </a>
-        </li>
-
-        <!-- ================================================= -->
-        <!-- USER FEEDBACK -->
-        <!-- ================================================= -->
-
-        <li>
-          <a href="/feedback-admin" class="sidebar-link-item">
-            <span class="link-icon-marker">
+          <li>
+            <a href="/feedback-admin">
               <i class="fa-solid fa-comments"></i>
+              <span>User Feedback</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/delete-accounts">
+              <i class="fa-solid fa-user-xmark"></i>
+              <span>Delete Account</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           SUPPORT
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-headset"></i>
             </span>
 
-            <span class="link-text"> User Feedback </span>
-          </a>
-        </li>
-        <li>
-          <a href="/logout" class="sidebar-link-item logout-item">
-            <span class="link-icon-marker">
-              <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="sidebar-text"> Support </span>
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/grievances">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>Grievance Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/contact">
+              <i class="fa-solid fa-address-book"></i>
+              <span>Contact</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           ADMINISTRATION
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button
+          type="button"
+          class="sidebar-link sidebar-parent"
+          aria-expanded="false"
+        >
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-shield-halved"></i>
             </span>
-            <span class="link-text">Logout</span>
-          </a>
-        </li>
-      </ul>
-    </div>
+
+            <span class="sidebar-text"> Administration </span>
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/AdminAgent">
+              <i class="fa-solid fa-user-shield"></i>
+              <span>Admin Agent</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           LOGOUT
+      ========================== -->
+      <li class="sidebar-item sidebar-logout">
+        <a href="/logout" class="sidebar-link direct-link logout-link">
+          <span class="sidebar-icon">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </span>
+
+          <span class="sidebar-text"> Logout </span>
+        </a>
+      </li>
+    </ul>
   </div>
 
-  <!-- Desktop collapse trigger (optional) -->
-  <div class="desktop-collapse-trigger" id="desktopCollapse">
-    <i class="fas fa-chevron-left"></i>
-  </div>
+  <!-- Desktop Collapse -->
+  <button
+    type="button"
+    class="desktop-collapse-trigger"
+    id="desktopCollapse"
+    aria-label="Collapse sidebar"
+  >
+    <i class="fa-solid fa-chevron-left"></i>
+  </button>
 </aside>
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // ✅ Sidebar Active Link Highlight
-    const sidebarLinks = document.querySelectorAll(".sidebar-link-item");
-    const currentUrl = window.location.pathname;
-
-    sidebarLinks.forEach((link) => {
-      const linkHref = link.getAttribute("href");
-      if (
-        linkHref === currentUrl ||
-        (currentUrl === "/courses/" && linkHref === "/courses/")
-      ) {
-        link.classList.add("active");
-      } else {
-        link.classList.remove("active");
-      }
-    });
-
-    // Mobile toggle functionality
     const sidebar = document.getElementById("responsiveSidebar");
     const toggleBtn = document.getElementById("sidebarToggle");
     const closeBtn = document.getElementById("sidebarClose");
     const backdrop = document.getElementById("sidebarBackdrop");
+    const collapseBtn = document.getElementById("desktopCollapse");
+
+    const parents = document.querySelectorAll(".sidebar-parent");
+    const submenuLinks = document.querySelectorAll(".sidebar-submenu a");
+    const directLinks = document.querySelectorAll(".direct-link");
+
+    const currentPath = window.location.pathname;
+
+    /* ==========================================
+     ACTIVE LINK
+  ========================================== */
+
+    function isCurrentPath(href) {
+      if (!href || href === "#") {
+        return false;
+      }
+
+      if (href === currentPath) {
+        return true;
+      }
+
+      return currentPath.startsWith(href + "/");
+    }
+
+    /* ==========================================
+     DIRECT LINKS ACTIVE
+  ========================================== */
+
+    directLinks.forEach(function (link) {
+      const href = link.getAttribute("href");
+
+      if (isCurrentPath(href)) {
+        link.classList.add("active");
+      }
+    });
+
+    /* ==========================================
+     SUBMENU ACTIVE
+  ========================================== */
+
+    submenuLinks.forEach(function (link) {
+      const href = link.getAttribute("href");
+
+      if (isCurrentPath(href)) {
+        link.classList.add("active");
+
+        const parentItem = link.closest(".has-submenu");
+
+        if (parentItem) {
+          parentItem.classList.add("submenu-open");
+
+          const parentButton = parentItem.querySelector(".sidebar-parent");
+
+          if (parentButton) {
+            parentButton.classList.add("active-parent");
+            parentButton.setAttribute("aria-expanded", "true");
+          }
+        }
+      }
+    });
+
+    /* ==========================================
+     ACCORDION
+  ========================================== */
+
+    parents.forEach(function (parent) {
+      parent.addEventListener("click", function () {
+        const currentItem = parent.closest(".has-submenu");
+        const isOpen = currentItem.classList.contains("submenu-open");
+
+        /* Close all other menus */
+
+        document
+          .querySelectorAll(".has-submenu.submenu-open")
+          .forEach(function (item) {
+            if (item !== currentItem) {
+              item.classList.remove("submenu-open");
+
+              const button = item.querySelector(".sidebar-parent");
+
+              if (button) {
+                button.setAttribute("aria-expanded", "false");
+              }
+            }
+          });
+
+        /* Toggle current */
+
+        if (isOpen) {
+          currentItem.classList.remove("submenu-open");
+          parent.setAttribute("aria-expanded", "false");
+        } else {
+          currentItem.classList.add("submenu-open");
+          parent.setAttribute("aria-expanded", "true");
+        }
+      });
+    });
+
+    /* ==========================================
+     MOBILE SIDEBAR
+  ========================================== */
 
     function openSidebar() {
       sidebar.classList.add("sidebar-open");
       backdrop.classList.add("active");
-      document.body.style.overflow = "hidden";
+
+      document.body.classList.add("sidebar-mobile-open");
     }
 
     function closeSidebar() {
       sidebar.classList.remove("sidebar-open");
       backdrop.classList.remove("active");
-      document.body.style.overflow = "";
+
+      document.body.classList.remove("sidebar-mobile-open");
     }
 
     if (toggleBtn) {
@@ -391,27 +551,73 @@
       backdrop.addEventListener("click", closeSidebar);
     }
 
-    // Close on escape key
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && sidebar.classList.contains("sidebar-open")) {
+    /* Close mobile sidebar after selecting page */
+
+    submenuLinks.forEach(function (link) {
+      link.addEventListener("click", function () {
+        if (window.innerWidth <= 992) {
+          closeSidebar();
+        }
+      });
+    });
+
+    directLinks.forEach(function (link) {
+      link.addEventListener("click", function () {
+        if (window.innerWidth <= 992) {
+          closeSidebar();
+        }
+      });
+    });
+
+    /* ==========================================
+     ESCAPE KEY
+  ========================================== */
+
+    document.addEventListener("keydown", function (event) {
+      if (
+        event.key === "Escape" &&
+        sidebar.classList.contains("sidebar-open")
+      ) {
         closeSidebar();
       }
     });
 
-    // Desktop collapse functionality (optional)
-    const collapseTrigger = document.getElementById("desktopCollapse");
-    if (collapseTrigger) {
-      collapseTrigger.addEventListener("click", function () {
+    /* ==========================================
+     DESKTOP COLLAPSE
+  ========================================== */
+
+    if (collapseBtn) {
+      collapseBtn.addEventListener("click", function () {
+        if (window.innerWidth <= 992) {
+          return;
+        }
+
         sidebar.classList.toggle("collapsed");
-        const icon = this.querySelector("i");
+
+        const icon = collapseBtn.querySelector("i");
+
         if (sidebar.classList.contains("collapsed")) {
-          icon.className = "fas fa-chevron-right";
+          icon.className = "fa-solid fa-chevron-right";
+
           document.body.classList.add("sidebar-collapsed");
         } else {
-          icon.className = "fas fa-chevron-left";
+          icon.className = "fa-solid fa-chevron-left";
+
           document.body.classList.remove("sidebar-collapsed");
         }
       });
     }
+
+    /* ==========================================
+     RESIZE SAFETY
+  ========================================== */
+
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 992) {
+        sidebar.classList.remove("sidebar-open");
+        backdrop.classList.remove("active");
+        document.body.classList.remove("sidebar-mobile-open");
+      }
+    });
   });
 </script>

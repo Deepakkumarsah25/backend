@@ -48,9 +48,7 @@ export const sendDeleteOtp = async (req, res) => {
     // GENERATE 4 DIGIT OTP
     // ============================================
 
-    const otp = Math.floor(
-      1000 + Math.random() * 9000
-    ).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
     console.log("Generated OTP:", otp);
 
@@ -58,14 +56,25 @@ export const sendDeleteOtp = async (req, res) => {
     user.deleteOtp = otp;
 
     // OTP valid for 10 minutes
-    user.deleteOtpExpiry = new Date(
-      Date.now() + OTP_EXPIRY
-    );
+    user.deleteOtpExpiry = new Date(Date.now() + OTP_EXPIRY);
 
     await user.save();
 
-    console.log("OTP saved in MongoDB");
+    /* ============================================
+   VERIFY SAVE
+============================================ */
 
+    const verifySavedUser = await User.findOne({
+      uid: user.uid,
+    }).select("uid email deletionRequested deletionDate");
+
+    console.log("================================");
+    console.log("DELETE REQUEST SAVED IN MONGODB");
+    console.log("UID:", verifySavedUser?.uid);
+    console.log("EMAIL:", verifySavedUser?.email);
+    console.log("deletionRequested:", verifySavedUser?.deletionRequested);
+    console.log("deletionDate:", verifySavedUser?.deletionDate);
+    console.log("================================");
     // ============================================
     // SEND EMAIL
     // ============================================
@@ -258,45 +267,31 @@ export const sendDeleteOtp = async (req, res) => {
 
           </body>
         </html>
-      `
+      `,
     );
 
-    console.log(
-      "OTP email sent successfully to:",
-      user.email
-    );
+    console.log("OTP email sent successfully to:", user.email);
 
     return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
     });
-
   } catch (error) {
-    console.error(
-      "================================"
-    );
+    console.error("================================");
 
-    console.error(
-      "SEND DELETE OTP ERROR:"
-    );
+    console.error("SEND DELETE OTP ERROR:");
 
     console.error(error);
 
-    console.error(
-      "================================"
-    );
+    console.error("================================");
 
     return res.status(500).json({
       success: false,
       message: "Failed to send OTP",
-      error:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : undefined,
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };
-
 
 // ============================================
 // VERIFY DELETE ACCOUNT OTP
@@ -345,10 +340,7 @@ export const verifyDeleteOtp = async (req, res) => {
     // CHECK OTP EXPIRY
     // ============================================
 
-    if (
-      !user.deleteOtpExpiry ||
-      new Date() > user.deleteOtpExpiry
-    ) {
+    if (!user.deleteOtpExpiry || new Date() > user.deleteOtpExpiry) {
       console.log("OTP expired");
 
       user.deleteOtp = "";
@@ -368,9 +360,7 @@ export const verifyDeleteOtp = async (req, res) => {
 
     user.deletionRequested = true;
 
-    user.deletionDate = new Date(
-      Date.now() + TEN_DAYS
-    );
+    user.deletionDate = new Date(Date.now() + TEN_DAYS);
 
     // Clear OTP after successful verification
     user.deleteOtp = "";
@@ -378,39 +368,25 @@ export const verifyDeleteOtp = async (req, res) => {
 
     await user.save();
 
-    console.log(
-      "Account deletion scheduled:"
-    );
+    console.log("Account deletion scheduled:");
 
-    console.log(
-      "Deletion date:",
-      user.deletionDate
-    );
+    console.log("Deletion date:", user.deletionDate);
 
     return res.status(200).json({
       success: true,
 
-      message:
-        "Account deletion request submitted successfully",
+      message: "Account deletion request submitted successfully",
 
-      deletionDate:
-        user.deletionDate,
+      deletionDate: user.deletionDate,
     });
-
   } catch (error) {
-    console.error(
-      "================================"
-    );
+    console.error("================================");
 
-    console.error(
-      "VERIFY DELETE OTP ERROR:"
-    );
+    console.error("VERIFY DELETE OTP ERROR:");
 
     console.error(error);
 
-    console.error(
-      "================================"
-    );
+    console.error("================================");
 
     return res.status(500).json({
       success: false,
@@ -418,7 +394,6 @@ export const verifyDeleteOtp = async (req, res) => {
     });
   }
 };
-
 
 // ============================================
 // CANCEL ACCOUNT DELETION
@@ -458,29 +433,20 @@ export const cancelDeletion = async (req, res) => {
 
     await user.save();
 
-    console.log(
-      "Account deletion cancelled successfully"
-    );
+    console.log("Account deletion cancelled successfully");
 
     return res.status(200).json({
       success: true,
       message: "Account deletion cancelled",
     });
-
   } catch (error) {
-    console.error(
-      "================================"
-    );
+    console.error("================================");
 
-    console.error(
-      "CANCEL DELETION ERROR:"
-    );
+    console.error("CANCEL DELETION ERROR:");
 
     console.error(error);
 
-    console.error(
-      "================================"
-    );
+    console.error("================================");
 
     return res.status(500).json({
       success: false,
