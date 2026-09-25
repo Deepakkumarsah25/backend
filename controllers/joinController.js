@@ -15,21 +15,6 @@ const MAX_PAGE_LIMIT = 10;
 const MAX_SEARCH_LENGTH = 50;
 
 
-/*******************************************************
- * HELPER
- *
- * Escape regex special characters so user input is
- * treated as normal search text.
- *
- * Example:
- *
- *   a+b*
- *
- * becomes:
- *
- *   a\+b\*
- *
- *******************************************************/
 
 const escapeRegex = (value = "") => {
   return value.replace(
@@ -699,86 +684,93 @@ export const renderJoinAdminPage =
   };
 
 
-/*******************************************************
- * PUBLIC CARD LOOKUP
- *
- * GET /api/join/card/:memberId
- *
- * This is separate from the list API.
- *
- * The complete card information is retrieved only
- * when the card screen needs it.
- *******************************************************/
+export const getCardByMemberId = async (
+  req,
+  res
+) => {
+  try {
 
-export const getCardByMemberId =
-  async (
-    req,
-    res
-  ) => {
-    try {
-      const memberId =
-        String(
-          req.params.memberId ||
-            ""
-        ).trim();
+    const userId = req.user?._id;
 
-      if (!memberId) {
-        return res.status(400).json({
-          success: false,
-          message:
-            "Member ID is required.",
-        });
-      }
-
-      const application =
-        await Join.findOne({
-          memberId,
-        }).lean();
-
-      if (!application) {
-        return res.status(404).json({
-          success: false,
-          message:
-            "Card not found.",
-        });
-      }
-
-      const {
-        memberId: cardMemberId,
-        fullName,
-        profilePhoto,
-        type,
-        state,
-        district,
-        address,
-        createdAt,
-      } = application;
-
-      return res.status(200).json({
-        success: true,
-
-        data: {
-          memberId:
-            cardMemberId,
-          fullName,
-          profilePhoto,
-          type,
-          state,
-          district,
-          address,
-          createdAt,
-        },
-      });
-    } catch (err) {
-      console.error(
-        "getCardByMemberId error:",
-        err
-      );
-
-      return res.status(500).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        message:
-          "Failed to fetch card.",
+        message: "Login required.",
       });
     }
-  };
+
+    /*
+     * Read member ID from URL.
+     */
+    const memberId = String(
+      req.params.memberId || ""
+    ).trim();
+
+    if (!memberId) {
+      return res.status(400).json({
+        success: false,
+        message: "Member ID is required.",
+      });
+    }
+
+    /*
+     * SECURITY:
+     *
+     * Do NOT search only by memberId.
+     *
+     * Search by BOTH:
+     *
+     *   memberId
+     *   addedBy
+     *
+     * This means the logged-in user can only
+     * access members that THEY added.
+     */
+    const application = await Join.findOne({
+      memberId,
+      addedBy: userId,
+    })
+      .select({
+        _id: 0,
+        memberId: 1,
+        fullName: 1,
+        profilePhoto: 1,
+        type: 1,
+        state: 1,
+        district: 1,
+        createdAt: 1,
+      })
+      .lean();
+
+    /*
+     * Same response for:
+     *
+     * - invalid member
+     * - another user's member
+     *
+     * This avoids revealing whether another user's
+     * member ID exists.
+     */
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "Card not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: application,
+    });
+  } catch (err) {
+    console.error(
+      "getCardByMemberId error:",
+      err
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch card.",
+    });
+  }
+};

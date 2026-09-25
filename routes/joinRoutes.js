@@ -12,17 +12,9 @@ import {
 const router = express.Router();
 
 /*
-  Mounted in server.js as:
-
-    app.use("/api/join", joinRoutes);
-
-  Final paths:
-
-    POST /api/join/add-member
-    GET  /api/join/my-added-members
-    GET  /api/join/card/:memberId
+  ADD MEMBER
+  Firebase authentication required.
 */
-
 router.post(
   "/add-member",
   protect,
@@ -30,15 +22,21 @@ router.post(
   addMemberByAgent
 );
 
+
+  // MY ADDED MEMBERS
+
 router.get(
   "/my-added-members",
   protect,
   getMyAddedMembers
 );
 
+
 router.get(
   "/card/:memberId",
+  protect,
   getCardByMemberId
 );
+
 
 export default router;

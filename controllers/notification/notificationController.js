@@ -1,15 +1,7 @@
 import mongoose from "mongoose";
 import Notification from "../../models/Notification.js";
-import User from "../../models/User.js";
 
-const resolveUser = async (req) => {
-  if (req.user?._id) return req.user;
-
-  const uid = req.headers["x-dev-uid"] || req.headers["x-user-uid"];
-  if (!uid) return null;
-
-  return User.findOne({ uid: String(uid) });
-};
+const resolveUser = (req) => req.user || null;
 
 const getUserFilter = (userId) => ({
   $or: [
@@ -17,6 +9,16 @@ const getUserFilter = (userId) => ({
     { userId: null, deletedBy: { $ne: userId } },
   ],
 });
+
+const formatNotification = (item, userId = null) => {
+  const { userId: owner, deletedBy, readBy, ...publicFields } = item;
+  return {
+    ...publicFields,
+    isRead: owner
+      ? Boolean(item.isRead)
+      : Boolean(item.isRead || (userId && readBy?.some((id) => String(id) === String(userId)))),
+  };
+};
 
 export const getNotifications = async (req, res) => {
   try {
@@ -31,11 +33,12 @@ export const getNotifications = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const unreadCount = notifications.filter((item) => !item.isRead).length;
+    const formattedNotifications = notifications.map((item) => formatNotification(item, userId));
+    const unreadCount = formattedNotifications.filter((item) => !item.isRead).length;
 
     return res.status(200).json({
       success: true,
-      notifications,
+      notifications: formattedNotifications,
       unreadCount,
     });
   } catch (error) {
@@ -52,11 +55,9 @@ export const getUnreadCount = async (req, res) => {
     const user = await resolveUser(req);
     const userId = user?._id || null;
 
-    const filter = userId
-      ? { isRead: false, ...getUserFilter(userId) }
-      : { isRead: false, userId: null };
-
-    const unreadCount = await Notification.countDocuments(filter);
+    const filter = userId ? getUserFilter(userId) : { userId: null };
+    const notifications = await Notification.find(filter).select("userId isRead readBy").lean();
+    const unreadCount = notifications.filter((item) => !formatNotification(item, userId).isRead).length;
 
     return res.status(200).json({ success: true, unreadCount });
   } catch (error) {
@@ -72,7 +73,8 @@ export const markNotificationRead = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await resolveUser(req);
-    const userId = user?._id || null;
+    const userId = user?._id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required" });
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -81,16 +83,21 @@ export const markNotificationRead = async (req, res) => {
       });
     }
 
-    const ownership = userId
-      ? {
-          _id: id,
-          $or: [{ userId }, { userId: null }],
-        }
-      : { _id: id, userId: null };
+    const ownership = {
+      _id: id,
+      deletedBy: { $ne: userId },
+      $or: [{ userId }, { userId: null }],
+    };
 
+    const existingNotification = await Notification.findOne(ownership).select("userId");
+    if (!existingNotification) {
+      return res.status(404).json({ success: false, message: "Notification not found" });
+    }
     const notification = await Notification.findOneAndUpdate(
       ownership,
-      { $set: { isRead: true } },
+      existingNotification.userId
+        ? { $set: { isRead: true } }
+        : { $addToSet: { readBy: userId } },
       { new: true }
     );
 
@@ -104,7 +111,7 @@ export const markNotificationRead = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Notification marked as read",
-      notification,
+      notification: formatNotification(notification.toObject(), userId),
     });
   } catch (error) {
     console.error("Mark Read Error:", error);
@@ -118,13 +125,17 @@ export const markNotificationRead = async (req, res) => {
 export const markAllNotificationsRead = async (req, res) => {
   try {
     const user = await resolveUser(req);
-    const userId = user?._id || null;
+    const userId = user?._id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required" });
 
-    const filter = userId
-      ? { isRead: false, ...getUserFilter(userId) }
-      : { isRead: false, userId: null };
-
-    await Notification.updateMany(filter, { $set: { isRead: true } });
+    await Notification.updateMany(
+      { isRead: false, userId },
+      { $set: { isRead: true } }
+    );
+    await Notification.updateMany(
+      { isRead: false, userId: null, deletedBy: { $ne: userId } },
+      { $addToSet: { readBy: userId } }
+    );
 
     return res.status(200).json({
       success: true,

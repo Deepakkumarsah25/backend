@@ -1,113 +1,67 @@
-// import User from "../models/User.js";
-// export const protect = async (req, res, next) => {
-//   try {
-//     const uid = req.headers["x-dev-uid"];
-
-//     if (!uid) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "No uid provided (dev bypass mode).",
-//       });
-//     }
-
-//     // findOne + create ki jagah atomic upsert — race condition fix
-// const updateData = { $setOnInsert: { uid } };
-
-//     // Agar headers me actual profile data mila hai, to use $set karo taaki
-//     // existing user ka profile bhi update ho jaye (sirf insert pe nahi)
-//     const setFields = {};
-//     if (req.headers["x-dev-name"]) setFields.name = req.headers["x-dev-name"];
-//     if (req.headers["x-dev-email"]) setFields.email = req.headers["x-dev-email"];
-//     if (req.headers["x-dev-phone"]) setFields.phone = req.headers["x-dev-phone"];
-//     if (req.headers["x-dev-photo"]) setFields.photoURL = req.headers["x-dev-photo"];
-
-//     if (Object.keys(setFields).length > 0) {
-//       updateData.$set = setFields;
-//     }
-
-//     const user = await User.findOneAndUpdate({ uid }, updateData, {
-//       new: true,
-//       upsert: true,
-//     });
-
-//     req.user = user;
-//     next();
-//   } catch (err) {
-//     console.error("Dev auth bypass error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Auth bypass failed.",
-//     });
-//   }
-// };
-
-
+import { adminAuth } from "../firebase/firebaseAdmin.js";
 import User from "../models/User.js";
 
-/*
-  DEV BYPASS — no real token verification.
-  Frontend sends the logged-in user's uid (and optionally
-  name/email/phone/photo) as plain headers instead of a
-  verified Firebase ID token.
+const unauthorized = (res, message = "Authentication required.") =>
+  res.status(401).json({ success: false, message });
 
-  TODO (later): swap this for real Firebase ID token
-  verification once FIREBASE_PRIVATE_KEY_B64 is sorted —
-  see firebaseAuth.js version from earlier in this chat.
-*/
-export const protect = async (req, res, next) => {
+export const verifyFirebaseToken = async (token) =>
+  adminAuth.verifyIdToken(token);
+
+export const resolveFirebaseUser = async (decodedToken) => {
+  const uid = decodedToken?.uid;
+  if (!uid) throw new Error("Verified Firebase token has no UID.");
+
+  const profile = {};
+  if (typeof decodedToken.name === "string") profile.name = decodedToken.name;
+  if (typeof decodedToken.email === "string") profile.email = decodedToken.email;
+  if (typeof decodedToken.phone_number === "string") profile.phone = decodedToken.phone_number;
+  if (typeof decodedToken.picture === "string") profile.photoURL = decodedToken.picture;
+
+  const update = { $setOnInsert: { uid, ...profile } };
+
   try {
-    const uid = req.headers["x-dev-uid"];
-
-    if (!uid) {
-      return res.status(401).json({
-        success: false,
-        message: "No uid provided (dev bypass mode).",
-      });
-    }
-
-    const updateData = { $setOnInsert: { uid } };
-
-    const setFields = {};
-    if (req.headers["x-dev-name"]) setFields.name = req.headers["x-dev-name"];
-    if (req.headers["x-dev-email"]) setFields.email = req.headers["x-dev-email"];
-    if (req.headers["x-dev-phone"]) setFields.phone = req.headers["x-dev-phone"];
-    if (req.headers["x-dev-photo"]) setFields.photoURL = req.headers["x-dev-photo"];
-
-    if (Object.keys(setFields).length > 0) {
-      updateData.$set = setFields;
-    }
-
-let user;
-    try {
-      user = await User.findOneAndUpdate({ uid }, updateData, {
-        returnDocument: "after",
-        upsert: true,
-      });
-    } catch (upsertErr) {
-      // Two near-simultaneous first-time requests for the same uid can
-      // both try to insert -> MongoDB E11000 duplicate key on the loser.
-      // The winner's doc now exists, so just fetch it instead of failing.
-      if (upsertErr.code === 11000) {
-        user = await User.findOne({ uid });
-      } else {
-        throw upsertErr;
-      }
-    }
-
-    if (!user) {
-      return res.status(500).json({
-        success: false,
-        message: "Could not resolve user.",
-      });
-    }
-
-    req.user = user;
-    next();
-  } catch (err) {
-    console.error("Dev auth bypass error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Auth bypass failed.",
+    const user = await User.findOneAndUpdate({ uid }, update, {
+      returnDocument: "after",
+      upsert: true,
+      setDefaultsOnInsert: true,
     });
+    if (!user) throw new Error("Could not resolve authenticated user.");
+    return user;
+  } catch (error) {
+    if (error?.code === 11000) {
+      const user = await User.findOne({ uid });
+      if (user) return user;
+    }
+    throw error;
   }
 };
+
+const getBearerToken = (req) => {
+  const header = req.get("authorization");
+  if (!header) return { error: "Authorization Bearer token is required." };
+  const match = /^Bearer\s+(\S+)$/i.exec(header);
+  if (!match) return { error: "Authorization header must use Bearer token format." };
+  return { token: match[1] };
+};
+
+export const protect = async (req, res, next) => {
+  const auth = getBearerToken(req);
+  if (auth.error) return unauthorized(res, auth.error);
+
+  let decodedToken;
+  try {
+    decodedToken = await verifyFirebaseToken(auth.token);
+  } catch {
+    return unauthorized(res, "Invalid or expired authentication token.");
+  }
+
+  try {
+    req.user = await resolveFirebaseUser(decodedToken);
+    return next();
+  } catch (error) {
+    console.error("Authenticated user resolution failed.", error?.message);
+    return res.status(500).json({ success: false, message: "Authentication could not be completed." });
+  }
+};
+
+export { getBearerToken, unauthorized };

@@ -40,20 +40,6 @@ console.log(
 );
 
 console.log(
-  "BREVO API KEY:",
-  BREVO_API_KEY
-    ? "✅ SET"
-    : "❌ NOT SET"
-);
-
-console.log(
-  "BREVO FROM EMAIL:",
-  BREVO_FROM_EMAIL
-    ? BREVO_FROM_EMAIL
-    : "❌ NOT SET"
-);
-
-console.log(
   "BREVO FROM NAME:",
   BREVO_FROM_NAME
 );
@@ -184,18 +170,8 @@ export const sendEmail = async (
     );
 
     console.log(
-      "TO:",
-      payload.to[0].email
-    );
-
-    console.log(
       "SUBJECT:",
       payload.subject
-    );
-
-    console.log(
-      "FROM:",
-      payload.sender.email
     );
 
     console.log(
@@ -282,10 +258,7 @@ export const sendEmail = async (
         response.status
       );
 
-      console.error(
-        "RESPONSE:",
-        responseData
-      );
+      console.error("BREVO ERROR CODE:", responseData.code || "unknown");
 
       console.error(
         "=========================================="
@@ -344,13 +317,8 @@ export const sendEmail = async (
     );
 
     console.error(
-      "TO:",
-      to
-    );
-
-    console.error(
       "ERROR:",
-      error.message
+      error?.code || error?.name || "Unexpected error"
     );
 
     console.error(

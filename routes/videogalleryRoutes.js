@@ -9,6 +9,7 @@ import {
   updateVideo,
   deleteVideo,
 } from "../controllers/videogalleryController.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 const router =
   express.Router();
@@ -55,6 +56,7 @@ router.get(
 
 router.post(
   "/videos",
+  requireAdmin,
   createVideo
 );
 
@@ -64,6 +66,7 @@ router.post(
 
 router.put(
   "/videos/:id",
+  requireAdmin,
   updateVideo
 );
 
@@ -73,6 +76,7 @@ router.put(
 
 router.delete(
   "/videos/:id",
+  requireAdmin,
   deleteVideo
 );
 

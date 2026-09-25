@@ -9,6 +9,7 @@ import {
   updateAlbum,
   deleteAlbum,
 } from "../controllers/albumController.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 const router = express.Router();
 
@@ -48,6 +49,7 @@ router.get(
 
 router.post(
   "/albums",
+  requireAdmin,
   createAlbum
 );
 
@@ -55,6 +57,7 @@ router.post(
 
 router.put(
   "/albums/:id",
+  requireAdmin,
   updateAlbum
 );
 
@@ -62,6 +65,7 @@ router.put(
 
 router.delete(
   "/albums/:id",
+  requireAdmin,
   deleteAlbum
 );
 

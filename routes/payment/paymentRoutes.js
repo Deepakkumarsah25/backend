@@ -1,10 +1,35 @@
 import express from "express";
 import crypto from "crypto";
 import Razorpay from "razorpay";
+import rateLimit from "express-rate-limit";
 
 import Donation from "../../models/Donation.js";
 
 const router = express.Router();
+
+const createOrderLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { success: false, message: "Too many payment orders. Please try again later." },
+});
+const verifyPaymentLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { success: false, message: "Too many verification requests. Please try again later." },
+});
+
+const configuredMinAmount = Number(process.env.PAYMENT_MIN_AMOUNT_INR || 1);
+const configuredMaxAmount = Number(process.env.PAYMENT_MAX_AMOUNT_INR || 100000);
+const MIN_AMOUNT = Number.isFinite(configuredMinAmount) && configuredMinAmount > 0
+  ? configuredMinAmount
+  : 1;
+const MAX_AMOUNT = Number.isFinite(configuredMaxAmount) && configuredMaxAmount > MIN_AMOUNT
+  ? configuredMaxAmount
+  : 100000;
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -17,22 +42,27 @@ CREATE RAZORPAY ORDER
 ========================================
 */
 
-router.post("/create-order", async (req, res) => {
+router.post("/create-order", createOrderLimit, async (req, res) => {
   try {
     const { amount } = req.body;
 
     const donationAmount = Number(amount);
+    const amountInPaise = Math.round(donationAmount * 100);
 
-    if (!donationAmount || donationAmount <= 0) {
+    if (
+      !Number.isFinite(donationAmount) ||
+      donationAmount < MIN_AMOUNT ||
+      donationAmount > MAX_AMOUNT ||
+      !Number.isSafeInteger(amountInPaise) ||
+      Math.abs(donationAmount * 100 - amountInPaise) > 1e-6
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid donation amount",
+        message: `Donation amount must be between ₹${MIN_AMOUNT} and ₹${MAX_AMOUNT}`,
       });
     }
 
     // ₹500 = 50000 paise
-    const amountInPaise = Math.round(donationAmount * 100);
-
     const receipt = `donation_${Date.now()}`;
 
     const order = await razorpay.orders.create({
@@ -43,7 +73,7 @@ router.post("/create-order", async (req, res) => {
 
     // Save order in MongoDB
     await Donation.create({
-      amount: donationAmount,
+      amount: amountInPaise / 100,
       currency: "INR",
       razorpayOrderId: order.id,
       status: "created",
@@ -57,7 +87,7 @@ router.post("/create-order", async (req, res) => {
       keyId: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
-    console.error("Create Razorpay Order Error:", error);
+    console.error("Create Razorpay Order Error:", error?.message || "Unexpected error");
 
     return res.status(500).json({
       success: false,
@@ -72,7 +102,7 @@ VERIFY RAZORPAY PAYMENT
 ========================================
 */
 
-router.post("/verify", async (req, res) => {
+router.post("/verify", verifyPaymentLimit, async (req, res) => {
   try {
     const {
       razorpay_payment_id,
@@ -81,9 +111,12 @@ router.post("/verify", async (req, res) => {
     } = req.body;
 
     if (
-      !razorpay_payment_id ||
-      !razorpay_order_id ||
-      !razorpay_signature
+      typeof razorpay_payment_id !== "string" ||
+      !/^pay_[A-Za-z0-9]+$/.test(razorpay_payment_id) ||
+      typeof razorpay_order_id !== "string" ||
+      !/^order_[A-Za-z0-9]+$/.test(razorpay_order_id) ||
+      typeof razorpay_signature !== "string" ||
+      !/^[a-fA-F0-9]{64}$/.test(razorpay_signature)
     ) {
       return res.status(400).json({
         success: false,
@@ -134,34 +167,52 @@ router.post("/verify", async (req, res) => {
       );
 
     if (!signatureValid) {
-      donation.status = "failed";
-      await donation.save();
-
       return res.status(400).json({
         success: false,
         message: "Payment signature verification failed",
       });
     }
 
-    // Payment verified
-    donation.razorpayPaymentId =
-      razorpay_payment_id;
+    if (donation.status === "paid") {
+      if (donation.razorpayPaymentId === razorpay_payment_id) {
+        return res.json({
+          success: true,
+          message: "Payment verified successfully",
+          donationId: donation._id,
+          amount: donation.amount,
+        });
+      }
+      return res.status(409).json({ success: false, message: "This order has already been verified." });
+    }
 
-    donation.razorpaySignature =
-      razorpay_signature;
+    const updatedDonation = await Donation.findOneAndUpdate(
+      { _id: donation._id, status: { $ne: "paid" } },
+      {
+        $set: {
+          razorpayPaymentId: razorpay_payment_id,
+          razorpaySignature: razorpay_signature,
+          status: "paid",
+        },
+      },
+      { new: true },
+    );
 
-    donation.status = "paid";
-
-    await donation.save();
+    if (!updatedDonation) {
+      const current = await Donation.findById(donation._id);
+      if (current?.status === "paid" && current.razorpayPaymentId === razorpay_payment_id) {
+        return res.json({ success: true, message: "Payment verified successfully", donationId: current._id, amount: current.amount });
+      }
+      return res.status(409).json({ success: false, message: "This order has already been verified." });
+    }
 
     return res.json({
       success: true,
       message: "Payment verified successfully",
-      donationId: donation._id,
-      amount: donation.amount,
+      donationId: updatedDonation._id,
+      amount: updatedDonation.amount,
     });
   } catch (error) {
-    console.error("Razorpay Verification Error:", error);
+    console.error("Razorpay Verification Error:", error?.message || "Unexpected error");
 
     return res.status(500).json({
       success: false,

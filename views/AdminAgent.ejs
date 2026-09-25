@@ -113,7 +113,7 @@
 
   <div class="main-content">
 
-    <h1><%= pageTitle %> (<%= users.length %> total)</h1>
+    <h1><%= pageTitle %> (<%= totalUsers %> total)</h1>
 
     <form class="toolbar" method="GET" action="/AdminAgent">
       <input type="text" name="search" value="<%= search %>" placeholder="Search name / email / phone / uid" />
@@ -144,10 +144,12 @@
               <td class="actions">
                 <form method="POST" action="/AdminAgent/<%= u._id %>/approve-request">
                   <input type="hidden" name="search" value="<%= search %>" />
+                  <input type="hidden" name="page" value="<%= page %>" />
                   <button type="submit" class="btn-approve">Approve</button>
                 </form>
                 <form method="POST" action="/AdminAgent/<%= u._id %>/reject-request">
                   <input type="hidden" name="search" value="<%= search %>" />
+                  <input type="hidden" name="page" value="<%= page %>" />
                   <button type="submit" class="btn-reject">Reject</button>
                 </form>
               </td>
@@ -194,6 +196,7 @@
               <td class="actions">
                 <form method="POST" action="/AdminAgent/<%= u._id %>/toggle-agent">
                   <input type="hidden" name="search" value="<%= search %>" />
+                  <input type="hidden" name="page" value="<%= page %>" />
                   <% if (u.isAgent) { %>
                     <button type="submit" class="btn-remove">Remove Agent</button>
                   <% } else { %>
@@ -206,6 +209,16 @@
         </tbody>
       </table>
     <% } %>
+
+    <nav aria-label="User pages" style="display:flex;gap:12px;align-items:center;margin:16px 0 32px;">
+      <% if (page > 1) { %>
+        <a href="/AdminAgent?page=<%= page - 1 %>&search=<%= encodeURIComponent(search) %>">Previous</a>
+      <% } %>
+      <span>Page <%= page %> of <%= totalPages %></span>
+      <% if (page < totalPages) { %>
+        <a href="/AdminAgent?page=<%= page + 1 %>&search=<%= encodeURIComponent(search) %>">Next</a>
+      <% } %>
+    </nav>
 
   </div>
 </body>

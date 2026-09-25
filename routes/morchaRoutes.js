@@ -1,5 +1,6 @@
 import express from "express";
 import upload from "../middlewar/upload.js"; 
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 import {
   renderMorcha,
   renderEditMorcha,
@@ -15,11 +16,11 @@ const router = express.Router();
 /* ===========================
    Admin Routes
 =========================== */
-router.get("/morcha", renderMorcha);
-router.get("/morcha/edit/:id", renderEditMorcha);
-router.post("/morcha/add", upload.single("image"), addMorcha);
-router.post("/morcha/update/:id", upload.single("image"), updateMorcha);
-router.get("/morcha/delete/:id", deleteMorcha);
+router.get("/morcha", requireAdmin, renderMorcha);
+router.get("/morcha/edit/:id", requireAdmin, renderEditMorcha);
+router.post("/morcha/add", requireAdmin, upload.single("image"), addMorcha);
+router.post("/morcha/update/:id", requireAdmin, upload.single("image"), updateMorcha);
+router.get("/morcha/delete/:id", requireAdmin, deleteMorcha);
 
 /* ===========================
    App API Routes

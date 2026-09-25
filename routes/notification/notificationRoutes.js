@@ -9,6 +9,7 @@ import {
 } from "../../controllers/notification/notificationController.js";
 
 import { optionalAuth } from "../../middlewar/optionalAuth.js";
+import { protect } from "../../middlewar/firebaseAuth.js";
 
 const router = express.Router();
 
@@ -29,21 +30,21 @@ router.get(
 // Mark one as read
 router.put(
   "/read/:id",
-  optionalAuth,
+  protect,
   markNotificationRead
 );
 
 // Mark all as read
 router.put(
   "/read-all",
-  optionalAuth,
+  protect,
   markAllNotificationsRead
 );
 
 // Delete
 router.delete(
   "/:id",
-  optionalAuth,
+  protect,
   deleteNotification
 );
 
