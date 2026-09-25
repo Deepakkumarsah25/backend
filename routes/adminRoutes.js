@@ -1,12 +1,13 @@
 import cmsRoutes from "./cmsRoutes.js";
 import express from "express";
 import upload from "../middlewar/upload.js";
-
+import { requireAdmin } from "../middlewar/adminAuth.js";
 import {
   loginAdmin,
   createAdmin,
   dashboard,
   addBanner,
+  logoutAdmin,
   deleteBanner,
 } from "../controllers/adminController.js";
 
@@ -48,13 +49,13 @@ router.get("/create-admin", createAdmin);
 
 router.post("/login", loginAdmin);
 
-router.get("/dashboard", dashboard);
+router.get("/dashboard", requireAdmin, dashboard);
 
 /* =========================================
    VIP LIVE
 ========================================= */
 
-router.get("/vip-live", (req, res) => {
+router.get("/vip-live", requireAdmin, (req, res) => {
   res.render("viplive");
 });
 
@@ -108,35 +109,19 @@ router.get("/album", async (req, res) => {
 
 router.get("/joinmember", renderJoinAdminPage);
 
-router.get(
-  "/joinmember/data",
-  getAllJoinApplications
-);
+router.get("/joinmember/data", getAllJoinApplications);
 
-router.get(
-  "/joinmember/:id",
-  getJoinApplicationById
-);
+router.get("/joinmember/:id", getJoinApplicationById);
 
-router.delete(
-  "/joinmember/:id",
-  deleteJoinApplication
-);
+router.delete("/joinmember/:id", deleteJoinApplication);
 
 /* =========================================
    BANNER
 ========================================= */
 
-router.post(
-  "/banner/add",
-  upload.array("banner", 20),
-  addBanner
-);
+router.post("/banner/add", upload.array("banner", 20), addBanner);
 
-router.delete(
-  "/banner/delete/:id",
-  deleteBanner
-);
+router.delete("/banner/delete/:id", deleteBanner);
 
 /* =========================================
    CONTACT US
@@ -144,30 +129,16 @@ router.delete(
 
 import * as contactController from "../controllers/admin/contactController.js";
 
-router.get(
-  "/admin/contact",
-  contactController.renderContactPage
-);
+router.get("/admin/contact", contactController.renderContactPage);
 
-router.post(
-  "/admin/contact/update",
-  contactController.updateContactInfo
-);
+router.post("/admin/contact/update", contactController.updateContactInfo);
 
-router.post(
-  "/admin/contact/office/add",
-  contactController.addOffice
-);
+router.post("/admin/contact/office/add", contactController.addOffice);
 
-router.post(
-  "/admin/contact/office/edit/:id",
-  contactController.editOffice
-);
+router.post("/admin/contact/office/edit/:id", contactController.editOffice);
 
-router.post(
-  "/admin/contact/office/delete/:id",
-  contactController.deleteOffice
-);
+router.post("/admin/contact/office/delete/:id", contactController.deleteOffice);
+router.get("/logout", logoutAdmin);
 
 /* =========================================
    DELETE ACCOUNT
@@ -179,37 +150,25 @@ router.post(
    /admin/delete-accounts
 */
 
-router.get(
-  "/admin/delete-accounts",
-  renderDeleteAccountPage
-);
+router.get("/admin/delete-accounts", renderDeleteAccountPage);
 
 /*
    Admin permanently deletes account
    Firebase Auth + MongoDB
 */
 
-router.post(
-  "/admin/delete-account/:id",
-  adminDeleteAccount
-);
+router.post("/admin/delete-account/:id", adminDeleteAccount);
 
 /*
    Admin cancels deletion request
 */
 
-router.post(
-  "/admin/delete-account/cancel/:id",
-  adminCancelDeleteAccount
-);
+router.post("/admin/delete-account/cancel/:id", adminCancelDeleteAccount);
 
 /* =========================================
    CMS
 ========================================= */
 
-router.use(
-  "/cms",
-  cmsRoutes
-);
+router.use("/cms", cmsRoutes);
 
 export default router;
