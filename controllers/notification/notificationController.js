@@ -59,11 +59,15 @@ const getUserFilter = (userId) => {
     : userId;
 
   return {
+    deletedBy: { $ne: userObjectId },
     $or: [
-      { userId: userObjectId, deletedBy: { $ne: userObjectId } },
-      { userId: String(userId), deletedBy: { $ne: userObjectId } },
-      { userId: null, deletedBy: { $ne: userObjectId } },
-      { targetType: "all", deletedBy: { $ne: userObjectId } },
+      { userId: userObjectId },
+      { userId: String(userId) },
+      { userId: null },
+      { userId: { $exists: false } },
+      { targetType: "all" },
+      { targetType: "member" },
+      { targetType: { $exists: false } },
     ],
   };
 };
@@ -72,6 +76,7 @@ const formatNotification = (item, userId = null) => {
   const { userId: owner, deletedBy, readBy, ...publicFields } = item;
   return {
     ...publicFields,
+    userId: owner || null,
     isRead: owner
       ? Boolean(item.isRead)
       : Boolean(item.isRead || (userId && readBy?.some((id) => String(id) === String(userId)))),
@@ -86,7 +91,13 @@ export const getNotifications = async (req, res) => {
     const filter = userId
       ? getUserFilter(userId)
       : {
-          $or: [{ userId: null }, { targetType: "all" }],
+          $or: [
+            { userId: null },
+            { userId: { $exists: false } },
+            { targetType: "all" },
+            { targetType: "member" },
+            { targetType: { $exists: false } },
+          ],
         };
 
     const notifications = await Notification.find(filter)
@@ -117,7 +128,15 @@ export const getUnreadCount = async (req, res) => {
 
     const filter = userId
       ? getUserFilter(userId)
-      : { $or: [{ userId: null }, { targetType: "all" }] };
+      : {
+          $or: [
+            { userId: null },
+            { userId: { $exists: false } },
+            { targetType: "all" },
+            { targetType: "member" },
+            { targetType: { $exists: false } },
+          ],
+        };
 
     const notifications = await Notification.find(filter).select("userId isRead readBy").lean();
     const unreadCount = notifications.filter((item) => !formatNotification(item, userId).isRead).length;
