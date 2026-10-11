@@ -85,7 +85,6 @@ export const addOrganisation = async (req, res) => {
     res.redirect("/organisation");
   } catch (error) {
     console.log("Add Organisation Error:", error);
-    console.log("Request Body:", req.body);
 
     res.status(500).send("Organisation Add Failed");
   }
@@ -162,7 +161,6 @@ export const updateOrganisation = async (req, res) => {
     res.redirect("/organisation");
   } catch (error) {
     console.log("Update Organisation Error:", error);
-    console.log("Request Body:", req.body);
 
     res.status(500).send("Organisation Update Failed");
   }

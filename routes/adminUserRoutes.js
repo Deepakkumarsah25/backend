@@ -1,4 +1,5 @@
 import express from "express";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 import {
   renderUsersAdminPage,
   toggleAgentStatus,
@@ -22,9 +23,9 @@ const router = express.Router();
   something (IP allowlist, login wall, etc.), add the same protection here.
 */
 
-router.get("/AdminAgent", renderUsersAdminPage);
-router.post("/AdminAgent/:id/toggle-agent", toggleAgentStatus);
-router.post("/AdminAgent/:id/approve-request", approveAgentRequest);
-router.post("/AdminAgent/:id/reject-request", rejectAgentRequest);
+router.get("/AdminAgent", requireAdmin, renderUsersAdminPage);
+router.post("/AdminAgent/:id/toggle-agent", requireAdmin, toggleAgentStatus);
+router.post("/AdminAgent/:id/approve-request", requireAdmin, approveAgentRequest);
+router.post("/AdminAgent/:id/reject-request", requireAdmin, rejectAgentRequest);
 
 export default router;

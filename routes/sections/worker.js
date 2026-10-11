@@ -1,6 +1,7 @@
 import express from "express";
 import upload from "../../middlewar/upload.js";
 import Worker from "../../models/Worker.js";
+import { requireAdmin } from "../../middlewar/requireAdmin.js";
 
 import {
   addWorker,
@@ -12,7 +13,7 @@ const router = express.Router();
 
 router.get("/member", getWorkers);
 
-router.get("/workerlist", async (req, res) => {
+router.get("/workerlist", requireAdmin, async (req, res) => {
   try {
     const workers = await Worker.find().sort({ createdAt: -1 });
 
@@ -27,12 +28,14 @@ router.get("/workerlist", async (req, res) => {
 
 router.post(
   "/worker/add",
+  requireAdmin,
   upload.single("photo"),
   addWorker
 );
 
 router.get(
   "/worker/delete/:id",
+  requireAdmin,
   deleteWorker
 );
 

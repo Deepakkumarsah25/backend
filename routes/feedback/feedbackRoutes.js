@@ -1,4 +1,7 @@
 import express from "express";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import { protect } from "../../middlewar/firebaseAuth.js";
+import { requireAdmin } from "../../middlewar/requireAdmin.js";
 
 import {
   createFeedback,
@@ -10,6 +13,22 @@ import {
 
 const router = express.Router();
 
+const feedbackIpLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { success: false, message: "Too many feedback submissions. Please try again later." },
+});
+const feedbackUserLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  keyGenerator: (req) => req.user?.uid || ipKeyGenerator(req.ip),
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { success: false, message: "Too many feedback submissions. Please try again later." },
+});
+
 
 // =====================================================
 // ADMIN DASHBOARD
@@ -18,6 +37,7 @@ const router = express.Router();
 
 router.get(
   "/",
+  requireAdmin,
   (req, res) => {
     res.render(
       "Feedback/feedbackDashboard"
@@ -33,6 +53,9 @@ router.get(
 
 router.post(
   "/feedback",
+  feedbackIpLimit,
+  protect,
+  feedbackUserLimit,
   createFeedback
 );
 
@@ -43,21 +66,25 @@ router.post(
 
 router.get(
   "/feedback",
+  requireAdmin,
   getAllFeedback
 );
 
 router.get(
   "/feedback/stats",
+  requireAdmin,
   getFeedbackStats
 );
 
 router.get(
   "/feedback/:id",
+  requireAdmin,
   getFeedbackById
 );
 
 router.delete(
   "/feedback/:id",
+  requireAdmin,
   deleteFeedback
 );
 

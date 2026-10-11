@@ -22,6 +22,7 @@ import {
 
 import Video from "../models/videogallery.js";
 import Album from "../models/Album.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 /* =========================================
    DELETE ACCOUNT CONTROLLER
@@ -47,14 +48,29 @@ router.get("/", (req, res) => {
    ADMIN AUTH & DASHBOARD
 ========================================= */
 
-router.get("/create-admin", createAdmin);
+// Public admin creation is disabled; provisioning must be done out of band.
+router.get("/create-admin", (req, res) => res.sendStatus(404));
 
 router.post("/login", loginAdmin);
 
 router.get("/logout", logoutAdmin);
 router.post("/logout", logoutAdmin);
 
-router.get("/dashboard", dashboard);
+/* =========================================
+   LOGOUT
+========================================= */
+
+router.get(
+  "/logout",
+  requireAdmin,
+  logoutAdmin
+);
+
+router.get(
+  "/dashboard",
+  requireAdmin,
+  dashboard
+);
 
 /* 10-Day Activity Logs Route and Aliases */
 router.get("/activity-logs", getActivityLogsPage);
@@ -80,72 +96,91 @@ router.post("/api/admin/quick-update", quickUpdateActivity);
    VIP LIVE
 ========================================= */
 
-router.get("/vip-live", (req, res) => {
-  res.render("viplive");
-});
+router.get(
+  "/vip-live",
+  requireAdmin,
+  (req, res) => {
+    res.render("viplive");
+  }
+);
 
 /* =========================================
    VIDEO GALLERY
 ========================================= */
 
-router.get("/video_gallery", async (req, res) => {
-  try {
-    const videos = await Video.find().sort({
-      createdAt: -1,
-    });
+router.get(
+  "/video_gallery",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const videos = await Video.find().sort({
+        createdAt: -1,
+      });
 
-    res.render("video_gallery", {
-      videos,
-    });
-  } catch (error) {
-    console.log(error);
+      res.render("video_gallery", {
+        videos,
+      });
+    } catch (error) {
+      console.log(error);
 
-    res.render("video_gallery", {
-      videos: [],
-    });
+      res.render("video_gallery", {
+        videos: [],
+      });
+    }
   }
-});
+);
 
 /* =========================================
    ALBUM
 ========================================= */
 
-router.get("/album", async (req, res) => {
-  try {
-    const albums = await Album.find().sort({
-      createdAt: -1,
-    });
+router.get(
+  "/album",
+  requireAdmin,
+  async (req, res) => {
+    try {
+      const albums = await Album.find().sort({
+        createdAt: -1,
+      });
 
-    res.render("album", {
-      albums,
-    });
-  } catch (error) {
-    console.log(error);
+      res.render("album", {
+        albums,
+      });
+    } catch (error) {
+      console.log(error);
 
-    res.render("album", {
-      albums: [],
-    });
+      res.render("album", {
+        albums: [],
+      });
+    }
   }
-});
+);
 
 /* =========================================
    JOIN MEMBER
 ========================================= */
 
-router.get("/joinmember", renderJoinAdminPage);
+router.get(
+  "/joinmember",
+  requireAdmin,
+  renderJoinAdminPage
+);
 
 router.get(
   "/joinmember/data",
+  requireAdmin,
   getAllJoinApplications
 );
 
 router.get(
   "/joinmember/:id",
+  requireAdmin,
   getJoinApplicationById
 );
 
 router.delete(
   "/joinmember/:id",
+  requireAdmin,
   deleteJoinApplication
 );
 
@@ -155,12 +190,14 @@ router.delete(
 
 router.post(
   "/banner/add",
+  requireAdmin,
   upload.array("banner", 20),
   addBanner
 );
 
 router.delete(
   "/banner/delete/:id",
+  requireAdmin,
   deleteBanner
 );
 
@@ -172,26 +209,31 @@ import * as contactController from "../controllers/admin/contactController.js";
 
 router.get(
   "/admin/contact",
+  requireAdmin,
   contactController.renderContactPage
 );
 
 router.post(
   "/admin/contact/update",
+  requireAdmin,
   contactController.updateContactInfo
 );
 
 router.post(
   "/admin/contact/office/add",
+  requireAdmin,
   contactController.addOffice
 );
 
 router.post(
   "/admin/contact/office/edit/:id",
+  requireAdmin,
   contactController.editOffice
 );
 
 router.post(
   "/admin/contact/office/delete/:id",
+  requireAdmin,
   contactController.deleteOffice
 );
 
@@ -207,6 +249,7 @@ router.post(
 
 router.get(
   "/admin/delete-accounts",
+  requireAdmin,
   renderDeleteAccountPage
 );
 
@@ -217,6 +260,7 @@ router.get(
 
 router.post(
   "/admin/delete-account/:id",
+  requireAdmin,
   adminDeleteAccount
 );
 
@@ -226,6 +270,7 @@ router.post(
 
 router.post(
   "/admin/delete-account/cancel/:id",
+  requireAdmin,
   adminCancelDeleteAccount
 );
 

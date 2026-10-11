@@ -156,30 +156,53 @@ export const renderGrievancesPage = async (req, res) => {
  *******************************************************/
 export const getGrievancesData = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
+    const parseBoundedInt = (value, fallback, max) => {
+      if (value === undefined || value === "") return fallback;
+      if (!/^\d+$/.test(String(value))) return null;
+      const parsed = Number(value);
+      return Number.isSafeInteger(parsed) && parsed >= 1 && parsed <= max ? parsed : null;
+    };
+    const page = parseBoundedInt(req.query.page, 1, 10000);
+    const limit = parseBoundedInt(req.query.limit, 20, 100);
+    if (page === null || limit === null) {
+      return res.status(400).json({ success: false, message: "Invalid pagination parameters." });
+    }
     const { category, status, search } = req.query;
 
     const filter = {};
     if (category && GRIEVANCE_CATEGORIES.includes(category)) filter.category = category;
     if (status && GRIEVANCE_STATUSES.includes(status)) filter.status = status;
 
+    if (search !== undefined && typeof search !== "string") {
+      return res.status(400).json({ success: false, message: "Invalid search query." });
+    }
     if (search?.trim()) {
+      if (search.trim().length > 100) {
+        return res.status(400).json({ success: false, message: "Search must be 100 characters or fewer." });
+      }
       const User = (await import("../../models/User.js")).default;
-      const regex = new RegExp(search.trim(), "i");
-      const matchingUsers = await User.find({ $or: [{ name: regex }, { phone: regex }] }).select("_id");
+      const escapedSearch = search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(escapedSearch, "i");
+      const matchingUsers = await User.find({ $or: [{ name: regex }, { phone: regex }] })
+        .select("_id")
+        .limit(5001)
+        .maxTimeMS(2000);
+      if (matchingUsers.length > 5000) {
+        return res.status(400).json({ success: false, message: "Search is too broad; please enter a more specific term." });
+      }
       const userIds = matchingUsers.map((u) => u._id);
       filter.$or = [{ title: regex }, { grievanceId: regex }, { user: { $in: userIds } }];
     }
 
-    const total = await Grievance.countDocuments(filter);
+    const total = await Grievance.countDocuments(filter).maxTimeMS(2000);
     const totalPages = Math.max(1, Math.ceil(total / limit));
 
     const grievances = await Grievance.find(filter)
       .populate("user", "name phone")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
+      .limit(limit)
+      .maxTimeMS(2000);
 
     return res.json({
       success: true,

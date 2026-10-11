@@ -1,8 +1,19 @@
 import User from "../../models/User.js";
 import { uploadToCloudinary } from "../../config/cloudinary.js";
 import { generateMemberId } from "../../services/memberId.js";
+import { getBearerToken, verifyFirebaseToken } from "../../middlewar/firebaseAuth.js";
 
 const PLACEHOLDER = "xxx";
+
+const formatSafeUser = (user) => ({
+  id: user._id,
+  uid: user.uid,
+  name: user.name,
+  email: user.email,
+  phone: user.phone,
+  photoURL: user.photoURL,
+  isAgent: user.isAgent || false,
+});
 
 /**
  * Format user data for membership card
@@ -28,22 +39,32 @@ const formatCard = (user) => ({
  *******************************************************/
 export const saveUser = async (req, res) => {
   try {
-    const { uid, name, email, photoURL, provider, fcmToken } = req.body;
-
-    // ------------------------------------------
-    // UID validation
-    // ------------------------------------------
-    if (!uid) {
+    const user = req.user;
+    if (!user?._id || !user.uid) {
       return res.status(400).json({
         success: false,
-        message: "UID is required",
+        message: "Authenticated user is required",
       });
+    }
+
+    const { name, photoURL, provider, fcmToken } = req.body;
+    let verifiedEmail;
+    const bearer = getBearerToken(req);
+    if (!bearer.error) {
+      try {
+        const decodedToken = await verifyFirebaseToken(bearer.token);
+        if (decodedToken.uid === req.user.uid && decodedToken.email_verified === true && typeof decodedToken.email === "string") {
+          verifiedEmail = decodedToken.email.trim().toLowerCase();
+        }
+      } catch {
+        // protect already validated the token; keep the stored email if revalidation is unavailable.
+      }
     }
 
     // ------------------------------------------
     // Check existing user
     // ------------------------------------------
-    const existingUser = await User.findOne({ uid });
+    const existingUser = user;
 
     // ==========================================
     // USER LOGGED IN DURING DELETION PERIOD
@@ -58,8 +79,8 @@ export const saveUser = async (req, res) => {
         existingUser.name = name;
       }
 
-      if (email !== undefined) {
-        existingUser.email = email;
+      if (verifiedEmail) {
+        existingUser.email = verifiedEmail;
       }
 
       if (photoURL !== undefined) {
@@ -82,31 +103,28 @@ export const saveUser = async (req, res) => {
         success: true,
         deletionCancelled: true,
         message: "Account deletion cancelled because you logged in.",
-        user: existingUser,
+        user: formatSafeUser(existingUser),
       });
     }
 
     // ==========================================
     // NORMAL LOGIN / SAVE / UPSERT
     // ==========================================
-    const user = await User.findOneAndUpdate(
-      { uid },
+    const savedUser = await User.findOneAndUpdate(
+      { _id: req.user._id },
       {
         $set: {
-          uid,
-          name,
-          email,
-          photoURL,
-          provider,
-          fcmToken,
+          ...(name !== undefined && { name }),
+          ...(verifiedEmail && { email: verifiedEmail }),
+          ...(photoURL !== undefined && { photoURL }),
+          ...(provider !== undefined && { provider }),
+          ...(fcmToken !== undefined && { fcmToken }),
           notificationEnabled: true,
           lastLogin: new Date(),
         },
       },
       {
         new: true,
-        upsert: true,
-        setDefaultsOnInsert: true,
       },
     );
 
@@ -117,14 +135,14 @@ export const saveUser = async (req, res) => {
       success: true,
       deletionCancelled: false,
       message: "User saved successfully.",
-      user,
+      user: savedUser ? formatSafeUser(savedUser) : null,
     });
   } catch (error) {
     console.error("USER SAVE ERROR:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "User save failed.",
     });
   }
 };

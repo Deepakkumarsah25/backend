@@ -1101,30 +1101,12 @@ export const updateTracking = async (
   res,
 ) => {
   try {
-    console.log(
-      "=========================================",
-    );
-
-    console.log(
-      "TRACKING API HIT",
-    );
-
-    console.log(
-      "REQUEST BODY:",
-      req.body,
-    );
-
-    console.log(
-      "=========================================",
-    );
-
     /* =========================================
        REQUEST DATA
     ========================================= */
 
     const {
       routeId,
-      driverId,
       lat,
       lng,
       speed,
@@ -1255,10 +1237,7 @@ export const updateTracking = async (
        DRIVER ID
     ========================================= */
 
-    const actualDriverId =
-      driverId ||
-      updatedRoute.driverId ||
-      null;
+    const actualDriverId = updatedRoute.driverId || null;
 
     /* =========================================
        SAVE TRACKING HISTORY

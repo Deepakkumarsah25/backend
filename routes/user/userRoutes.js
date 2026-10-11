@@ -13,7 +13,7 @@ import { saveUser, getMyCard, updateMyCard } from "../../controllers/user/userCo
 
 const router = express.Router();
 
-router.post("/save-user", saveUser);
+router.post("/save-user", protect, saveUser);
 
 router.get("/me", protect, async (req, res) => {
   res.json({

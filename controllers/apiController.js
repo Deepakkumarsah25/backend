@@ -24,7 +24,8 @@ export const getContact = async (req, res) => {
     const offices = await VipOffice.find();
     res.json({ info, offices });
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong", error: error.message });
+    console.error("GET CONTACT ERROR:", error?.message || "Unexpected error");
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
