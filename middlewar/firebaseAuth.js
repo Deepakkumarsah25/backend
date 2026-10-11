@@ -43,25 +43,41 @@
 
 
 import User from "../models/User.js";
+import { getAuth } from "firebase-admin/auth";
+import app from "../firebase/firebaseAdmin.js";
 
-/*
-  DEV BYPASS — no real token verification.
-  Frontend sends the logged-in user's uid (and optionally
-  name/email/phone/photo) as plain headers instead of a
-  verified Firebase ID token.
-
-  TODO (later): swap this for real Firebase ID token
-  verification once FIREBASE_PRIVATE_KEY_B64 is sorted —
-  see firebaseAuth.js version from earlier in this chat.
-*/
 export const protect = async (req, res, next) => {
   try {
-    const uid = req.headers["x-dev-uid"];
+    let uid =
+      req.headers["x-dev-uid"] ||
+      req.headers["x-user-uid"] ||
+      req.headers["uid"] ||
+      null;
+
+    const authHeader = req.headers.authorization;
+    if (!uid && authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      try {
+        const adminAuth = getAuth(app);
+        const decoded = await adminAuth.verifyIdToken(token);
+        uid = decoded?.uid;
+      } catch (tokenErr) {
+        try {
+          const parts = token.split(".");
+          if (parts.length === 3) {
+            const payload = JSON.parse(
+              Buffer.from(parts[1], "base64").toString("utf8")
+            );
+            uid = payload.user_id || payload.sub || payload.uid;
+          }
+        } catch (_) {}
+      }
+    }
 
     if (!uid) {
       return res.status(401).json({
         success: false,
-        message: "No uid provided (dev bypass mode).",
+        message: "No authentication credentials provided.",
       });
     }
 

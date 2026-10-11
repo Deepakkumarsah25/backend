@@ -337,15 +337,33 @@ export const addRoute = async (req, res) => {
        DATABASE NOTIFICATION
     ========================================= */
 
+    const baseUrl = (
+      process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`
+    ).replace(/\/$/, "");
+    const trackUrl = `${baseUrl}/track/${route._id}`;
+
     try {
-      await Notification.create({
-        title: "New Route Added",
+      const hindiTitle = "🚩 वीआईपी पार्टी वाहन सूचना";
+      const hindiMessage =
+        "वीआईपी पार्टी का वाहन आपके क्षेत्र के पास पहुँच रहा है। कृपया आवश्यक तैयारी रखें और आसपास के लोगों तक कार्यक्रम की जानकारी पहुँचाएँ।";
 
-        message: `${route.routeName} route has been added.`,
-
+      const createdNotification = await Notification.create({
+        title: hindiTitle,
+        message: hindiMessage,
         type: "route",
-
         relatedId: route._id,
+        targetType: "all",
+        actionType: "none",
+        deepLink: "",
+        actionUrl: "",
+        metadata: {
+          routeName: route.routeName,
+          startLocation: route.startLocation || "",
+          endLocation: route.endLocation || "",
+          distanceKm: route.distanceKm || 0,
+          durationMin: route.durationMin || 0,
+          time: new Date().toISOString(),
+        },
       });
     } catch (notificationError) {
       console.error("ROUTE NOTIFICATION ERROR:", notificationError);
@@ -356,15 +374,20 @@ export const addRoute = async (req, res) => {
     ========================================= */
 
     try {
+      const hindiTitle = "🚩 वीआईपी पार्टी वाहन सूचना";
+      const hindiMessage =
+        "वीआईपी पार्टी का वाहन आपके क्षेत्र के पास पहुँच रहा है। कृपया आवश्यक तैयारी रखें और आसपास के लोगों तक कार्यक्रम की जानकारी पहुँचाएँ।";
+
       await sendPushNotification(
-        "VIP Party",
-
-        `${route.routeName} route has been added.`,
-
+        hindiTitle,
+        hindiMessage,
         {
           type: "route",
-
+          actionType: "none",
           routeId: route._id.toString(),
+          screen: "/notifications",
+          title: hindiTitle,
+          message: hindiMessage,
         },
       );
     } catch (pushError) {

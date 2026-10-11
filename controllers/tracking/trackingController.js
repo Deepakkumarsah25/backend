@@ -132,28 +132,7 @@ const buildWorkerEmailHtml = ({
     .content {
       padding: 30px;
     }
-
-    .info-box {
-      background: #f8fafc;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 15px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 14px 24px;
-      background: #0d6efd;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    .btn-green {
-      background: #16a34a;
-    }
+  </style>
 
     .footer {
       background: #f1f5f9;
@@ -201,58 +180,6 @@ const buildWorkerEmailHtml = ({
         कृपया आवश्यक तैयारी रखें
         और आसपास के लोगों तक
         कार्यक्रम की जानकारी पहुँचाएँ।
-      </p>
-
-      <div class="info-box">
-
-        <p>
-          <strong>मार्ग:</strong>
-          ${route?.routeName || "वीआईपी पार्टी मार्ग"}
-        </p>
-
-        <p>
-          <strong>गति:</strong>
-          ${Number(numericSpeed || 0).toFixed(2)} किमी/घंटा
-        </p>
-
-        <p>
-          <strong>गंतव्य:</strong>
-          ${endLocation}
-        </p>
-
-        <p>
-          <strong>समय:</strong>
-          ${new Date().toLocaleString("hi-IN")}
-        </p>
-
-      </div>
-
-      <center>
-
-        <a
-          class="btn"
-          href="${trackUrl}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          📍 लाइव ट्रैकिंग देखें
-        </a>
-
-        <br>
-
-        <a
-          class="btn btn-green"
-          href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-            endLocation,
-          )}&travelmode=driving"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          🧭 मार्ग नेविगेशन खोलें
-        </a>
-
-      </center>
-
     </div>
 
     <div class="footer">
@@ -332,11 +259,10 @@ const sendMemberAppNotification = async ({
     const destination =
       route?.endLocation || "Destination";
 
-    const title =
-      "🚗 VIP पार्टी वाहन अलर्ट";
+    const title = "🚩 वीआईपी पार्टी वाहन सूचना";
 
     const message =
-      "VIP पार्टी का वाहन आपके क्षेत्र से लगभग 10 किलोमीटर के दायरे में पहुँच चुका है।";
+      "वीआईपी पार्टी का वाहन आपके क्षेत्र के 10 किलोमीटर के दायरे में है। कृपया आवश्यक तैयारी रखें और आसपास के लोगों तक कार्यक्रम की जानकारी पहुँचाएँ।";
 
     const notification =
       await createMemberNotification({
@@ -350,11 +276,11 @@ const sendMemberAppNotification = async ({
 
         relatedId: routeId,
 
-        actionType: "tracking",
+        actionType: "none",
 
-        deepLink: `/track/${routeId}`,
+        deepLink: "",
 
-        actionUrl: trackUrl,
+        actionUrl: "",
 
         metadata: {
           workerName:
@@ -362,17 +288,13 @@ const sendMemberAppNotification = async ({
 
           routeName:
             route?.routeName ||
-            "VIP Party Route",
+            "वीआईपी पार्टी मार्ग",
 
-          speed: numericSpeed,
+          speed: Number(numericSpeed || 0).toFixed(2),
 
           destination,
 
-          time: new Date().toISOString(),
-
-          trackUrl,
-
-          navigationUrl,
+          time: new Date().toLocaleString("hi-IN"),
         },
       });
 
@@ -386,13 +308,13 @@ const sendMemberAppNotification = async ({
       data: {
         type: "route",
 
-        actionType: "tracking",
+        actionType: "none",
 
         routeId: String(routeId),
 
-        deepLink: `/track/${routeId}`,
+        notificationId: notification?._id ? String(notification._id) : "",
 
-        actionUrl: trackUrl,
+        screen: "/notifications",
 
         title,
 

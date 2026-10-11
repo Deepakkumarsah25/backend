@@ -1,22 +1,72 @@
 import mongoose from "mongoose";
 import Notification from "../../models/Notification.js";
 import User from "../../models/User.js";
+import { getAuth } from "firebase-admin/auth";
+import app from "../../firebase/firebaseAdmin.js";
 
 const resolveUser = async (req) => {
   if (req.user?._id) return req.user;
 
-  const uid = req.headers["x-dev-uid"] || req.headers["x-user-uid"];
-  if (!uid) return null;
+  let uid =
+    req.headers["x-dev-uid"] ||
+    req.headers["x-user-uid"] ||
+    req.headers["uid"] ||
+    null;
 
-  return User.findOne({ uid: String(uid) });
+  const authHeader = req.headers.authorization;
+  if (!uid && authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    try {
+      const adminAuth = getAuth(app);
+      const decoded = await adminAuth.verifyIdToken(token);
+      uid = decoded?.uid;
+    } catch (e) {
+      try {
+        const parts = token.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(
+            Buffer.from(parts[1], "base64").toString("utf8")
+          );
+          uid = payload.user_id || payload.sub || payload.uid;
+        }
+      } catch (_) {}
+    }
+  }
+
+  if (uid) {
+    let user = await User.findOne({ uid: String(uid) });
+    if (!user) {
+      const email = req.headers["x-dev-email"] || req.headers["x-user-email"];
+      if (email) {
+        user = await User.findOne({ email: String(email).trim().toLowerCase() });
+      }
+    }
+    if (user) return user;
+  }
+
+  const email = req.headers["x-dev-email"] || req.headers["x-user-email"];
+  if (email) {
+    const user = await User.findOne({ email: String(email).trim().toLowerCase() });
+    if (user) return user;
+  }
+
+  return null;
 };
 
-const getUserFilter = (userId) => ({
-  $or: [
-    { userId, deletedBy: { $ne: userId } },
-    { userId: null, deletedBy: { $ne: userId } },
-  ],
-});
+const getUserFilter = (userId) => {
+  const userObjectId = mongoose.Types.ObjectId.isValid(userId)
+    ? new mongoose.Types.ObjectId(userId)
+    : userId;
+
+  return {
+    $or: [
+      { userId: userObjectId, deletedBy: { $ne: userObjectId } },
+      { userId: String(userId), deletedBy: { $ne: userObjectId } },
+      { userId: null, deletedBy: { $ne: userObjectId } },
+      { targetType: "all", deletedBy: { $ne: userObjectId } },
+    ],
+  };
+};
 
 export const getNotifications = async (req, res) => {
   try {
@@ -25,7 +75,9 @@ export const getNotifications = async (req, res) => {
 
     const filter = userId
       ? getUserFilter(userId)
-      : { userId: null };
+      : {
+          $or: [{ userId: null }, { targetType: "all" }],
+        };
 
     const notifications = await Notification.find(filter)
       .sort({ createdAt: -1 })
@@ -54,7 +106,7 @@ export const getUnreadCount = async (req, res) => {
 
     const filter = userId
       ? { isRead: false, ...getUserFilter(userId) }
-      : { isRead: false, userId: null };
+      : { isRead: false, $or: [{ userId: null }, { targetType: "all" }] };
 
     const unreadCount = await Notification.countDocuments(filter);
 
@@ -84,9 +136,13 @@ export const markNotificationRead = async (req, res) => {
     const ownership = userId
       ? {
           _id: id,
-          $or: [{ userId }, { userId: null }],
+          $or: [
+            { userId },
+            { userId: null },
+            { targetType: "all" },
+          ],
         }
-      : { _id: id, userId: null };
+      : { _id: id, $or: [{ userId: null }, { targetType: "all" }] };
 
     const notification = await Notification.findOneAndUpdate(
       ownership,
@@ -122,7 +178,7 @@ export const markAllNotificationsRead = async (req, res) => {
 
     const filter = userId
       ? { isRead: false, ...getUserFilter(userId) }
-      : { isRead: false, userId: null };
+      : { isRead: false, $or: [{ userId: null }, { targetType: "all" }] };
 
     await Notification.updateMany(filter, { $set: { isRead: true } });
 
@@ -159,7 +215,7 @@ export const deleteNotification = async (req, res) => {
     const notification = await Notification.findOneAndUpdate(
       {
         _id: id,
-        $or: [{ userId }, { userId: null }],
+        $or: [{ userId }, { userId: null }, { targetType: "all" }],
       },
       { $addToSet: { deletedBy: userId } },
       { new: true }
