@@ -32,6 +32,7 @@ import morchaRoutes from "./routes/morchaRoutes.js";
 import leadershipRoutes from "./routes/leadershipRoutes.js";
 import adminUserRoutes from "./routes/adminUserRoutes.js";
 import cmsRoutes from "./routes/cmsRoutes.js";
+import journeyRoutes from "./routes/journeyRoutes.js";
 import bainarliveupdate from "./routes/sections/banners.js";
 import workerRoutes from "./routes/sections/worker.js";
 import routeRoutes from "./routes/route/routeRoutes.js";
@@ -251,6 +252,7 @@ app.use(
   CMS
 */
 app.use("/cms", cmsRoutes);
+app.use(journeyRoutes);
 
 /*
   LEADERSHIP
@@ -484,7 +486,7 @@ app.listen(
     );
 
     console.log(
-      `http://127.0.0.1:${PORT}`
+      `http://192.168.1.18:${PORT}`
     );
 
     console.log(
