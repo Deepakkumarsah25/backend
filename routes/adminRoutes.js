@@ -4,11 +4,13 @@ import upload from "../middlewar/upload.js";
 
 import {
   loginAdmin,
+  logoutAdmin,
   createAdmin,
   dashboard,
+  quickUpdateActivity,
   addBanner,
-  logoutAdmin,
   deleteBanner,
+  getActivityLogsPage,
 } from "../controllers/adminController.js";
 
 import {
@@ -45,13 +47,16 @@ router.get("/", (req, res) => {
 });
 
 /* =========================================
-   ADMIN
+   ADMIN AUTH & DASHBOARD
 ========================================= */
 
 // Public admin creation is disabled; provisioning must be done out of band.
 router.get("/create-admin", (req, res) => res.sendStatus(404));
 
 router.post("/login", loginAdmin);
+
+router.get("/logout", logoutAdmin);
+router.post("/logout", logoutAdmin);
 
 /* =========================================
    LOGOUT
@@ -68,6 +73,26 @@ router.get(
   requireAdmin,
   dashboard
 );
+
+/* 10-Day Activity Logs Route and Aliases */
+router.get("/activity-logs", getActivityLogsPage);
+router.get("/activity-log", getActivityLogsPage);
+router.get("/activitylogs", getActivityLogsPage);
+router.get("/activitylog", getActivityLogsPage);
+router.get("/activities", getActivityLogsPage);
+router.get("/activity", getActivityLogsPage);
+router.get("/10-day-activity", getActivityLogsPage);
+router.get("/10-days-activity", getActivityLogsPage);
+router.get("/10-days-activity-log", getActivityLogsPage);
+router.get("/admin/activity-logs", getActivityLogsPage);
+router.get("/admin/activity-log", getActivityLogsPage);
+router.get("/admin/activitylogs", getActivityLogsPage);
+router.get("/admin/activitylog", getActivityLogsPage);
+router.get("/admin/activities", getActivityLogsPage);
+router.get("/admin/activity", getActivityLogsPage);
+
+router.post("/api/admin/quick-update", quickUpdateActivity);
+
 
 /* =========================================
    VIP LIVE

@@ -1,21 +1,13 @@
 <head>
   <!-- Font Awesome -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
   <!-- Sidebar CSS -->
   <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
 
 <!-- Mobile Sidebar Toggle -->
-<button
-  class="sidebar-toggle-btn"
-  id="sidebarToggle"
-  aria-label="Open navigation"
-  type="button"
->
+<button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open navigation" type="button">
   <span></span>
   <span></span>
   <span></span>
@@ -41,12 +33,7 @@
       </div>
     </div>
 
-    <button
-      class="sidebar-mobile-close"
-      id="sidebarClose"
-      type="button"
-      aria-label="Close navigation"
-    >
+    <button class="sidebar-mobile-close" id="sidebarClose" type="button" aria-label="Close navigation">
       <i class="fa-solid fa-xmark"></i>
     </button>
   </div>
@@ -70,14 +57,60 @@
       </li>
 
       <!-- =========================
+           ACTIVITY LOGS (LAST 10 DAYS)
+      ========================== -->
+      <li class="sidebar-item">
+
+        <a href="/activity-logs" class="sidebar-link direct-link" id="sidebarActivityLogLink">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+
+            <span class="sidebar-text">
+              10-Day Activity Log
+            </span>
+          </span>
+
+          <span class="sidebar-badge"
+            style="background: rgba(255, 255, 255, 0.22); color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto;">
+            10 Days
+          </span>
+        </a>
+
+      </li>
+
+
+      <!-- =========================
+           ACTIVITY LOGS (LAST 10 DAYS)
+      ========================== -->
+      <li class="sidebar-item">
+
+        <a href="/activity-logs" class="sidebar-link direct-link" id="sidebarActivityLogLink">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+
+            <span class="sidebar-text">
+              10-Day Activity Log
+            </span>
+          </span>
+
+          <span class="sidebar-badge"
+            style="background: rgba(255, 255, 255, 0.22); color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto;">
+            10 Days
+          </span>
+        </a>
+
+      </li>
+
+
+      <!-- =========================
            PEOPLE & ORGANISATION
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-users"></i>
@@ -131,11 +164,7 @@
            TRANSPORT
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-car-side"></i>
@@ -175,11 +204,7 @@
            MEDIA RESOURCES
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-photo-film"></i>
@@ -226,11 +251,7 @@
            CONTENT MANAGEMENT
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-pen-to-square"></i>
@@ -284,11 +305,7 @@
            USER MANAGEMENT
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-user-gear"></i>
@@ -328,11 +345,7 @@
            SUPPORT
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-headset"></i>
@@ -365,11 +378,7 @@
            ADMINISTRATION
       ========================== -->
       <li class="sidebar-item has-submenu">
-        <button
-          type="button"
-          class="sidebar-link sidebar-parent"
-          aria-expanded="false"
-        >
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-shield-halved"></i>
@@ -388,6 +397,13 @@
               <span>Admin Agent</span>
             </a>
           </li>
+          <li>
+            <a href="/activity-logs">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>10-Day Activity Log</span>
+            </a>
+          </li>
+
         </ul>
       </li>
 
@@ -395,7 +411,9 @@
            LOGOUT
       ========================== -->
       <li class="sidebar-item sidebar-logout">
+
         <a href="/logout" class="sidebar-link direct-link logout-link">
+
           <span class="sidebar-icon">
             <i class="fa-solid fa-right-from-bracket"></i>
           </span>
@@ -407,12 +425,7 @@
   </div>
 
   <!-- Desktop Collapse -->
-  <button
-    type="button"
-    class="desktop-collapse-trigger"
-    id="desktopCollapse"
-    aria-label="Collapse sidebar"
-  >
+  <button type="button" class="desktop-collapse-trigger" id="desktopCollapse" aria-label="Collapse sidebar">
     <i class="fa-solid fa-chevron-left"></i>
   </button>
 </aside>

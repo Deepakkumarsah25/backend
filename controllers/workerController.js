@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Worker from "../models/Worker.js";
 import cloudinary from "../config/cloudinary.js";
+import { logAdminActivity } from "../services/activityService.js";
 
 /* =========================================================
    ADD WORKER
@@ -123,6 +124,14 @@ export const addWorker = async (req, res) => {
       "Saved Location:",
       worker.location
     );
+
+    await logAdminActivity(req, {
+      section: "People & Organisation",
+      action: "Added New Worker / Member",
+      details: `Registered ${req.body.fullName || "Member"} (${req.body.district || "Bihar"})`,
+      actionType: "create",
+      sectionIcon: "fa-solid fa-users",
+    });
 
     return res.redirect(
       "/workerlist"
@@ -524,9 +533,18 @@ export const deleteWorker = async (
       workerId
     );
 
+    await logAdminActivity(req, {
+      section: "People & Organisation",
+      action: "Deleted Worker / Member",
+      details: `Removed worker: ${worker.fullName || "Member"}`,
+      actionType: "delete",
+      sectionIcon: "fa-solid fa-user-minus",
+    });
+
     return res.redirect(
       "/workerlist"
     );
+
 
   } catch (error) {
 

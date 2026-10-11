@@ -1041,7 +1041,6 @@ body{
 </style>
 
 </head>
-
 <body>
 
 
@@ -1355,7 +1354,23 @@ body{
 
   </section>
 
-</div>
+    <form action="/login" method="POST" id="loginForm">
+      <div class="input-group">
+        <label for="adminEmail">
+          <span>Admin Email</span>
+        </label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-envelope input-icon"></i>
+          <input
+            type="email"
+            id="adminEmail"
+            name="email"
+            placeholder="Enter your registered email"
+            required
+            autocomplete="email"
+          >
+        </div>
+      </div>
 
 
 <script>
