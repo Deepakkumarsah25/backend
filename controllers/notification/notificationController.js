@@ -66,7 +66,8 @@ const getUserFilter = (userId) => {
       { userId: null },
       { userId: { $exists: false } },
       { targetType: "all" },
-      { targetType: "member" },
+      { targetType: "member", userId: null },
+      { targetType: "member", userId: { $exists: false } },
       { targetType: { $exists: false } },
     ],
   };
@@ -74,12 +75,19 @@ const getUserFilter = (userId) => {
 
 const formatNotification = (item, userId = null) => {
   const { userId: owner, deletedBy, readBy, ...publicFields } = item;
+  const isPersonal = owner && userId && String(owner) === String(userId);
+  const isReadByCurrentUser = Boolean(
+    userId && readBy?.some((id) => String(id) === String(userId))
+  );
+
+  const isRead = isPersonal
+    ? Boolean(item.isRead || isReadByCurrentUser)
+    : (userId ? isReadByCurrentUser : Boolean(item.isRead));
+
   return {
     ...publicFields,
     userId: owner || null,
-    isRead: owner
-      ? Boolean(item.isRead)
-      : Boolean(item.isRead || (userId && readBy?.some((id) => String(id) === String(userId)))),
+    isRead,
   };
 };
 
@@ -95,7 +103,8 @@ export const getNotifications = async (req, res) => {
             { userId: null },
             { userId: { $exists: false } },
             { targetType: "all" },
-            { targetType: "member" },
+            { targetType: "member", userId: null },
+            { targetType: "member", userId: { $exists: false } },
             { targetType: { $exists: false } },
           ],
         };
@@ -133,7 +142,8 @@ export const getUnreadCount = async (req, res) => {
             { userId: null },
             { userId: { $exists: false } },
             { targetType: "all" },
-            { targetType: "member" },
+            { targetType: "member", userId: null },
+            { targetType: "member", userId: { $exists: false } },
             { targetType: { $exists: false } },
           ],
         };
@@ -165,35 +175,35 @@ export const markNotificationRead = async (req, res) => {
       });
     }
 
-    const ownership = {
-      _id: id,
-      deletedBy: { $ne: userId },
-      $or: [{ userId }, { userId: null }, { targetType: "all" }],
-    };
+    const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    const existingNotification = await Notification.findOne(ownership).select("userId");
+    const existingNotification = await Notification.findOne({
+      _id: id,
+      deletedBy: { $ne: userObjectId },
+    });
+
     if (!existingNotification) {
       return res.status(404).json({ success: false, message: "Notification not found" });
     }
-    const notification = await Notification.findOneAndUpdate(
-      ownership,
-      existingNotification.userId
-        ? { $set: { isRead: true } }
-        : { $addToSet: { readBy: userId } },
+
+    const isOwner =
+      existingNotification.userId &&
+      String(existingNotification.userId) === String(userObjectId);
+
+    const updateQuery = isOwner
+      ? { $set: { isRead: true }, $addToSet: { readBy: userObjectId } }
+      : { $addToSet: { readBy: userObjectId } };
+
+    const notification = await Notification.findByIdAndUpdate(
+      id,
+      updateQuery,
       { new: true }
     );
-
-    if (!notification) {
-      return res.status(404).json({
-        success: false,
-        message: "Notification not found",
-      });
-    }
 
     return res.status(200).json({
       success: true,
       message: "Notification marked as read",
-      notification: formatNotification(notification.toObject(), userId),
+      notification: formatNotification(notification.toObject(), userObjectId),
     });
   } catch (error) {
     console.error("Mark Read Error:", error);
@@ -210,17 +220,26 @@ export const markAllNotificationsRead = async (req, res) => {
     const userId = user?._id;
     if (!userId) return res.status(401).json({ success: false, message: "Authentication required" });
 
-    await Notification.updateMany(
-      { isRead: false, userId },
-      { $set: { isRead: true } }
-    );
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
     await Notification.updateMany(
       {
-        isRead: false,
-        $or: [{ userId: null }, { targetType: "all" }],
-        deletedBy: { $ne: userId },
+        userId: userObjectId,
+        deletedBy: { $ne: userObjectId },
       },
-      { $addToSet: { readBy: userId } }
+      {
+        $set: { isRead: true },
+        $addToSet: { readBy: userObjectId },
+      }
+    );
+
+    await Notification.updateMany(
+      {
+        deletedBy: { $ne: userObjectId },
+      },
+      {
+        $addToSet: { readBy: userObjectId },
+      }
     );
 
     return res.status(200).json({
@@ -253,12 +272,11 @@ export const deleteNotification = async (req, res) => {
       });
     }
 
-    const notification = await Notification.findOneAndUpdate(
-      {
-        _id: id,
-        $or: [{ userId }, { userId: null }, { targetType: "all" }],
-      },
-      { $addToSet: { deletedBy: userId } },
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const notification = await Notification.findByIdAndUpdate(
+      id,
+      { $addToSet: { deletedBy: userObjectId } },
       { new: true }
     );
 
