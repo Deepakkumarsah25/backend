@@ -16,6 +16,7 @@
             <img
                 src="/assets/imgicon_sectionparty1.png"
                 alt="Vikassheel Insaan Party Logo"
+                onerror="this.onerror=null; this.src='/assets/logo.png';"
             >
         </div>
 
@@ -24,7 +25,6 @@
                 Vikassheel
                 <span>Insaan Party</span>
             </h2>
-
             <p>Admin Control Panel</p>
         </div>
 
@@ -36,67 +36,113 @@
     ========================== -->
     <div class="header-right">
 
+        <!-- Active Admin Session Indicator Pill -->
+        <div class="header-session-pill" title="Currently logged in administrator">
+            <span class="pulse-green-dot"></span>
+            <span class="session-label-text">Logged In:</span>
+            <span class="session-email-text">
+                <i class="fa-solid fa-user-check" style="font-size: 11px;"></i>
+                <%= (locals.admin && locals.admin.email) ? locals.admin.email : 'admin@vipparty.com' %>
+            </span>
+        </div>
+
         <!-- Global Search -->
         <div class="global-search">
-
             <i class="fa-solid fa-magnifying-glass"></i>
-
             <input
                 type="text"
                 id="globalSearch"
-                placeholder="Search..."
+                placeholder="Search panel..."
                 autocomplete="off"
             >
-
         </div>
-
 
         <!-- Header Actions -->
         <div class="header-actions">
-
             <!-- Notifications -->
             <button
                 type="button"
                 class="header-action-btn"
                 aria-label="Notifications"
+                title="Notifications"
             >
                 <i class="fa-regular fa-bell"></i>
-
                 <span class="notification-indicator"></span>
             </button>
-
-
-            <!-- Settings -->
-            <button
-                type="button"
-                class="header-action-btn"
-                aria-label="Settings"
-            >
-                <i class="fa-solid fa-gear"></i>
-            </button>
-
         </div>
 
-
-        <!-- Admin Profile -->
-        <div class="user-meta-header">
-
+        <!-- Admin Profile & Switcher -->
+        <div class="user-meta-header" id="userProfileHeaderBtn" tabindex="0">
             <div class="header-avatar">
-                <i class="fa-solid fa-user"></i>
+                <i class="fa-solid fa-user-shield"></i>
             </div>
 
             <div class="identity-text">
-
-                <strong>VIP Admin</strong>
-
-                <span>Administration Panel</span>
-
+                <strong><%= (locals.admin && locals.admin.name) ? locals.admin.name : 'VIP Admin' %></strong>
+                <span title="<%= (locals.admin && locals.admin.email) ? locals.admin.email : 'admin@vipparty.com' %>">
+                    <%= (locals.admin && locals.admin.email) ? locals.admin.email : 'admin@vipparty.com' %>
+                </span>
             </div>
 
-            <i class="fa-solid fa-chevron-down profile-arrow"></i>
+            <i class="fa-solid fa-chevron-down profile-arrow" id="profileDropdownArrow"></i>
 
+            <!-- Dropdown Menu -->
+            <div class="header-profile-dropdown" id="profileDropdownMenu">
+                <div class="dropdown-header-card">
+                    <div class="dropdown-avatar">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                    <div class="dropdown-meta">
+                        <h4><%= (locals.admin && locals.admin.name) ? locals.admin.name : 'VIP Admin' %></h4>
+                        <p><%= (locals.admin && locals.admin.email) ? locals.admin.email : 'admin@vipparty.com' %></p>
+                        <span class="role-chip"><%= (locals.admin && locals.admin.role) ? locals.admin.role : 'Super Admin' %></span>
+                    </div>
+                </div>
+
+                <div class="dropdown-divider"></div>
+
+                <a href="/dashboard" class="dropdown-link-item">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="/activity-logs" class="dropdown-link-item">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>10-Day Activity Log</span>
+                </a>
+
+                <a href="/logout" class="dropdown-link-item logout-link-item">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout / Switch User</span>
+                </a>
+            </div>
         </div>
 
     </div>
 
 </header>
+
+<script>
+    (function() {
+        const profileBtn = document.getElementById('userProfileHeaderBtn');
+        const dropdownMenu = document.getElementById('profileDropdownMenu');
+        const arrow = document.getElementById('profileDropdownArrow');
+
+        if (profileBtn && dropdownMenu) {
+            profileBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('show');
+                if (arrow) {
+                    arrow.style.transform = dropdownMenu.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!profileBtn.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                    if (arrow) arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+    })();
+</script>

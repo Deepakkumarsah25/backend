@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10-Day Admin Activity Audit Log - Vikassheel Insaan Party</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="/css/activityLogs.css">
+</head>
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <%- include('common/header.ejs') %>
+
+    <!-- ==================== SIDEBAR ==================== -->
+    <%- include('common/sidebar.ejs') %>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content">
+        <div class="activity-logs-container">
+
+            <!-- PAGE HEADER -->
+            <div class="al-page-header">
+                <div class="al-title-wrap">
+                    <span class="al-badge-pill">
+                        <span class="pulse-dot"></span> Live Audit & Governance &bull; Last 10 Days
+                    </span>
+                    <h1 class="al-title">
+                        <i class="fa-solid fa-clock-rotate-left" style="color: #0b4ea2;"></i>
+                        10-Day Admin Activity Audit Log
+                    </h1>
+                </div>
+
+                <div class="al-header-actions">
+                    <div class="date-window-chip">
+                        <i class="fa-regular fa-calendar-days"></i>
+                        <span>
+                            <% 
+                                const d10 = new Date(); 
+                                d10.setDate(d10.getDate() - 10);
+                                const d10Str = d10.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                                const todayStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                            %>
+                            <%= d10Str %> &mdash; <%= todayStr %>
+                        </span>
+                    </div>
+
+                    <a href="/dashboard" class="btn-filter-reset" style="background:#ffffff; border:1px solid #cbd5e1; text-decoration:none;">
+                        <i class="fa-solid fa-arrow-left"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+
+            <!-- SUMMARY KPI STRIP (SLEEK, COMPACT & MODERN) -->
+            <div class="metrics-summary-bar">
+                <div class="summary-kpi-item">
+                    <div class="kpi-icon-pill kpi-blue">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div class="kpi-text-wrap">
+                        <div class="kpi-value"><%= stats.total10Days %></div>
+                        <div class="kpi-label">Total Modifications</div>
+                    </div>
+                </div>
+
+                <div class="kpi-separator"></div>
+
+                <div class="summary-kpi-item">
+                    <div class="kpi-icon-pill kpi-green">
+                        <i class="fa-solid fa-user-check"></i>
+                    </div>
+                    <div class="kpi-text-wrap">
+                        <div class="kpi-value"><%= stats.activeAdminsCount %> <span class="kpi-sub-num">/ 4</span></div>
+                        <div class="kpi-label">Active Admins</div>
+                    </div>
+                </div>
+
+                <div class="kpi-separator"></div>
+
+                <div class="summary-kpi-item">
+                    <div class="kpi-icon-pill kpi-amber">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div class="kpi-text-wrap">
+                        <div class="kpi-value"><%= stats.todayCount %></div>
+                        <div class="kpi-label">Today's Updates</div>
+                    </div>
+                </div>
+
+                <div class="kpi-separator"></div>
+
+                <div class="summary-kpi-item">
+                    <div class="kpi-icon-pill kpi-purple">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div class="kpi-text-wrap">
+                        <div class="kpi-value kpi-title-value" title="<%= stats.topSection %>"><%= stats.topSection %></div>
+                        <div class="kpi-label">Top Active Section</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 ADMIN PROFILES OVERVIEW SECTION (COMPACT & BEAUTIFUL) -->
+            <section class="admin-overview-section">
+                <div class="section-label-bar">
+                    <h3>
+                        <i class="fa-solid fa-users-gear" style="color: #0b4ea2;"></i>
+                        4 Admin Accounts Activity Overview (Last 10 Days)
+                    </h3>
+                    <span style="font-size: 12.5px; color: #64748b;">
+                        Click <strong>View Activity</strong> on any card to isolate that admin's changes instantly (No reload)
+                    </span>
+                </div>
+
+                <div class="admin-cards-grid">
+                    <% adminGroups.forEach(function(adm) { %>
+                        <div 
+                            class="admin-profile-card" 
+                            id="admin-overview-card-<%= adm.email.replace(/[@.]/g, '-') %>"
+                            onclick="selectAdminFilter('<%= adm.email %>')"
+                        >
+                            <div class="card-accent-bar" style="background: <%= adm.avatarBg %>;"></div>
+                            
+                            <div>
+                                <div class="ap-header">
+                                    <div class="ap-avatar" style="background: <%= adm.avatarBg %>;">
+                                        <i class="<%= adm.icon %>"></i>
+                                    </div>
+                                    <div class="ap-info">
+                                        <h4 class="ap-name"><%= adm.name %></h4>
+                                        <div class="ap-email" title="<%= adm.email %>">
+                                            <i class="fa-regular fa-envelope"></i> <%= adm.email %>
+                                        </div>
+                                        <span class="role-tag <%= adm.roleClass %>"><%= adm.role %></span>
+                                    </div>
+                                </div>
+
+                                <div class="ap-stats-row">
+                                    <div class="ap-stat-item">
+                                        <div class="ap-stat-num" style="color: #0b4ea2;"><%= adm.totalActions %></div>
+                                        <div class="ap-stat-label">Total</div>
+                                    </div>
+                                    <div class="ap-stat-item">
+                                        <div class="ap-stat-num" style="color: #16a34a;"><%= adm.stats.creates %></div>
+                                        <div class="ap-stat-label">Added</div>
+                                    </div>
+                                    <div class="ap-stat-item">
+                                        <div class="ap-stat-num" style="color: #2563eb;"><%= adm.stats.updates %></div>
+                                        <div class="ap-stat-label">Edited</div>
+                                    </div>
+                                    <div class="ap-stat-item">
+                                        <div class="ap-stat-num" style="color: #dc2626;"><%= adm.stats.deletes %></div>
+                                        <div class="ap-stat-label">Deleted</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ap-footer">
+                                <div class="ap-last-active">
+                                    <span style="font-size: 10px; color: #94a3b8; display: block; font-weight: 700;">LAST ACTIVE:</span>
+                                    <strong style="color: #334155; font-size: 11.5px;"><%= adm.lastActiveTime %></strong>
+                                </div>
+                                
+                                <button 
+                                    type="button" 
+                                    class="btn-filter-admin" 
+                                    id="btn-card-filter-<%= adm.email.replace(/[@.]/g, '-') %>"
+                                    onclick="event.stopPropagation(); selectAdminFilter('<%= adm.email %>')"
+                                >
+                                    <i class="fa-solid fa-eye"></i> View Activity
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- FILTER & SEARCH TOOLBAR (INSTANT CLIENT-SIDE FILTERING - ZERO RELOAD) -->
+            <div class="filter-toolbar-card" id="filterToolbarRoot">
+                <div class="filter-form">
+                    <div class="filters-left">
+                        <!-- Filter by Admin Email -->
+                        <div class="filter-group">
+                            <label for="emailFilter"><i class="fa-solid fa-user"></i> Admin Account</label>
+                            <select id="emailFilter" class="filter-select" onchange="applyClientFilters()">
+                                <option value="all">All Admins (4 Accounts)</option>
+                                <option value="admin@vipparty.com">Mukesh Sahani (admin@vipparty.com)</option>
+                                <option value="editor@vipparty.com">Vikram Sharma (editor@vipparty.com)</option>
+                                <option value="manager@vipparty.com">Pooja Dhakad (manager@vipparty.com)</option>
+                                <option value="media@vipparty.com">Ravi Verma (media@vipparty.com)</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter by Section -->
+                        <div class="filter-group">
+                            <label for="sectionFilter"><i class="fa-solid fa-folder-tree"></i> Section / Module</label>
+                            <select id="sectionFilter" class="filter-select" onchange="applyClientFilters()">
+                                <option value="all">All Sections</option>
+                                <% if (allSections && allSections.length > 0) { %>
+                                    <% allSections.forEach(function(sec) { %>
+                                        <option value="<%= sec %>"><%= sec %></option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
+
+                        <!-- Filter by Action Type -->
+                        <div class="filter-group">
+                            <label for="actionTypeFilter"><i class="fa-solid fa-arrow-right-arrow-left"></i> Action Type</label>
+                            <select id="actionTypeFilter" class="filter-select" onchange="applyClientFilters()">
+                                <option value="all">All Actions</option>
+                                <option value="create">Created / Added (+)</option>
+                                <option value="update">Updated / Edited (✎)</option>
+                                <option value="delete">Deleted / Removed (✕)</option>
+                            </select>
+                        </div>
+
+                        <!-- Search keyword (Instant OnInput) -->
+                        <div class="filter-group">
+                            <label for="searchInput"><i class="fa-solid fa-magnifying-glass"></i> Search Details</label>
+                            <div class="search-wrap">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input 
+                                    type="text" 
+                                    id="searchInput"
+                                    class="search-input" 
+                                    placeholder="Search changes, workers, banners..." 
+                                    oninput="applyClientFilters()"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button type="button" class="btn-filter-reset" onclick="resetAllClientFilters()">
+                                <i class="fa-solid fa-rotate"></i> Reset Filters
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- View Switcher Tabs -->
+                    <div class="view-tabs">
+                        <button type="button" class="tab-btn active" id="tabGroupedBtn" onclick="switchView('grouped')">
+                            <i class="fa-solid fa-users"></i> Grouped by Admin
+                        </button>
+                        <button type="button" class="tab-btn" id="tabTimelineBtn" onclick="switchView('timeline')">
+                            <i class="fa-solid fa-timeline"></i> Timeline View
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LIVE STATUS STRIP (UPDATED INSTANTLY BY JS) -->
+            <div class="filter-status-strip" id="filterStatusStrip">
+                <div>
+                    <i class="fa-solid fa-circle-check" style="margin-right: 6px; color: #10b981;"></i>
+                    <span id="filterStatusText">
+                        Showing all <strong><%= allActivities.length %> activities</strong> across all 4 admin accounts in the last 10 days.
+                    </span>
+                </div>
+                <button 
+                    type="button" 
+                    id="btnClearActiveFilter" 
+                    onclick="resetAllClientFilters()" 
+                    style="display: none; background: none; border: none; color: #0b4ea2; font-weight: 700; cursor: pointer; text-decoration: underline;"
+                >
+                    Show All Admins
+                </button>
+            </div>
+
+            <div id="activityViewRoot"></div>
+
+            <!-- =========================================================
+                 VIEW 1: GROUPED BY ADMIN EMAIL (DEFAULT)
+            ========================================================= -->
+            <div id="groupedViewContainer" class="admin-group-container">
+                <% adminGroups.forEach(function(adm) { %>
+                    <div 
+                        class="admin-group-card" 
+                        id="admin-group-block-<%= adm.email.replace(/[@.]/g, '-') %>"
+                        data-admin-email="<%= adm.email.toLowerCase() %>"
+                    >
+                        <!-- Admin Group Header -->
+                        <div class="ag-header">
+                            <div class="ag-user-identity">
+                                <div class="ag-avatar" style="background: <%= adm.avatarBg %>;">
+                                    <i class="<%= adm.icon %>"></i>
+                                </div>
+                                <div class="ag-user-details">
+                                    <h4>
+                                        <%= adm.name %>
+                                        <span class="role-tag <%= adm.roleClass %>"><%= adm.role %></span>
+                                    </h4>
+                                    <div class="ag-email-text">
+                                        <i class="fa-regular fa-envelope"></i> <%= adm.email %>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ag-metrics">
+                                <span class="ag-pill ag-pill-total group-total-pill">
+                                    <i class="fa-solid fa-list-check"></i> <span class="group-count-num"><%= adm.activities.length %></span> Actions
+                                </span>
+                                <% if (adm.stats.creates > 0) { %>
+                                    <span class="ag-pill ag-pill-create">
+                                        <i class="fa-solid fa-plus"></i> <%= adm.stats.creates %> Added
+                                    </span>
+                                <% } %>
+                                <% if (adm.stats.updates > 0) { %>
+                                    <span class="ag-pill ag-pill-update">
+                                        <i class="fa-solid fa-pen"></i> <%= adm.stats.updates %> Edited
+                                    </span>
+                                <% } %>
+                                <% if (adm.stats.deletes > 0) { %>
+                                    <span class="ag-pill ag-pill-delete">
+                                        <i class="fa-solid fa-trash"></i> <%= adm.stats.deletes %> Removed
+                                    </span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- List of All Modifications by this Admin -->
+                        <div class="ag-activities-list">
+                            <% if (adm.activities && adm.activities.length > 0) { %>
+                                <% adm.activities.forEach(function(act) { %>
+                                    <div 
+                                        class="activity-row-item item-filter-target"
+                                        data-admin="<%= (act.adminEmail || '').toLowerCase() %>"
+                                        data-section="<%= act.section || '' %>"
+                                        data-type="<%= act.actionType || '' %>"
+                                        data-search="<%= ((act.action || '') + ' ' + (act.details || '') + ' ' + (act.section || '') + ' ' + (act.adminName || '')).toLowerCase() %>"
+                                    >
+                                        <!-- Action Type Icon -->
+                                        <div class="act-type-icon act-type-<%= act.actionType %>">
+                                            <% if (act.actionType === 'create') { %>
+                                                <i class="fa-solid fa-plus"></i>
+                                            <% } else if (act.actionType === 'delete') { %>
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            <% } else if (act.actionType === 'login') { %>
+                                                <i class="fa-solid fa-right-to-bracket"></i>
+                                            <% } else { %>
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            <% } %>
+                                        </div>
+
+                                        <!-- Main Info -->
+                                        <div class="act-main-info">
+                                            <div class="act-header-line">
+                                                <!-- Section Badge -->
+                                                <span class="act-section-badge">
+                                                    <i class="<%= act.sectionIcon || 'fa-solid fa-cube' %>" style="color: #0b4ea2;"></i>
+                                                    <%= act.section %>
+                                                </span>
+
+                                                <!-- Action Title -->
+                                                <h5 class="act-title"><%= act.action %></h5>
+
+                                                <!-- Action Type Tag -->
+                                                <span class="act-type-tag <%= act.actionType %>">
+                                                    <% if (act.actionType === 'create') { %>+ Added
+                                                    <% } else if (act.actionType === 'update') { %>✎ Modified
+                                                    <% } else if (act.actionType === 'delete') { %>✕ Removed
+                                                    <% } else { %><%= act.actionType %><% } %>
+                                                </span>
+                                            </div>
+
+                                            <!-- Details Description -->
+                                            <p class="act-details">
+                                                <%= act.details %>
+                                            </p>
+
+                                            <!-- Metadata (Time, IP, Date) -->
+                                            <div class="act-meta-line">
+                                                <span class="act-time-pill">
+                                                    <i class="fa-regular fa-clock"></i> <%= act.timeAgo %>
+                                                </span>
+                                                <span>&bull;</span>
+                                                <span>
+                                                    <i class="fa-regular fa-calendar"></i> <%= act.exactTime %>
+                                                </span>
+                                                <% if (act.ip) { %>
+                                                    <span>&bull;</span>
+                                                    <span>
+                                                        <i class="fa-solid fa-network-wired"></i> IP: <%= act.ip %>
+                                                    </span>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+                            <% } else { %>
+                                <div class="empty-group-state">
+                                    <i class="fa-regular fa-clipboard" style="font-size: 26px; margin-bottom: 8px; display: block; color: #cbd5e1;"></i>
+                                    No modifications recorded for <strong><%= adm.name %></strong> in the last 10 days.
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                <% }); %>
+
+                <!-- Empty Filter Results Box for Grouped View -->
+                <div class="empty-results-box" id="emptyGroupedNotice" style="display: none;">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h4>No Activities Match Your Filter</h4>
+                    <p>Try clearing your keyword search or adjusting the module / action filter.</p>
+                    <button type="button" class="btn-filter-reset" onclick="resetAllClientFilters()" style="background:#0b4ea2; color:#fff; border:none; padding:9px 18px;">
+                        Reset All Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 VIEW 2: CHRONOLOGICAL TIMELINE VIEW (HIDDEN INITIALLY)
+            ========================================================= -->
+            <div id="timelineViewContainer" class="timeline-container" style="display: none;">
+                <% const dateKeys = Object.keys(dateGroups); %>
+                <% if (dateKeys && dateKeys.length > 0) { %>
+                    <% dateKeys.forEach(function(dateKey) { %>
+                        <div class="timeline-date-block" data-date-block="<%= dateKey %>">
+                            <!-- Date Divider Header -->
+                            <div class="date-divider">
+                                <span class="date-badge">
+                                    <i class="fa-regular fa-calendar-check"></i> <%= dateKey %>
+                                </span>
+                                <div class="date-line"></div>
+                            </div>
+
+                            <!-- List of items for this date -->
+                            <% dateGroups[dateKey].forEach(function(act) { %>
+                                <% 
+                                    const matchAdm = adminGroups.find(a => a.email.toLowerCase() === (act.adminEmail || '').toLowerCase());
+                                    const bg = matchAdm ? matchAdm.avatarBg : 'linear-gradient(135deg, #64748b 0%, #475569 100%)';
+                                    const icon = matchAdm ? matchAdm.icon : 'fa-solid fa-user-shield';
+                                %>
+                                <div 
+                                    class="timeline-card item-filter-target"
+                                    data-admin="<%= (act.adminEmail || '').toLowerCase() %>"
+                                    data-section="<%= act.section || '' %>"
+                                    data-type="<%= act.actionType || '' %>"
+                                    data-search="<%= ((act.action || '') + ' ' + (act.details || '') + ' ' + (act.section || '') + ' ' + (act.adminName || '')).toLowerCase() %>"
+                                >
+                                    <!-- User Badge on Left -->
+                                    <div class="tl-user-badge">
+                                        <div class="tl-avatar" style="background: <%= bg %>;">
+                                            <i class="<%= icon %>"></i>
+                                        </div>
+                                        <div style="min-width: 0;">
+                                            <div class="tl-user-name"><%= act.adminName || 'Admin' %></div>
+                                            <div class="tl-user-email"><%= act.adminEmail %></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Main Activity Body -->
+                                    <div class="tl-body">
+                                        <div class="act-header-line">
+                                            <span class="act-section-badge">
+                                                <i class="<%= act.sectionIcon || 'fa-solid fa-cube' %>" style="color: #0b4ea2;"></i>
+                                                <%= act.section %>
+                                            </span>
+                                            <h5 class="act-title"><%= act.action %></h5>
+                                            <span class="act-type-tag <%= act.actionType %>">
+                                                <% if (act.actionType === 'create') { %>+ Added
+                                                <% } else if (act.actionType === 'update') { %>✎ Modified
+                                                <% } else if (act.actionType === 'delete') { %>✕ Removed
+                                                <% } else { %><%= act.actionType %><% } %>
+                                            </span>
+                                        </div>
+                                        <p class="act-details"><%= act.details %></p>
+                                    </div>
+
+                                    <!-- Timestamp on Right -->
+                                    <div class="tl-time-block">
+                                        <div style="font-weight: 700; color: #1e293b;"><%= act.timeAgo %></div>
+                                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;"><%= act.exactTime %></div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% }); %>
+                <% } %>
+
+                <!-- Empty Filter Results Box for Timeline View -->
+                <div class="empty-results-box" id="emptyTimelineNotice" style="display: none;">
+                    <i class="fa-solid fa-timeline"></i>
+                    <h4>No Activities Match Your Filter</h4>
+                    <p>Try adjusting your search keywords or filter dropdowns.</p>
+                    <button type="button" class="btn-filter-reset" onclick="resetAllClientFilters()" style="background:#0b4ea2; color:#fff; border:none; padding:9px 18px;">
+                        Reset All Filters
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- =========================================================
+         INSTANT CLIENT-SIDE FILTERING & INTERACTION SCRIPT (NO RELOAD)
+    ========================================================= -->
+    <script>
+        let currentActiveEmail = 'all';
+
+        // 1. One-click selection from the 4 Admin Overview Cards
+        function selectAdminFilter(email) {
+            const emailSelect = document.getElementById('emailFilter');
+            
+            // If clicking the same active card, toggle back to all
+            if (currentActiveEmail === email) {
+                currentActiveEmail = 'all';
+                if (emailSelect) emailSelect.value = 'all';
+            } else {
+                currentActiveEmail = email;
+                if (emailSelect) emailSelect.value = email;
+            }
+
+            applyClientFilters();
+
+            // Smooth scroll down to the activity list
+            const target = document.getElementById('activityViewRoot');
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        // 2. Core client-side filtering engine (Zero page reload)
+        function applyClientFilters() {
+            const emailSelect = document.getElementById('emailFilter');
+            const sectionSelect = document.getElementById('sectionFilter');
+            const actionTypeSelect = document.getElementById('actionTypeFilter');
+            const searchInput = document.getElementById('searchInput');
+
+            const selectedEmail = (emailSelect ? emailSelect.value : 'all').toLowerCase().trim();
+            const selectedSection = (sectionSelect ? sectionSelect.value : 'all').trim();
+            const selectedType = (actionTypeSelect ? actionTypeSelect.value : 'all').trim();
+            const searchKeyword = (searchInput ? searchInput.value : '').toLowerCase().trim();
+
+            currentActiveEmail = selectedEmail;
+
+            // Update active state visuals on the 4 overview cards
+            const allAdminCards = document.querySelectorAll('.admin-profile-card');
+            allAdminCards.forEach(card => {
+                card.classList.remove('active-filtered');
+                const btn = card.querySelector('.btn-filter-admin');
+                if (btn) {
+                    btn.classList.remove('btn-active-state');
+                    btn.innerHTML = '<i class="fa-solid fa-eye"></i> View Activity';
+                }
+            });
+
+            if (selectedEmail !== 'all') {
+                const activeCardId = 'admin-overview-card-' + selectedEmail.replace(/[@.]/g, '-');
+                const activeCard = document.getElementById(activeCardId);
+                if (activeCard) {
+                    activeCard.classList.add('active-filtered');
+                    const btn = activeCard.querySelector('.btn-filter-admin');
+                    if (btn) {
+                        btn.classList.add('btn-active-state');
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Viewing';
+                    }
+                }
+            }
+
+            // Filter items in Grouped View
+            const adminGroupBlocks = document.querySelectorAll('.admin-group-card');
+            let totalVisibleItems = 0;
+
+            adminGroupBlocks.forEach(groupBlock => {
+                const groupEmail = (groupBlock.getAttribute('data-admin-email') || '').toLowerCase();
+                const itemsInGroup = groupBlock.querySelectorAll('.activity-row-item');
+                let visibleInThisGroup = 0;
+
+                // If filtering by a specific email and this block doesn't match, hide whole block
+                if (selectedEmail !== 'all' && groupEmail !== selectedEmail) {
+                    groupBlock.style.display = 'none';
+                    return;
+                }
+
+                itemsInGroup.forEach(item => {
+                    const itemAdmin = item.getAttribute('data-admin') || '';
+                    const itemSection = item.getAttribute('data-section') || '';
+                    const itemType = item.getAttribute('data-type') || '';
+                    const itemSearch = item.getAttribute('data-search') || '';
+
+                    const matchesEmail = (selectedEmail === 'all' || itemAdmin === selectedEmail);
+                    const matchesSection = (selectedSection === 'all' || itemSection === selectedSection);
+                    const matchesType = (selectedType === 'all' || itemType === selectedType);
+                    const matchesSearch = (!searchKeyword || itemSearch.includes(searchKeyword));
+
+                    if (matchesEmail && matchesSection && matchesType && matchesSearch) {
+                        item.style.display = 'flex';
+                        visibleInThisGroup++;
+                        totalVisibleItems++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                // Update count pill on group header
+                const countSpan = groupBlock.querySelector('.group-count-num');
+                if (countSpan) countSpan.textContent = visibleInThisGroup;
+
+                // Show or hide this admin group block
+                if (visibleInThisGroup > 0) {
+                    groupBlock.style.display = 'block';
+                } else {
+                    groupBlock.style.display = 'none';
+                }
+            });
+
+            // Filter items in Timeline View
+            const timelineCards = document.querySelectorAll('.timeline-card');
+            timelineCards.forEach(card => {
+                const itemAdmin = card.getAttribute('data-admin') || '';
+                const itemSection = card.getAttribute('data-section') || '';
+                const itemType = card.getAttribute('data-type') || '';
+                const itemSearch = card.getAttribute('data-search') || '';
+
+                const matchesEmail = (selectedEmail === 'all' || itemAdmin === selectedEmail);
+                const matchesSection = (selectedSection === 'all' || itemSection === selectedSection);
+                const matchesType = (selectedType === 'all' || itemType === selectedType);
+                const matchesSearch = (!searchKeyword || itemSearch.includes(searchKeyword));
+
+                if (matchesEmail && matchesSection && matchesType && matchesSearch) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Hide empty timeline date blocks
+            const timelineDateBlocks = document.querySelectorAll('.timeline-date-block');
+            timelineDateBlocks.forEach(block => {
+                const visibleInDate = block.querySelectorAll('.timeline-card[style*="display: flex"], .timeline-card:not([style*="display: none"])');
+                block.style.display = visibleInDate.length > 0 ? 'block' : 'none';
+            });
+
+            // Update live status strip text
+            const statusText = document.getElementById('filterStatusText');
+            const clearBtn = document.getElementById('btnClearActiveFilter');
+            const emptyGrouped = document.getElementById('emptyGroupedNotice');
+            const emptyTimeline = document.getElementById('emptyTimelineNotice');
+
+            const hasActiveFilter = (selectedEmail !== 'all' || selectedSection !== 'all' || selectedType !== 'all' || searchKeyword !== '');
+
+            if (statusText) {
+                if (hasActiveFilter) {
+                    let desc = `Showing <strong>${totalVisibleItems} matching activities</strong>`;
+                    if (selectedEmail !== 'all') desc += ` for <strong>${selectedEmail}</strong>`;
+                    if (selectedSection !== 'all') desc += ` in <strong>${selectedSection}</strong>`;
+                    if (selectedType !== 'all') desc += ` (${selectedType.toUpperCase()})`;
+                    if (searchKeyword) desc += ` matching "<strong>${searchKeyword}</strong>"`;
+                    statusText.innerHTML = desc;
+                    if (clearBtn) clearBtn.style.display = 'inline-block';
+                } else {
+                    statusText.innerHTML = `Showing all <strong>${totalVisibleItems} activities</strong> across all 4 admin accounts in the last 10 days.`;
+                    if (clearBtn) clearBtn.style.display = 'none';
+                }
+            }
+
+            if (emptyGrouped) emptyGrouped.style.display = totalVisibleItems === 0 ? 'block' : 'none';
+            if (emptyTimeline) emptyTimeline.style.display = totalVisibleItems === 0 ? 'block' : 'none';
+        }
+
+        // 3. Reset All Filters (Instant - No reload)
+        function resetAllClientFilters() {
+            const emailSelect = document.getElementById('emailFilter');
+            const sectionSelect = document.getElementById('sectionFilter');
+            const actionTypeSelect = document.getElementById('actionTypeFilter');
+            const searchInput = document.getElementById('searchInput');
+
+            if (emailSelect) emailSelect.value = 'all';
+            if (sectionSelect) sectionSelect.value = 'all';
+            if (actionTypeSelect) actionTypeSelect.value = 'all';
+            if (searchInput) searchInput.value = '';
+
+            currentActiveEmail = 'all';
+            applyClientFilters();
+        }
+
+        // 4. View Switcher Tabs (Grouped vs Timeline)
+        function switchView(view) {
+            const groupedContainer = document.getElementById('groupedViewContainer');
+            const timelineContainer = document.getElementById('timelineViewContainer');
+            const tabGroupedBtn = document.getElementById('tabGroupedBtn');
+            const tabTimelineBtn = document.getElementById('tabTimelineBtn');
+
+            if (view === 'timeline') {
+                if (groupedContainer) groupedContainer.style.display = 'none';
+                if (timelineContainer) timelineContainer.style.display = 'block';
+                if (tabGroupedBtn) tabGroupedBtn.classList.remove('active');
+                if (tabTimelineBtn) tabTimelineBtn.classList.add('active');
+            } else {
+                if (groupedContainer) groupedContainer.style.display = 'block';
+                if (timelineContainer) timelineContainer.style.display = 'none';
+                if (tabTimelineBtn) tabTimelineBtn.classList.remove('active');
+                if (tabGroupedBtn) tabGroupedBtn.classList.add('active');
+            }
+        }
+
+        // 5. Initial setup on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('responsiveSidebar');
+            const isMobile = window.innerWidth <= 992;
+            
+            if (!isMobile) {
+                document.body.classList.remove('sidebar-collapsed');
+            } else {
+                if (sidebar) {
+                    sidebar.classList.remove('sidebar-open');
+                }
+            }
+
+            // Run initial filter check to sync visible counts
+            applyClientFilters();
+        });
+    </script>
+</body>
+</html>

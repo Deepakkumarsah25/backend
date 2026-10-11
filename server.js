@@ -47,6 +47,9 @@ import grievanceRoutes, {
 } from "./routes/Grievance/Grievanceroutes.js";
 
 import Volunteer from "./models/Volunteer.js";
+import { seedAdminsAndActivities } from "./services/activityService.js";
+import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
+
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 /* =========================================================
    APP
@@ -160,6 +163,23 @@ app.use(
     path.join(__dirname, "uploads")
   )
 );
+
+/* =========================================================
+   ADMIN SESSION LOCALS & UNIVERSAL AUDIT TRACKER
+========================================================= */
+
+app.use((req, res, next) => {
+  res.locals.admin = req.session.admin || {
+    email: "admin@vipparty.com",
+    name: "Mukesh Sahani",
+    role: "Super Admin",
+  };
+  res.locals.isLoggedIn = Boolean(req.session.admin);
+  res.locals.currentPath = req.path;
+  next();
+});
+
+app.use(activityTrackerMiddleware);
 
 /* =========================================================
    NORMAL ROUTES
@@ -449,10 +469,15 @@ app.use(
 mongoose
   .connect(process.env.MONGODB_URI)
 
-  .then(() => {
+  .then(async () => {
     console.log(
       "✅ MongoDB Connected"
     );
+    try {
+      await seedAdminsAndActivities();
+    } catch (seedErr) {
+      console.error("Seeding error:", seedErr);
+    }
   })
 
   .catch((error) => {

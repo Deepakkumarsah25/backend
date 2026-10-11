@@ -32,17 +32,185 @@
             <div class="page-header">
                 <div>
                     <h1 class="page-title">Dashboard</h1>
-                    <p class="page-subtitle">Welcome back, Admin! Here's what's happening with your party today.</p>
-                </div>
-                <div class="header-actions">
-                    <button class="btn-primary">
-                        <i class="fas fa-plus"></i> New Entry
-                    </button>
-                    <button class="btn-secondary">
-                        <i class="fas fa-download"></i> Export
-                    </button>
+                    <p class="page-subtitle">
+                        Welcome back, <strong><%= locals.admin ? locals.admin.name : 'Admin' %></strong> 
+                        (<%= locals.admin ? locals.admin.email : 'admin@vipparty.com' %>) &bull; Multi-Admin Activity Tracking Active
+                    </p>
                 </div>
             </div>
+
+            <!-- =========================================================
+                 RECENT ADMIN UPDATES (LAST 2 EDITORS AUDIT TRAIL)
+            ========================================================= -->
+            <section class="admin-audit-section" id="adminAuditSection">
+                <div class="audit-section-header">
+                    <div class="audit-title-group">
+                        <div class="audit-badge-pill">
+                            <i class="fa-solid fa-users-gear"></i> Multi-Admin Audit Trail
+                        </div>
+                        <h2 class="audit-section-title">Recent Modifications by Admins</h2>
+                        <p class="audit-section-desc">
+                            Click the button to open and view the last 2 administrators who updated or changed sections in the admin panel.
+                        </p>
+                    </div>
+
+                    <div class="audit-header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <a href="/activity-logs" class="btn-toggle-audit" style="text-decoration: none; background: #0b4ea2; color: #ffffff; border-color: #0b4ea2; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                            <span>10-Day Activity Log</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+                        </a>
+                        <button type="button" class="btn-toggle-audit" id="btnToggleAudit" onclick="toggleAuditDrawer()">
+                            <i class="fa-solid fa-users-viewfinder"></i>
+                            <span id="btnAuditText">View Last 2 Users Data</span>
+                            <i class="fa-solid fa-chevron-down" id="chevronAuditIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Collapsible Drawer (Hidden by default, opens on click) -->
+                <div class="audit-drawer-container" id="auditDrawerContainer" style="display: none;">
+                    <div class="audit-drawer-bar">
+                        <div class="audit-drawer-bar-title">
+                            <span class="pulse-indicator"></span>
+                            <strong>Audit Trail:</strong> Last 2 Active Users Modification Details
+                        </div>
+                        <button type="button" class="btn-drawer-close" onclick="toggleAuditDrawer()" title="Close details">
+                            <i class="fa-solid fa-xmark"></i> Hide Details
+                        </button>
+                    </div>
+
+                    <div class="audit-cards-grid">
+                        <!-- PERSON 1: Most Recent Modifier -->
+                        <% if (lastTwoEditors && lastTwoEditors[0]) { %>
+                            <div class="modifier-card modifier-card-latest">
+                                <div class="modifier-header">
+                                    <span class="modifier-rank-badge rank-1">
+                                        <i class="fa-solid fa-crown"></i> Latest Modifier (1st Person)
+                                    </span>
+                                    <span class="time-chip" title="<%= lastTwoEditors[0].exactTime %>">
+                                        <i class="fa-regular fa-clock"></i> <%= lastTwoEditors[0].timeAgo %>
+                                    </span>
+                                </div>
+
+                                <div class="modifier-user-row">
+                                    <div class="modifier-avatar avatar-latest">
+                                        <%= lastTwoEditors[0].adminName ? lastTwoEditors[0].adminName.substring(0, 2).toUpperCase() : 'AD' %>
+                                    </div>
+                                    <div class="modifier-info">
+                                        <h4 class="modifier-name"><%= lastTwoEditors[0].adminName || 'Admin' %></h4>
+                                        <div class="modifier-email-wrap">
+                                            <i class="fa-solid fa-envelope"></i>
+                                            <span class="modifier-email"><%= lastTwoEditors[0].adminEmail %></span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge">
+                                        <%= lastTwoEditors[0].adminRole || 'Admin' %>
+                                    </span>
+                                </div>
+
+                                <div class="modifier-body">
+                                    <div class="section-tag-row">
+                                        <span class="section-label-prefix">Changed Section:</span>
+                                        <span class="section-tag section-tag-active">
+                                            <i class="<%= lastTwoEditors[0].sectionIcon || 'fa-solid fa-pen-to-square' %>"></i>
+                                            <strong><%= lastTwoEditors[0].section %></strong>
+                                        </span>
+                                    </div>
+
+                                    <div class="change-detail-box">
+                                        <div class="change-action-title">
+                                            <i class="fa-solid fa-circle-check"></i> <%= lastTwoEditors[0].action %>
+                                        </div>
+                                        <% if (lastTwoEditors[0].details) { %>
+                                            <p class="change-desc"><%= lastTwoEditors[0].details %></p>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <div class="modifier-footer">
+                                    <div class="timestamp-subtext">
+                                        <i class="fa-solid fa-calendar-days"></i> <%= lastTwoEditors[0].exactTime %>
+                                    </div>
+                                    <span class="status-live-chip">
+                                        <span class="dot-live"></span> Most Recent Update
+                                    </span>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="modifier-card">
+                                <p style="color: #64748b; font-size: 13px;">No admin modifications recorded yet.</p>
+                            </div>
+                        <% } %>
+
+                        <!-- PERSON 2: 2nd Last / Previous Modifier -->
+                        <% if (lastTwoEditors && lastTwoEditors[1]) { %>
+                            <div class="modifier-card modifier-card-previous">
+                                <div class="modifier-header">
+                                    <span class="modifier-rank-badge rank-2">
+                                        <i class="fa-solid fa-clock-rotate-left"></i> Previous Modifier (2nd Person)
+                                    </span>
+                                    <span class="time-chip" title="<%= lastTwoEditors[1].exactTime %>">
+                                        <i class="fa-regular fa-clock"></i> <%= lastTwoEditors[1].timeAgo %>
+                                    </span>
+                                </div>
+
+                                <div class="modifier-user-row">
+                                    <div class="modifier-avatar avatar-previous">
+                                        <%= lastTwoEditors[1].adminName ? lastTwoEditors[1].adminName.substring(0, 2).toUpperCase() : 'AD' %>
+                                    </div>
+                                    <div class="modifier-info">
+                                        <h4 class="modifier-name"><%= lastTwoEditors[1].adminName || 'Admin' %></h4>
+                                        <div class="modifier-email-wrap">
+                                            <i class="fa-solid fa-envelope"></i>
+                                            <span class="modifier-email"><%= lastTwoEditors[1].adminEmail %></span>
+                                        </div>
+                                    </div>
+                                    <span class="role-badge">
+                                        <%= lastTwoEditors[1].adminRole || 'Admin' %>
+                                    </span>
+                                </div>
+
+                                <div class="modifier-body">
+                                    <div class="section-tag-row">
+                                        <span class="section-label-prefix">Changed Section:</span>
+                                        <span class="section-tag section-tag-muted">
+                                            <i class="<%= lastTwoEditors[1].sectionIcon || 'fa-solid fa-pen-to-square' %>"></i>
+                                            <strong><%= lastTwoEditors[1].section %></strong>
+                                        </span>
+                                    </div>
+
+                                    <div class="change-detail-box">
+                                        <div class="change-action-title">
+                                            <i class="fa-solid fa-circle-check"></i> <%= lastTwoEditors[1].action %>
+                                        </div>
+                                        <% if (lastTwoEditors[1].details) { %>
+                                            <p class="change-desc"><%= lastTwoEditors[1].details %></p>
+                                        <% } %>
+                                    </div>
+                                </div>
+
+                                <div class="modifier-footer">
+                                    <div class="timestamp-subtext">
+                                        <i class="fa-solid fa-calendar-days"></i> <%= lastTwoEditors[1].exactTime %>
+                                    </div>
+                                    <span class="status-prior-chip">
+                                        <span class="dot-prior"></span> Previous Update
+                                    </span>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div class="modifier-card" style="display: flex; align-items: center; justify-content: center; text-align: center; padding: 40px 20px;">
+                                <div>
+                                    <i class="fa-solid fa-user-clock" style="font-size: 36px; color: #94a3b8; margin-bottom: 10px;"></i>
+                                    <h4 style="font-size: 15px; color: #1e293b; margin-bottom: 4px;">Awaiting 2nd Admin Activity</h4>
+                                    <p style="font-size: 12.5px; color: #64748b;">Log in with another email or make a second change to compare the last 2 editors.</p>
+                                </div>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </section>
 
             <!-- Stats Cards -->
             <div class="stats-grid">
@@ -99,7 +267,7 @@
                 </div>
             </div>
 
-            <!-- Charts & Activity Section -->
+            <!-- Charts Section -->
             <div class="dashboard-grid">
                 <!-- Chart Card -->
                 <div class="card chart-card">
@@ -151,66 +319,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Recent Activity -->
-                <div class="card activity-card">
-                    <div class="card-header">
-                        <div>
-                            <h3 class="card-title">Recent Activity</h3>
-                            <p class="card-subtitle">Latest updates from your party</p>
-                        </div>
-                        <a href="#" class="view-all-link">View All</a>
-                    </div>
-                    <div class="card-body">
-                        <div class="activity-list">
-                            <div class="activity-item">
-                                <div class="activity-icon" style="background: #e8f5e9; color: #2e7d32;">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p class="activity-text"><strong>Rajesh Kumar</strong> joined as a new worker</p>
-                                    <span class="activity-time">2 minutes ago</span>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon" style="background: #e3f2fd; color: #1565c0;">
-                                    <i class="fas fa-route"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p class="activity-text"><strong>Route #12</strong> was updated by Suresh</p>
-                                    <span class="activity-time">15 minutes ago</span>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon" style="background: #fff3e0; color: #e65100;">
-                                    <i class="fas fa-car"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p class="activity-text"><strong>Driver Vijay</strong> completed his shift</p>
-                                    <span class="activity-time">1 hour ago</span>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon" style="background: #fce4ec; color: #c62828;">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p class="activity-text"><strong>Alert:</strong> Worker attendance low today</p>
-                                    <span class="activity-time">2 hours ago</span>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-icon" style="background: #f3e5f5; color: #6a1b9a;">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                                <div class="activity-content">
-                                    <p class="activity-text"><strong>Task #456</strong> marked as completed</p>
-                                    <span class="activity-time">3 hours ago</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Quick Actions -->
@@ -253,16 +361,49 @@
 
     <!-- ==================== SCRIPTS ==================== -->
     <script>
+        function toggleAuditDrawer() {
+            const drawer = document.getElementById('auditDrawerContainer');
+            const btnText = document.getElementById('btnAuditText');
+            const chevron = document.getElementById('chevronAuditIcon');
+            const btn = document.getElementById('btnToggleAudit');
+
+            if (!drawer) return;
+
+            const isCurrentlyHidden = drawer.style.display === 'none' || window.getComputedStyle(drawer).display === 'none';
+
+            if (isCurrentlyHidden) {
+                drawer.style.display = 'block';
+                drawer.classList.remove('closed');
+                drawer.classList.add('open');
+                if (btnText) btnText.textContent = 'Hide Last 2 Users Data';
+                if (chevron) {
+                    chevron.classList.remove('fa-chevron-down');
+                    chevron.classList.add('fa-chevron-up');
+                }
+                if (btn) btn.classList.add('active');
+                
+                // Smooth scroll to the audit section if not fully in view
+                drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                drawer.style.display = 'none';
+                drawer.classList.remove('open');
+                drawer.classList.add('closed');
+                if (btnText) btnText.textContent = 'View Last 2 Users Data';
+                if (chevron) {
+                    chevron.classList.remove('fa-chevron-up');
+                    chevron.classList.add('fa-chevron-down');
+                }
+                if (btn) btn.classList.remove('active');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-open sidebar on desktop, but not on mobile
             const sidebar = document.getElementById('responsiveSidebar');
             const isMobile = window.innerWidth <= 992;
             
             if (!isMobile) {
-                // On desktop, sidebar is visible by default
                 document.body.classList.remove('sidebar-collapsed');
             } else {
-                // On mobile, sidebar starts hidden
                 if (sidebar) {
                     sidebar.classList.remove('sidebar-open');
                 }
