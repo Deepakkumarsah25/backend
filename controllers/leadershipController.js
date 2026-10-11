@@ -105,7 +105,6 @@ if (req.file) {
     res.redirect("/leadership");
   } catch (error) {
     console.log(error);
-    console.log(req.body);
     res.status(500).send("Leadership Add Failed");
   }
 };
@@ -203,7 +202,6 @@ export const updateLeadership = async (req, res) => {
     res.redirect("/leadership");
   } catch (error) {
     console.log(error);
-    console.log(req.body);
     res.status(500).send("Leadership Update Failed");
   }
 };

@@ -1,12 +1,14 @@
 import multer from "multer";
-
-const storage = multer.memoryStorage();
+import { boundedMemoryStorage } from "./upload.js";
 
 const newsUpload = multer({
-  storage,
+  storage: boundedMemoryStorage,
 
   limits: {
     fileSize: 100 * 1024 * 1024,
+    files: 22,
+    fields: 80,
+    parts: 102,
   },
 
   fileFilter: (req, file, cb) => {

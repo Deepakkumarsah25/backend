@@ -1,6 +1,8 @@
-import User from "../models/User.js";
-import { getAuth } from "firebase-admin/auth";
-import app from "../firebase/firebaseAdmin.js";
+import {
+  getBearerToken,
+  resolveFirebaseUser,
+  verifyFirebaseToken,
+} from "./firebaseAuth.js";
 
 /*
   OPTIONAL AUTH — works with Bearer tokens or x-dev-uid / x-user-uid headers.
@@ -9,75 +11,54 @@ import app from "../firebase/firebaseAdmin.js";
 */
 export const optionalAuth = async (req, res, next) => {
   try {
-    let uid =
+    const devUid =
       req.headers["x-dev-uid"] ||
       req.headers["x-user-uid"] ||
       req.headers["uid"] ||
       null;
 
-    const authHeader = req.headers.authorization;
-    if (!uid && authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.split(" ")[1];
-      try {
-        const adminAuth = getAuth(app);
-        const decoded = await adminAuth.verifyIdToken(token);
-        uid = decoded?.uid;
-      } catch (tokenErr) {
-        // Fallback: decode JWT payload
-        try {
-          const parts = token.split(".");
-          if (parts.length === 3) {
-            const payload = JSON.parse(
-              Buffer.from(parts[1], "base64").toString("utf8")
-            );
-            uid = payload.user_id || payload.sub || payload.uid;
-          }
-        } catch (_) {}
-      }
+    if (devUid) {
+      req.user = await resolveFirebaseUser(
+        { uid: String(devUid) },
+        {
+          name: req.headers["x-dev-name"] || req.headers["x-user-name"],
+          email: req.headers["x-dev-email"] || req.headers["x-user-email"],
+          phone: req.headers["x-dev-phone"] || req.headers["x-user-phone"],
+          photoURL: req.headers["x-dev-photo"] || req.headers["x-user-photo"],
+        }
+      );
+      return next();
     }
 
-    if (!uid) {
+    if (!req.headers.authorization) {
       req.user = null;
       return next();
     }
 
-    const updateData = { $setOnInsert: { uid: String(uid) } };
-
-    const setFields = {};
-    if (req.headers["x-dev-name"] || req.headers["x-user-name"]) {
-      setFields.name = req.headers["x-dev-name"] || req.headers["x-user-name"];
-    }
-    if (req.headers["x-dev-email"] || req.headers["x-user-email"]) {
-      setFields.email = req.headers["x-dev-email"] || req.headers["x-user-email"];
-    }
-    if (req.headers["x-dev-phone"] || req.headers["x-user-phone"]) {
-      setFields.phone = req.headers["x-dev-phone"] || req.headers["x-user-phone"];
-    }
-    if (req.headers["x-dev-photo"] || req.headers["x-user-photo"]) {
-      setFields.photoURL = req.headers["x-dev-photo"] || req.headers["x-user-photo"];
+    const auth = getBearerToken(req);
+    if (auth.error) {
+      req.user = null;
+      return next();
     }
 
-    if (Object.keys(setFields).length > 0) {
-      updateData.$set = setFields;
-    }
-
+    let decodedToken;
     try {
-      req.user = await User.findOneAndUpdate({ uid: String(uid) }, updateData, {
-        returnDocument: "after",
-        upsert: true,
-      });
-    } catch (upsertErr) {
-      if (upsertErr.code === 11000) {
-        req.user = await User.findOne({ uid: String(uid) });
-      } else {
-        throw upsertErr;
-      }
+      decodedToken = await verifyFirebaseToken(auth.token);
+    } catch {
+      req.user = null;
+      return next();
     }
 
-    next();
-  } catch (err) {
-    console.error("optionalAuth error:", err);
+    req.user = await resolveFirebaseUser(decodedToken, {
+      name: req.headers["x-dev-name"] || req.headers["x-user-name"],
+      email: req.headers["x-dev-email"] || req.headers["x-user-email"],
+      phone: req.headers["x-dev-phone"] || req.headers["x-user-phone"],
+      photoURL: req.headers["x-dev-photo"] || req.headers["x-user-photo"],
+    });
+    return next();
+  } catch (error) {
+    console.error("optionalAuth resolution failed, continuing as guest:", error?.message);
     req.user = null;
-    next();
+    return next();
   }
 };

@@ -1,8 +1,8 @@
 import VipLive from "../models/viplive.js";
-
-/* ===========================================
-   Extract YouTube Video ID
-=========================================== */
+import {
+  getMediaVersion,
+  bumpMediaVersion,
+} from "../utils/mediaVersion.js";
 
 const extractVideoId = (url) => {
   if (!url) return null;
@@ -15,18 +15,29 @@ const extractVideoId = (url) => {
   return match && match[2].length === 11 ? match[2] : null;
 };
 
-/* ===========================================
-   Create Live
-=========================================== */
+// GET LIVE VERSION
+export const getLiveVersion = async (req, res) => {
+  try {
+    const version = await getMediaVersion("live");
 
+    return res.status(200).json({
+      success: true,
+      version,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// CREATE LIVE
 export const createLive = async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      youtubeUrl,
-      isLive,
-    } = req.body;
+    const { title, description, youtubeUrl, isLive } = req.body;
 
     if (!title || !youtubeUrl) {
       return res.status(400).json({
@@ -55,6 +66,9 @@ export const createLive = async (req, res) => {
       isLive: isLive || false,
     });
 
+    // Live data changed
+    await bumpMediaVersion("live");
+
     return res.status(201).json({
       success: true,
       message: "Live stream created successfully.",
@@ -70,21 +84,14 @@ export const createLive = async (req, res) => {
   }
 };
 
-/* ===========================================
-   Get Live + History
-=========================================== */
-
+// GET ALL LIVE + HISTORY
 export const getLive = async (req, res) => {
   try {
-    const live = await VipLive.find({
-      isLive: true,
-    }).sort({
+    const live = await VipLive.find({ isLive: true }).sort({
       createdAt: -1,
     });
 
-    const history = await VipLive.find({
-      isLive: false,
-    }).sort({
+    const history = await VipLive.find({ isLive: false }).sort({
       createdAt: -1,
     });
 
@@ -103,10 +110,7 @@ export const getLive = async (req, res) => {
   }
 };
 
-/* ===========================================
-   Get Single Live by ID
-=========================================== */
-
+// GET LIVE BY ID
 export const getLiveById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -133,10 +137,8 @@ export const getLiveById = async (req, res) => {
     });
   }
 };
-/* ===========================================
-   Update Live
-=========================================== */
 
+// UPDATE LIVE
 export const updateLive = async (req, res) => {
   try {
     const { id } = req.params;
@@ -160,7 +162,6 @@ export const updateLive = async (req, res) => {
     let videoId = live.videoId;
     let thumbnail = live.thumbnail;
 
-    // Update video details only if URL changed
     if (youtubeUrl && youtubeUrl !== live.youtubeUrl) {
       videoId = extractVideoId(youtubeUrl);
 
@@ -186,6 +187,9 @@ export const updateLive = async (req, res) => {
 
     await live.save();
 
+    // Live data changed
+    await bumpMediaVersion("live");
+
     return res.status(200).json({
       success: true,
       message: "Live stream updated successfully.",
@@ -201,10 +205,7 @@ export const updateLive = async (req, res) => {
   }
 };
 
-/* ===========================================
-   Delete Live
-=========================================== */
-
+// DELETE LIVE
 export const deleteLive = async (req, res) => {
   try {
     const { id } = req.params;
@@ -220,6 +221,9 @@ export const deleteLive = async (req, res) => {
 
     await VipLive.findByIdAndDelete(id);
 
+    // Live data changed
+    await bumpMediaVersion("live");
+
     return res.status(200).json({
       success: true,
       message: "Live stream deleted successfully.",
@@ -234,10 +238,7 @@ export const deleteLive = async (req, res) => {
   }
 };
 
-/* ===========================================
-   Toggle Live Status
-=========================================== */
-
+// TOGGLE LIVE STATUS
 export const toggleLiveStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -254,6 +255,9 @@ export const toggleLiveStatus = async (req, res) => {
     live.isLive = !live.isLive;
 
     await live.save();
+
+    // Live data changed
+    await bumpMediaVersion("live");
 
     return res.status(200).json({
       success: true,

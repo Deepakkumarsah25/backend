@@ -5,8 +5,4 @@ async(phone,message)=>{
     "WhatsApp Message"
   );
 
-  console.log(phone);
-
-  console.log(message);
-
 };

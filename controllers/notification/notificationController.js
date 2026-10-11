@@ -68,6 +68,16 @@ const getUserFilter = (userId) => {
   };
 };
 
+const formatNotification = (item, userId = null) => {
+  const { userId: owner, deletedBy, readBy, ...publicFields } = item;
+  return {
+    ...publicFields,
+    isRead: owner
+      ? Boolean(item.isRead)
+      : Boolean(item.isRead || (userId && readBy?.some((id) => String(id) === String(userId)))),
+  };
+};
+
 export const getNotifications = async (req, res) => {
   try {
     const user = await resolveUser(req);
@@ -83,11 +93,12 @@ export const getNotifications = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const unreadCount = notifications.filter((item) => !item.isRead).length;
+    const formattedNotifications = notifications.map((item) => formatNotification(item, userId));
+    const unreadCount = formattedNotifications.filter((item) => !item.isRead).length;
 
     return res.status(200).json({
       success: true,
-      notifications,
+      notifications: formattedNotifications,
       unreadCount,
     });
   } catch (error) {
@@ -105,10 +116,11 @@ export const getUnreadCount = async (req, res) => {
     const userId = user?._id || null;
 
     const filter = userId
-      ? { isRead: false, ...getUserFilter(userId) }
-      : { isRead: false, $or: [{ userId: null }, { targetType: "all" }] };
+      ? getUserFilter(userId)
+      : { $or: [{ userId: null }, { targetType: "all" }] };
 
-    const unreadCount = await Notification.countDocuments(filter);
+    const notifications = await Notification.find(filter).select("userId isRead readBy").lean();
+    const unreadCount = notifications.filter((item) => !formatNotification(item, userId).isRead).length;
 
     return res.status(200).json({ success: true, unreadCount });
   } catch (error) {
@@ -124,7 +136,8 @@ export const markNotificationRead = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await resolveUser(req);
-    const userId = user?._id || null;
+    const userId = user?._id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required" });
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({
@@ -133,20 +146,21 @@ export const markNotificationRead = async (req, res) => {
       });
     }
 
-    const ownership = userId
-      ? {
-          _id: id,
-          $or: [
-            { userId },
-            { userId: null },
-            { targetType: "all" },
-          ],
-        }
-      : { _id: id, $or: [{ userId: null }, { targetType: "all" }] };
+    const ownership = {
+      _id: id,
+      deletedBy: { $ne: userId },
+      $or: [{ userId }, { userId: null }, { targetType: "all" }],
+    };
 
+    const existingNotification = await Notification.findOne(ownership).select("userId");
+    if (!existingNotification) {
+      return res.status(404).json({ success: false, message: "Notification not found" });
+    }
     const notification = await Notification.findOneAndUpdate(
       ownership,
-      { $set: { isRead: true } },
+      existingNotification.userId
+        ? { $set: { isRead: true } }
+        : { $addToSet: { readBy: userId } },
       { new: true }
     );
 
@@ -160,7 +174,7 @@ export const markNotificationRead = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Notification marked as read",
-      notification,
+      notification: formatNotification(notification.toObject(), userId),
     });
   } catch (error) {
     console.error("Mark Read Error:", error);
@@ -174,13 +188,21 @@ export const markNotificationRead = async (req, res) => {
 export const markAllNotificationsRead = async (req, res) => {
   try {
     const user = await resolveUser(req);
-    const userId = user?._id || null;
+    const userId = user?._id;
+    if (!userId) return res.status(401).json({ success: false, message: "Authentication required" });
 
-    const filter = userId
-      ? { isRead: false, ...getUserFilter(userId) }
-      : { isRead: false, $or: [{ userId: null }, { targetType: "all" }] };
-
-    await Notification.updateMany(filter, { $set: { isRead: true } });
+    await Notification.updateMany(
+      { isRead: false, userId },
+      { $set: { isRead: true } }
+    );
+    await Notification.updateMany(
+      {
+        isRead: false,
+        $or: [{ userId: null }, { targetType: "all" }],
+        deletedBy: { $ne: userId },
+      },
+      { $addToSet: { readBy: userId } }
+    );
 
     return res.status(200).json({
       success: true,

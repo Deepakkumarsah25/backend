@@ -69,22 +69,13 @@
 
 
 import express from "express";
-import User from "../models/User.js";
 import { protect } from "../middlewar/firebaseAuth.js";
 import Join from "../models/joinmodel.js";
 const router = express.Router();
 
-router.post("/save-user", async (req, res) => {
+router.post("/save-user", protect, async (req, res) => {
   try {
-    const data = req.body;
-
-    let user = await User.findOne({
-      uid: data.uid,
-    });
-
-    if (!user) {
-      user = await User.create(data);
-    }
+    const user = req.user;
 
     res.json({
       success: true,

@@ -1,12 +1,13 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 
 import express from "express";
 import mongoose from "mongoose";
 import session from "express-session";
 import cors from "cors";
 import path from "path";
+import crypto from "crypto";
 import { fileURLToPath } from "url";
+import corsOptions from "./config/corsOptions.js";
 
 /* =========================================================
    ROUTES
@@ -46,7 +47,10 @@ import grievanceRoutes, {
 } from "./routes/Grievance/Grievanceroutes.js";
 
 import Volunteer from "./models/Volunteer.js";
+import { seedAdminsAndActivities } from "./services/activityService.js";
+import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
 
+import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -91,12 +95,7 @@ app.use(
    CORS
 ========================================================= */
 
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 /* =========================================================
    SECURITY / GEOLOCATION POLICY
@@ -120,17 +119,21 @@ app.use((req, res, next) => {
    SESSION
 ========================================================= */
 
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 app.use(
   session({
     secret:
-      process.env.SESSION_SECRET || "vipparty",
+      process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
 
     resave: false,
 
     saveUninitialized: false,
 
     cookie: {
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: "lax",
     },
@@ -160,6 +163,23 @@ app.use(
     path.join(__dirname, "uploads")
   )
 );
+
+/* =========================================================
+   ADMIN SESSION LOCALS & UNIVERSAL AUDIT TRACKER
+========================================================= */
+
+app.use((req, res, next) => {
+  res.locals.admin = req.session.admin || {
+    email: "admin@vipparty.com",
+    name: "Mukesh Sahani",
+    role: "Super Admin",
+  };
+  res.locals.isLoggedIn = Boolean(req.session.admin);
+  res.locals.currentPath = req.path;
+  next();
+});
+
+app.use(activityTrackerMiddleware);
 
 /* =========================================================
    NORMAL ROUTES
@@ -192,7 +212,7 @@ app.use("/", adminRoutes);
 app.use("/api", apiRoutes);
 
 app.use("/api", searchRoutes);
-
+app.use("/api", mediaRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api", vipLiveRoute);
@@ -435,9 +455,9 @@ app.use(
     return res.status(500).json({
       success: false,
 
-      message:
-        error.message ||
-        "Internal Server Error",
+      message: process.env.NODE_ENV === "production"
+        ? "Internal Server Error"
+        : error.message || "Internal Server Error",
     });
   }
 );
@@ -449,10 +469,15 @@ app.use(
 mongoose
   .connect(process.env.MONGODB_URI)
 
-  .then(() => {
+  .then(async () => {
     console.log(
       "✅ MongoDB Connected"
     );
+    try {
+      await seedAdminsAndActivities();
+    } catch (seedErr) {
+      console.error("Seeding error:", seedErr);
+    }
   })
 
   .catch((error) => {

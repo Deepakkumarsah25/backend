@@ -103,6 +103,16 @@ deleteOtpExpiry: {
   default: null,
 },
 
+deleteOtpAttempts: {
+  type: Number,
+  default: 0,
+},
+
+deleteOtpLastSentAt: {
+  type: Date,
+  default: null,
+},
+
 deletionRequested: {
   type: Boolean,
   default: false,

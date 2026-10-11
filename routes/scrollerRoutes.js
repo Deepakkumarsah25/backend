@@ -1,6 +1,7 @@
 import express from "express";
 
 import upload from "../middlewar/upload.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 import {
   scrollerPage,
@@ -19,6 +20,7 @@ const router = express.Router();
 
 router.get(
   "/scroller",
+  requireAdmin,
   scrollerPage
 );
 
@@ -28,6 +30,7 @@ router.get(
 
 router.post(
   "/scroller/add",
+  requireAdmin,
   upload.array("media", 20),
   addScrollerMedia
 );
@@ -47,6 +50,7 @@ router.get(
 
 router.delete(
   "/scroller/delete/:id",
+  requireAdmin,
   deleteScrollerMedia
 );
 
@@ -56,6 +60,7 @@ router.delete(
 
 router.get(
   "/scroller/status/:id",
+  requireAdmin,
   toggleScrollerStatus
 );
 
@@ -65,6 +70,7 @@ router.get(
 
 router.post(
   "/scroller/order/:id",
+  requireAdmin,
   updateDisplayOrder
 );
 

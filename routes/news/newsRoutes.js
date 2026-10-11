@@ -1,6 +1,7 @@
 import express from "express";
 
 import newsUpload from "../../middlewar/newsUpload.js";
+import { requireAdmin } from "../../middlewar/requireAdmin.js";
 
 import {
   newsPage,
@@ -13,6 +14,7 @@ import {
   toggleNewsFeatured,
   updateNewsOrder,
   getNewsApi,
+  getNewsVersion,
   getNewsByIdApi,
   getRelatedNewsApi,
 } from "../../controllers/news/newsController.js";
@@ -25,16 +27,19 @@ const router = express.Router();
 
 router.get(
   "/news",
+  requireAdmin,
   newsPage
 );
 
 router.get(
   "/news/add",
+  requireAdmin,
   addNewsPage
 );
 
 router.post(
   "/news/add",
+  requireAdmin,
   newsUpload.fields([
     {
       name: "coverImage",
@@ -54,11 +59,13 @@ router.post(
 
 router.get(
   "/news/edit/:id",
+  requireAdmin,
   editNewsPage
 );
 
 router.post(
   "/news/edit/:id",
+  requireAdmin,
   newsUpload.fields([
     {
       name: "coverImage",
@@ -78,21 +85,25 @@ router.post(
 
 router.get(
   "/news/delete/:id",
+  requireAdmin,
   deleteNews
 );
 
 router.get(
   "/news/status/:id",
+  requireAdmin,
   toggleNewsStatus
 );
 
 router.get(
   "/news/featured/:id",
+  requireAdmin,
   toggleNewsFeatured
 );
 
 router.post(
   "/news/order/:id",
+  requireAdmin,
   updateNewsOrder
 );
 
@@ -106,13 +117,18 @@ router.get(
 );
 
 router.get(
-  "/api/news/:id",
-  getNewsByIdApi
+  "/api/news/version",
+  getNewsVersion
 );
 
 router.get(
   "/api/news/related/:id",
   getRelatedNewsApi
+);
+
+router.get(
+  "/api/news/:id",
+  getNewsByIdApi
 );
 
 export default router;

@@ -1,5 +1,6 @@
 import express from "express";
 import upload from "../middlewar/upload.js";
+import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 import {
   showOrganisation,
@@ -19,14 +20,15 @@ const router = express.Router();
 // =======================
 
 // Show All
-router.get("/", showOrganisation);
+router.get("/", requireAdmin, showOrganisation);
 
 // Add Page
-router.get("/add", showAddOrganisation);
+router.get("/add", requireAdmin, showAddOrganisation);
 
 // Save
 router.post(
   "/add",
+  requireAdmin,
   upload.single("image"),
   addOrganisation
 );
@@ -34,12 +36,14 @@ router.post(
 // Edit Page
 router.get(
   "/edit/:id",
+  requireAdmin,
   editOrganisation
 );
 
 // Update
 router.post(
   "/update/:id",
+  requireAdmin,
   upload.single("image"),
   updateOrganisation
 );
@@ -47,6 +51,7 @@ router.post(
 // Delete
 router.delete(
   "/delete/:id",
+  requireAdmin,
   deleteOrganisation
 );
 
