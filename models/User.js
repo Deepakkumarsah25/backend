@@ -94,34 +94,34 @@ const userSchema = new mongoose.Schema(
       sparse: true, // field genuinely absent (not null) on docs without one
     },
     deleteOtp: {
-  type: String,
-  default: "",
-},
+      type: String,
+      default: "",
+    },
 
-deleteOtpExpiry: {
-  type: Date,
-  default: null,
-},
+    deleteOtpExpiry: {
+      type: Date,
+      default: null,
+    },
 
-deleteOtpAttempts: {
-  type: Number,
-  default: 0,
-},
+    deleteOtpAttempts: {
+      type: Number,
+      default: 0,
+    },
 
-deleteOtpLastSentAt: {
-  type: Date,
-  default: null,
-},
+    deleteOtpLastSentAt: {
+      type: Date,
+      default: null,
+    },
 
-deletionRequested: {
-  type: Boolean,
-  default: false,
-},
+    deletionRequested: {
+      type: Boolean,
+      default: false,
+    },
 
-deletionDate: {
-  type: Date,
-  default: null,
-},
+    deletionDate: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
