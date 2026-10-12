@@ -1,4 +1,5 @@
 import Organisation from "../models/organisation.js";
+import OrganisationCategory from "../models/OrganisationCategory.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
 
@@ -44,9 +45,11 @@ export const showOrganisation = async (req, res) => {
 // ===========================
 // Add Page
 // ===========================
-export const showAddOrganisation = (req, res) => {
-  res.render("Organisation/add");
+export const showAddOrganisation = async (req, res) => {
+  const categories = await OrganisationCategory.find({ isActive: true }).sort({ order: 1, createdAt: 1 });
+  res.render("Organisation/add", { categories });
 };
+
 
 // ===========================
 // Add Organisation
@@ -101,13 +104,18 @@ export const editOrganisation = async (req, res) => {
       return res.send("Organisation Member Not Found");
     }
 
+    const categories = await OrganisationCategory.find({ isActive: true }).sort({
+      order: 1,
+      createdAt: 1,
+    });
+
     res.render("Organisation/edit", {
       organisation,
+      categories,
     });
   } catch (error) {
-    console.log("Edit Organisation Error:", error);
-
-    res.status(500).send("Something went wrong");
+    console.log(error);
+    res.send("Something went wrong");
   }
 };
 
