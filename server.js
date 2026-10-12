@@ -42,6 +42,7 @@ import feedbackRoutes from "./routes/feedback/feedbackRoutes.js";
 import paymentRoutes from "./routes/payment/paymentRoutes.js";
 import newsRoutes from "./routes/news/newsRoutes.js";
 import eventRoutes from "./routes/events/eventRoutes.js";
+import organisationCategoryRoutes from "./routes/organisationCategoryRoutes.js";
 
 import grievanceRoutes, {
   adminGrievanceRouter,
@@ -267,6 +268,11 @@ app.use(
   "/organisation",
   organisationRoutes
 );
+
+app.use(
+  "/organisation/categories",
+   organisationCategoryRoutes
+  );
 
 /*
   CMS
