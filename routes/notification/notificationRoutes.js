@@ -6,6 +6,7 @@ import {
   markNotificationRead,
   markAllNotificationsRead,
   deleteNotification,
+  deleteMultipleNotifications,
 } from "../../controllers/notification/notificationController.js";
 
 import { optionalAuth } from "../../middlewar/optionalAuth.js";
@@ -30,21 +31,28 @@ router.get(
 // Mark one as read
 router.put(
   "/read/:id",
-  protect,
+  optionalAuth,
   markNotificationRead
 );
 
 // Mark all as read
 router.put(
   "/read-all",
-  protect,
+  optionalAuth,
   markAllNotificationsRead
 );
 
-// Delete
+// Delete multiple
+router.post(
+  "/delete-multiple",
+  optionalAuth,
+  deleteMultipleNotifications
+);
+
+// Delete single
 router.delete(
   "/:id",
-  protect,
+  optionalAuth,
   deleteNotification
 );
 
