@@ -18,6 +18,8 @@ import {
   getJoinApplicationById,
   deleteJoinApplication,
   renderJoinAdminPage,
+  approveJoinApplication,
+  rejectJoinApplication,
 } from "../controllers/joinController.js";
 
 import Video from "../models/videogallery.js";
@@ -176,6 +178,18 @@ router.get(
   "/joinmember/:id",
   requireAdmin,
   getJoinApplicationById
+);
+
+router.post(
+  "/joinmember/:id/approve",
+  requireAdmin,
+  approveJoinApplication
+);
+
+router.post(
+  "/joinmember/:id/reject",
+  requireAdmin,
+  rejectJoinApplication
 );
 
 router.delete(
