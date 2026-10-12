@@ -1,5 +1,6 @@
 import CmsPage from "../models/CmsPage.js";
 import cloudinary from "../config/cloudinary.js";
+import { logAdminActivity } from "../services/activityService.js";
 
 
 // ======================================================
@@ -278,6 +279,15 @@ export const updateCmsPage = async (
       `/cms/${pageKey}`
     );
 
+    await logAdminActivity(req, {
+      section: "Content Management (CMS)",
+      action: "Updated CMS Page",
+      details: `Updated page '${pageKey}': ${title || "About VIP"}`,
+      actionType: "update",
+      sectionIcon: "fa-solid fa-file-pen",
+    });
+
+    res.redirect(`/cms/${pageKey}`);
   } catch (error) {
 
     console.log(
@@ -293,14 +303,8 @@ export const updateCmsPage = async (
 };
 
 
-// ======================================================
-// ADD SECTION
-// POST /cms/:pageKey/section/add
-// ======================================================
-export const addSection = async (
-  req,
-  res
-) => {
+// Add Section
+export const addSection = async (req, res) => {
   try {
 
     const { pageKey } =

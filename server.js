@@ -32,6 +32,7 @@ import morchaRoutes from "./routes/morchaRoutes.js";
 import leadershipRoutes from "./routes/leadershipRoutes.js";
 import adminUserRoutes from "./routes/adminUserRoutes.js";
 import cmsRoutes from "./routes/cmsRoutes.js";
+import journeyRoutes from "./routes/journeyRoutes.js";
 import bainarliveupdate from "./routes/sections/banners.js";
 import workerRoutes from "./routes/sections/worker.js";
 import routeRoutes from "./routes/route/routeRoutes.js";
@@ -48,6 +49,9 @@ import grievanceRoutes, {
 } from "./routes/Grievance/Grievanceroutes.js";
 
 import Volunteer from "./models/Volunteer.js";
+import { seedAdminsAndActivities } from "./services/activityService.js";
+import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
+
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 /* =========================================================
    APP
@@ -163,6 +167,23 @@ app.use(
 );
 
 /* =========================================================
+   ADMIN SESSION LOCALS & UNIVERSAL AUDIT TRACKER
+========================================================= */
+
+app.use((req, res, next) => {
+  res.locals.admin = req.session.admin || {
+    email: "admin@vipparty.com",
+    name: "Mukesh Sahani",
+    role: "Super Admin",
+  };
+  res.locals.isLoggedIn = Boolean(req.session.admin);
+  res.locals.currentPath = req.path;
+  next();
+});
+
+app.use(activityTrackerMiddleware);
+
+/* =========================================================
    NORMAL ROUTES
 ========================================================= */
 
@@ -257,6 +278,7 @@ app.use(
   CMS
 */
 app.use("/cms", cmsRoutes);
+app.use(journeyRoutes);
 
 /*
   LEADERSHIP
@@ -455,10 +477,15 @@ app.use(
 mongoose
   .connect(process.env.MONGODB_URI)
 
-  .then(() => {
+  .then(async () => {
     console.log(
       "✅ MongoDB Connected"
     );
+    try {
+      await seedAdminsAndActivities();
+    } catch (seedErr) {
+      console.error("Seeding error:", seedErr);
+    }
   })
 
   .catch((error) => {
@@ -490,7 +517,7 @@ app.listen(
     );
 
     console.log(
-      `http://127.0.0.1:${PORT}`
+      `http://192.168.1.18:${PORT}`
     );
 
     console.log(
