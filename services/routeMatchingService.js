@@ -55,7 +55,7 @@ const calculateDistanceKm = (
 export const findNearbyWorkers = async (
   vehicleLat,
   vehicleLng,
-  radiusKm = 10
+  radiusKm = 20
 ) => {
   try {
 
@@ -151,17 +151,21 @@ export const findNearbyWorkers = async (
 
           const workerLat =
             Number(
-              worker.location?.lat
+              worker.location?.lat ?? worker.lat
             );
 
           const workerLng =
             Number(
-              worker.location?.lng
+              worker.location?.lng ?? worker.lng
             );
 
           const valid =
             Number.isFinite(workerLat) &&
             Number.isFinite(workerLng) &&
+            workerLat >= -90 &&
+            workerLat <= 90 &&
+            workerLng >= -180 &&
+            workerLng <= 180 &&
             !(
               workerLat === 0 &&
               workerLng === 0
@@ -172,7 +176,7 @@ export const findNearbyWorkers = async (
             console.log(
               "WORKER LOCATION INVALID:",
               worker.fullName,
-              worker.location
+              worker.location || { lat: worker.lat, lng: worker.lng }
             );
 
           }
@@ -199,17 +203,17 @@ export const findNearbyWorkers = async (
 
             /* =====================================
                IMPORTANT:
-               NESTED LOCATION SE READ KARNA HAI
+               LOCATION SE READ KARNA HAI (FALLBACK TO ROOT)
             ===================================== */
 
             const workerLat =
               Number(
-                worker.location?.lat
+                worker.location?.lat ?? worker.lat
               );
 
             const workerLng =
               Number(
-                worker.location?.lng
+                worker.location?.lng ?? worker.lng
               );
 
 

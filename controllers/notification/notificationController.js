@@ -33,59 +33,133 @@ const resolveUser = async (req) => {
     }
   }
 
+  // 1. Check by UID or _id (prefer account with active fcmToken)
   if (uid) {
-    let user = await User.findOne({ uid: String(uid) });
-    if (!user) {
-      const email = req.headers["x-dev-email"] || req.headers["x-user-email"];
-      if (email) {
-        user = await User.findOne({ email: String(email).trim().toLowerCase() });
-      }
+    const orQueries = [{ uid: String(uid) }];
+    if (mongoose.Types.ObjectId.isValid(uid)) {
+      orQueries.push({ _id: new mongoose.Types.ObjectId(uid) });
     }
+    let user = await User.findOne({ $or: orQueries }).sort({ fcmToken: -1, updatedAt: -1 });
     if (user) return user;
   }
 
+  // 2. Check by Email
   const email = req.headers["x-dev-email"] || req.headers["x-user-email"];
   if (email) {
-    const user = await User.findOne({ email: String(email).trim().toLowerCase() });
+    const cleanEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({
+      email: {
+        $regex: `^${cleanEmail.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+        $options: "i",
+      },
+    }).sort({ fcmToken: -1, updatedAt: -1 });
     if (user) return user;
+  }
+
+  // 3. Check by Phone
+  const phone =
+    req.headers["x-dev-phone"] ||
+    req.headers["x-user-phone"] ||
+    req.headers["phone"];
+  if (phone) {
+    const cleanPhone = String(phone).replace(/\D/g, "").slice(-10);
+    if (cleanPhone.length === 10) {
+      const phoneRegex = new RegExp(`(?:\\+?91|0)?${cleanPhone}$`);
+      const user = await User.findOne({ phone: { $regex: phoneRegex } }).sort({
+        fcmToken: -1,
+        updatedAt: -1,
+      });
+      if (user) return user;
+    }
   }
 
   return null;
 };
 
-const getUserFilter = (userId) => {
-  const userObjectId = mongoose.Types.ObjectId.isValid(userId)
-    ? new mongoose.Types.ObjectId(userId)
-    : userId;
+const getUserFilter = async (user) => {
+  const primaryId = user?._id || user;
+  const userObjectId = mongoose.Types.ObjectId.isValid(primaryId)
+    ? new mongoose.Types.ObjectId(primaryId)
+    : primaryId;
 
-  const excludedIds = [userObjectId];
-  if (mongoose.Types.ObjectId.isValid(userId)) {
-    excludedIds.push(String(userId));
+  let allUserIds = [userObjectId];
+  if (mongoose.Types.ObjectId.isValid(primaryId)) {
+    allUserIds.push(String(primaryId));
   }
 
-  return {
-    deletedBy: { $nin: excludedIds },
-    $or: [
-      // Direct notifications for this specific user
-      { userId: userObjectId },
-      { userId: String(userId) },
+  try {
+    const orConditions = [{ _id: userObjectId }];
+    if (user?.email) {
+      orConditions.push({
+        email: {
+          $regex: `^${String(user.email).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+          $options: "i",
+        },
+      });
+    }
+    if (user?.phone) {
+      const cleanPhone = String(user.phone).replace(/\D/g, "").slice(-10);
+      if (cleanPhone.length === 10) {
+        orConditions.push({
+          phone: { $regex: new RegExp(`(?:\\+?91|0)?${cleanPhone}$`) },
+        });
+      }
+    }
+    if (user?.uid) {
+      orConditions.push({ uid: String(user.uid) });
+    }
 
-      // Broadcast / global notifications
-      { targetType: "all", userId: null },
-      { targetType: "all", userId: { $exists: false } },
-      { targetType: "member", userId: null },
-      { targetType: "member", userId: { $exists: false } },
-      { userId: null, targetType: { $ne: "user" } },
-      { userId: { $exists: false }, targetType: { $ne: "user" } },
-    ],
+    const related = await User.find({ $or: orConditions }).select("_id").lean();
+    if (related && related.length > 0) {
+      const idSet = new Set();
+      related.forEach((r) => {
+        idSet.add(r._id);
+        idSet.add(String(r._id));
+      });
+      allUserIds = Array.from(idSet);
+    }
+  } catch (err) {
+    console.error("getUserFilter related users error:", err);
+  }
+
+  const excludedIds = [...allUserIds];
+
+  return {
+    filter: {
+      deletedBy: { $nin: excludedIds },
+      $or: [
+        // Direct notifications for this user or any linked accounts
+        { userId: { $in: allUserIds } },
+        ...allUserIds.map((id) => ({ userId: id })),
+
+        // Broadcast / global notifications
+        { targetType: "all", userId: null },
+        { targetType: "all", userId: { $exists: false } },
+        { targetType: "member", userId: null },
+        { targetType: "member", userId: { $exists: false } },
+        { userId: null, targetType: { $ne: "user" } },
+        { userId: { $exists: false }, targetType: { $ne: "user" } },
+      ],
+    },
+    allUserIds,
   };
 };
 
-const formatNotification = (item, userId = null) => {
+const formatNotification = (item, userId = null, allUserIds = []) => {
   const { userId: owner, deletedBy, readBy, ...publicFields } = item;
-  const isPersonal = owner && userId && String(owner) === String(userId);
+  const isPersonal =
+    owner &&
+    userId &&
+    (String(owner) === String(userId) ||
+      allUserIds.some((id) => String(owner) === String(id)));
+
   const isReadByCurrentUser = Boolean(
-    userId && readBy?.some((id) => String(id) === String(userId))
+    userId &&
+      readBy?.some(
+        (id) =>
+          String(id) === String(userId) ||
+          allUserIds.some((rid) => String(id) === String(rid))
+      )
   );
 
   const isRead = isPersonal
@@ -111,18 +185,25 @@ export const getNotifications = async (req, res) => {
         : []
     );
 
-    const filter = userId
-      ? getUserFilter(userId)
-      : {
-          $or: [
-            { targetType: "all", userId: null },
-            { targetType: "all", userId: { $exists: false } },
-            { targetType: "member", userId: null },
-            { targetType: "member", userId: { $exists: false } },
-            { userId: null, targetType: { $ne: "user" } },
-            { userId: { $exists: false }, targetType: { $ne: "user" } },
-          ],
-        };
+    let filter;
+    let allUserIds = [];
+
+    if (user) {
+      const resolved = await getUserFilter(user);
+      filter = resolved.filter;
+      allUserIds = resolved.allUserIds;
+    } else {
+      filter = {
+        $or: [
+          { targetType: "all", userId: null },
+          { targetType: "all", userId: { $exists: false } },
+          { targetType: "member", userId: null },
+          { targetType: "member", userId: { $exists: false } },
+          { userId: null, targetType: { $ne: "user" } },
+          { userId: { $exists: false }, targetType: { $ne: "user" } },
+        ],
+      };
+    }
 
     const notifications = await Notification.find(filter)
       .sort({ createdAt: -1 })
@@ -138,7 +219,7 @@ export const getNotifications = async (req, res) => {
     const formattedNotifications = notifications
       .filter((item) => !clientDeletedSet.has(String(item._id)))
       .map((item) => {
-        const formatted = formatNotification(item, userId);
+        const formatted = formatNotification(item, userId, allUserIds);
         if (clientReadSet.has(String(item._id))) {
           formatted.isRead = true;
         }
@@ -173,18 +254,25 @@ export const getUnreadCount = async (req, res) => {
         : []
     );
 
-    const filter = userId
-      ? getUserFilter(userId)
-      : {
-          $or: [
-            { targetType: "all", userId: null },
-            { targetType: "all", userId: { $exists: false } },
-            { targetType: "member", userId: null },
-            { targetType: "member", userId: { $exists: false } },
-            { userId: null, targetType: { $ne: "user" } },
-            { userId: { $exists: false }, targetType: { $ne: "user" } },
-          ],
-        };
+    let filter;
+    let allUserIds = [];
+
+    if (user) {
+      const resolved = await getUserFilter(user);
+      filter = resolved.filter;
+      allUserIds = resolved.allUserIds;
+    } else {
+      filter = {
+        $or: [
+          { targetType: "all", userId: null },
+          { targetType: "all", userId: { $exists: false } },
+          { targetType: "member", userId: null },
+          { targetType: "member", userId: { $exists: false } },
+          { userId: null, targetType: { $ne: "user" } },
+          { userId: { $exists: false }, targetType: { $ne: "user" } },
+        ],
+      };
+    }
 
     const rawReadIds = req.headers["x-read-ids"];
     const clientReadSet = new Set(
@@ -252,7 +340,7 @@ export const markNotificationRead = async (req, res) => {
       );
 
       // Compute updated unread count for this user
-      const filter = getUserFilter(userId);
+      const { filter, allUserIds } = await getUserFilter(user);
       const rawReadIds = req.headers["x-read-ids"];
       const clientReadSet = new Set(
         rawReadIds && typeof rawReadIds === "string"
@@ -264,14 +352,14 @@ export const markNotificationRead = async (req, res) => {
       const allNotifs = await Notification.find(filter).select("userId isRead readBy").lean();
       const unreadCount = allNotifs.filter((item) => {
         if (clientReadSet.has(String(item._id))) return false;
-        return !formatNotification(item, userId).isRead;
+        return !formatNotification(item, userId, allUserIds).isRead;
       }).length;
 
       return res.status(200).json({
         success: true,
         message: "Notification marked as read",
         unreadCount,
-        notification: formatNotification(notification.toObject(), userObjectId),
+        notification: formatNotification(notification.toObject(), userObjectId, allUserIds),
       });
     } else {
       // Guest user marking notification as read
@@ -330,12 +418,13 @@ export const markAllNotificationsRead = async (req, res) => {
     const userId = user?._id;
 
     if (userId) {
+      const { allUserIds } = await getUserFilter(user);
       const userObjectId = new mongoose.Types.ObjectId(userId);
 
       await Notification.updateMany(
         {
-          userId: userObjectId,
-          deletedBy: { $ne: userObjectId },
+          userId: { $in: allUserIds },
+          deletedBy: { $nin: allUserIds },
         },
         {
           $set: { isRead: true },
@@ -345,7 +434,7 @@ export const markAllNotificationsRead = async (req, res) => {
 
       await Notification.updateMany(
         {
-          deletedBy: { $ne: userObjectId },
+          deletedBy: { $nin: allUserIds },
         },
         {
           $addToSet: { readBy: userObjectId },
