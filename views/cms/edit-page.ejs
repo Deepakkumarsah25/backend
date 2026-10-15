@@ -236,15 +236,15 @@ Page Information
 <div class="form-group">
 
 <label>
-Page Title
+Page Title <span style="font-size: 13px; color: #888; font-weight: normal;">(Optional)</span>
 </label>
 
 <input
   type="text"
   name="title"
   class="form-control"
+  placeholder="Enter page title (optional)"
   value="<%= page.title || '' %>"
-  required
 >
 
 </div>
@@ -253,12 +253,13 @@ Page Title
 <div class="form-group">
 
 <label>
-Intro Text
+Intro Text <span style="font-size: 13px; color: #888; font-weight: normal;">(Optional)</span>
 </label>
 
 <textarea
   name="introText"
   class="form-control"
+  placeholder="Enter intro text (optional)"
 ><%= page.introText || '' %></textarea>
 
 </div>
@@ -297,15 +298,14 @@ Intro Text
 <div class="form-group">
 
 <label>
-Section Heading
+Section Heading <span style="font-size: 13px; color: #888; font-weight: normal;">(Optional)</span>
 </label>
 
 <input
   type="text"
   name="heading"
   class="form-control"
-  placeholder="Example: 2017"
-  required
+  placeholder="Example: 2017 (optional)"
 >
 
 </div>
@@ -314,14 +314,13 @@ Section Heading
 <div class="form-group">
 
 <label>
-Description
+Description <span style="font-size: 13px; color: #888; font-weight: normal;">(Optional)</span>
 </label>
 
 <textarea
   name="description"
   class="form-control"
-  placeholder="Enter section description"
-  required
+  placeholder="Enter section description (optional)"
 ></textarea>
 
 </div>
@@ -399,18 +398,18 @@ Display Order
 <div class="section-card">
 
 
+<% if (section.heading) { %>
 <h3>
-
 <%= section.heading %>
-
 </h3>
+<% } %>
 
 
+<% if (section.description) { %>
 <p>
-
 <%= section.description %>
-
 </p>
+<% } %>
 
 
 <% if (section.image) { %>
@@ -478,7 +477,7 @@ Display Order
 <div class="form-group">
 
 <label>
-Heading
+Heading <span style="font-size: 13px; color: #888; font-weight: normal;">(Optional)</span>
 </label>
 
 <input
@@ -486,7 +485,7 @@ Heading
   name="heading"
   value="<%= section.heading || '' %>"
   class="form-control"
-  required
+  placeholder="Enter heading (optional)"
 >
 
 </div>
@@ -495,13 +494,13 @@ Heading
 <div class="form-group">
 
 <label>
-Description
+Description <span style="font-size: 13px; color: #888; font-weight: normal;">(Optional)</span>
 </label>
 
 <textarea
   name="description"
   class="form-control"
-  required
+  placeholder="Enter description (optional)"
 ><%= section.description || '' %></textarea>
 
 </div>
