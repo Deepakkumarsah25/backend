@@ -11,6 +11,7 @@ import {
   addBanner,
   deleteBanner,
   getActivityLogsPage,
+  getActivityLogsApi,
 } from "../controllers/adminController.js";
 
 import {
@@ -92,6 +93,8 @@ router.get("/admin/activities", getActivityLogsPage);
 router.get("/admin/activity", getActivityLogsPage);
 
 router.post("/api/admin/quick-update", quickUpdateActivity);
+router.get("/api/activity-logs", getActivityLogsApi);
+router.get("/api/admin/activity-logs", getActivityLogsApi);
 
 
 /* =========================================
