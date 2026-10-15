@@ -53,6 +53,7 @@ import { seedAdminsAndActivities } from "./services/activityService.js";
 import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
 
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
+import adminFormsRoutes from "./routes/adminFormsRoutes.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -204,8 +205,10 @@ app.use(userRoutes);
 app.use("/api/users", userRoutes);
 
 /*
-  ADMIN
+  ADMIN & FORMS HUB
 */
+app.use("/admin/forms", adminFormsRoutes);
+app.use("/forms", adminFormsRoutes);
 app.use("/", adminRoutes);
 
 /*

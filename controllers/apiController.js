@@ -1,4 +1,5 @@
 import Banner from "../models/Banner.js";
+import Scroller from "../models/Scroller.js";
 import ContactInfo from "../models/ContactInfo.js";
 import VipOffice from "../models/VipOffice.js";
 import CmsPage from "../models/CmsPage.js";
@@ -16,6 +17,42 @@ export const getBanners = async (
     success: true,
     banners,
   });
+};
+
+export const getHeroBanners = async (req, res) => {
+  try {
+    const scrollers = await Scroller.find({ active: true, type: "image" }).sort({
+      displayOrder: 1,
+      createdAt: -1,
+    });
+
+    if (scrollers && scrollers.length > 0) {
+      return res.json({
+        success: true,
+        source: "scroller",
+        banners: scrollers.map((s) => ({
+          _id: s._id,
+          imageUrl: s.mediaUrl,
+          title: s.originalName || "Hero Banner",
+          displayOrder: s.displayOrder,
+        })),
+      });
+    }
+
+    const banners = await Banner.find({ active: true }).sort({ createdAt: -1 });
+    return res.json({
+      success: true,
+      source: "banner",
+      banners: banners.map((b) => ({
+        _id: b._id,
+        imageUrl: b.imageUrl,
+        title: b.title || "Hero Banner",
+      })),
+    });
+  } catch (error) {
+    console.error("GET HERO BANNERS ERROR:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
 };
 
 export const getContact = async (req, res) => {

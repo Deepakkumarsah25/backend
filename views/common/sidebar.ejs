@@ -82,24 +82,76 @@
 
 
       <!-- =========================
-           ACTIVITY LOGS (LAST 10 DAYS)
+           FORMS & APPLICATIONS HUB
       ========================== -->
-      <li class="sidebar-item">
-
-        <a href="/activity-logs" class="sidebar-link direct-link" id="sidebarActivityLogLink">
+      <li class="sidebar-item has-submenu">
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
-            <span class="sidebar-icon">
-              <i class="fa-solid fa-clock-rotate-left"></i>
+            <span class="sidebar-icon" style="color: #f59e0b;">
+              <i class="fa-solid fa-clipboard-list"></i>
             </span>
 
-            <span class="sidebar-text">
-              10-Day Activity Log
-            </span>
+            <span class="sidebar-text"> Forms (फ़ॉर्म्स प्रबंधन) </span>
           </span>
 
+          <span class="sidebar-badge"
+            style="background: #0b4ea2; color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto; margin-right: 6px;">
+            Live
+          </span>
 
-        </a>
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
 
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/admin/forms">
+              <i class="fa-solid fa-table-cells-large"></i>
+              <span>All Submissions (सभी फ़ॉर्म)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/forms?type=volunteers">
+              <i class="fa-solid fa-handshake-angle"></i>
+              <span>Volunteers (वालंटियर)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/forms?type=scholarships">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <span>Scholarships (छात्रवृत्ति)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/forms?type=candidatures">
+              <i class="fa-solid fa-vote-yea"></i>
+              <span>UP 2027 (दावेदारी आवेदन)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/forms?type=joins">
+              <i class="fa-solid fa-id-card"></i>
+              <span>Join VIP (सदस्यता आवेदन)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/forms?type=contacts">
+              <i class="fa-solid fa-envelope-open-text"></i>
+              <span>Contact Inquiries (संपर्क)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/forms?type=users">
+              <i class="fa-solid fa-user-check"></i>
+              <span>Web Users (पंजीकृत यूजर्स)</span>
+            </a>
+          </li>
+        </ul>
       </li>
 
 
@@ -284,8 +336,8 @@
 
           <li>
             <a href="/scroller">
-              <i class="fa-solid fa-scroll"></i>
-              <span>Update Banner Scroller</span>
+              <i class="fa-solid fa-images"></i>
+              <span>Hero Banner (Web & App)</span>
             </a>
           </li>
 
