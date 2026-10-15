@@ -47,7 +47,6 @@ import grievanceRoutes, {
 } from "./routes/Grievance/Grievanceroutes.js";
 
 import { seedAdminsAndActivities } from "./services/activityService.js";
-import { migrateLegacyVolunteers } from "./services/migrateLegacyVolunteers.js";
 import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
 
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
@@ -469,11 +468,6 @@ mongoose
     console.log(
       "✅ MongoDB Connected"
     );
-    try {
-      await migrateLegacyVolunteers();
-    } catch (migrationErr) {
-      console.error("Legacy volunteer migration error:", migrationErr);
-    }
     try {
       await seedAdminsAndActivities();
     } catch (seedErr) {
