@@ -184,30 +184,30 @@
                 </div>
             </section>
 
-            <!-- FILTER & SEARCH TOOLBAR (INSTANT CLIENT-SIDE FILTERING - ZERO RELOAD) -->
+            <!-- FILTER & SEARCH TOOLBAR -->
             <div class="filter-toolbar-card" id="filterToolbarRoot">
                 <div class="filter-form">
                     <div class="filters-left">
                         <!-- Filter by Admin Email -->
                         <div class="filter-group">
                             <label for="emailFilter"><i class="fa-solid fa-user"></i> Admin Account</label>
-                            <select id="emailFilter" class="filter-select" onchange="applyClientFilters()">
-                                <option value="all">All Admins (4 Accounts)</option>
-                                <option value="admin@vipparty.com">Mukesh Sahani (admin@vipparty.com)</option>
-                                <option value="editor@vipparty.com">Vikram Sharma (editor@vipparty.com)</option>
-                                <option value="manager@vipparty.com">Pooja Dhakad (manager@vipparty.com)</option>
-                                <option value="media@vipparty.com">Ravi Verma (media@vipparty.com)</option>
+                            <select id="emailFilter" class="filter-select" onchange="handleFilterChange()">
+                                <option value="all" <%= currentEmail === 'all' ? 'selected' : '' %>>All Admins (4 Accounts)</option>
+                                <option value="admin@vipparty.com" <%= currentEmail === 'admin@vipparty.com' ? 'selected' : '' %>>Mukesh Sahani (admin@vipparty.com)</option>
+                                <option value="editor@vipparty.com" <%= currentEmail === 'editor@vipparty.com' ? 'selected' : '' %>>Vikram Sharma (editor@vipparty.com)</option>
+                                <option value="manager@vipparty.com" <%= currentEmail === 'manager@vipparty.com' ? 'selected' : '' %>>Pooja Dhakad (manager@vipparty.com)</option>
+                                <option value="media@vipparty.com" <%= currentEmail === 'media@vipparty.com' ? 'selected' : '' %>>Ravi Verma (media@vipparty.com)</option>
                             </select>
                         </div>
 
                         <!-- Filter by Section -->
                         <div class="filter-group">
                             <label for="sectionFilter"><i class="fa-solid fa-folder-tree"></i> Section / Module</label>
-                            <select id="sectionFilter" class="filter-select" onchange="applyClientFilters()">
+                            <select id="sectionFilter" class="filter-select" onchange="handleFilterChange()">
                                 <option value="all">All Sections</option>
                                 <% if (allSections && allSections.length > 0) { %>
                                     <% allSections.forEach(function(sec) { %>
-                                        <option value="<%= sec %>"><%= sec %></option>
+                                        <option value="<%= sec %>" <%= currentSection === sec ? 'selected' : '' %>><%= sec %></option>
                                     <% }); %>
                                 <% } %>
                             </select>
@@ -216,15 +216,15 @@
                         <!-- Filter by Action Type -->
                         <div class="filter-group">
                             <label for="actionTypeFilter"><i class="fa-solid fa-arrow-right-arrow-left"></i> Action Type</label>
-                            <select id="actionTypeFilter" class="filter-select" onchange="applyClientFilters()">
+                            <select id="actionTypeFilter" class="filter-select" onchange="handleFilterChange()">
                                 <option value="all">All Actions</option>
-                                <option value="create">Created / Added (+)</option>
-                                <option value="update">Updated / Edited (✎)</option>
-                                <option value="delete">Deleted / Removed (✕)</option>
+                                <option value="create" <%= currentActionType === 'create' ? 'selected' : '' %>>Created / Added (+)</option>
+                                <option value="update" <%= currentActionType === 'update' ? 'selected' : '' %>>Updated / Edited (✎)</option>
+                                <option value="delete" <%= currentActionType === 'delete' ? 'selected' : '' %>>Deleted / Removed (✕)</option>
                             </select>
                         </div>
 
-                        <!-- Search keyword (Instant OnInput) -->
+                        <!-- Search keyword (Debounced) -->
                         <div class="filter-group">
                             <label for="searchInput"><i class="fa-solid fa-magnifying-glass"></i> Search Details</label>
                             <div class="search-wrap">
@@ -234,7 +234,8 @@
                                     id="searchInput"
                                     class="search-input" 
                                     placeholder="Search changes, workers, banners..." 
-                                    oninput="applyClientFilters()"
+                                    value="<%= currentSearch %>"
+                                    oninput="handleSearchInput()"
                                 >
                             </div>
                         </div>
@@ -248,8 +249,8 @@
 
                     <!-- View Switcher Tabs -->
                     <div class="view-tabs">
-                        <button type="button" class="tab-btn active" id="tabGroupedBtn" onclick="switchView('grouped')">
-                            <i class="fa-solid fa-users"></i> Grouped by Admin
+                        <button type="button" class="tab-btn active" id="tabFeedBtn" onclick="switchView('feed')">
+                            <i class="fa-solid fa-list-check"></i> Activity Feed
                         </button>
                         <button type="button" class="tab-btn" id="tabTimelineBtn" onclick="switchView('timeline')">
                             <i class="fa-solid fa-timeline"></i> Timeline View
@@ -258,12 +259,15 @@
                 </div>
             </div>
 
-            <!-- LIVE STATUS STRIP (UPDATED INSTANTLY BY JS) -->
+            <!-- LIVE STATUS STRIP -->
             <div class="filter-status-strip" id="filterStatusStrip">
-                <div>
-                    <i class="fa-solid fa-circle-check" style="margin-right: 6px; color: #10b981;"></i>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <i class="fa-solid fa-circle-check" style="color: #10b981;"></i>
                     <span id="filterStatusText">
-                        Showing all <strong><%= allActivities.length %> activities</strong> across all 4 admin accounts in the last 10 days.
+                        Showing <strong><%= pagination.startIndex %> - <%= pagination.endIndex %></strong> of <strong><%= pagination.totalCount %> activities</strong> (Page <%= pagination.page %> of <%= pagination.totalPages %>)
+                    </span>
+                    <span id="loadingIndicator" class="loading-indicator-pill" style="display: none;">
+                        <i class="fa-solid fa-spinner fa-spin"></i> Fetching logs...
                     </span>
                 </div>
                 <button 
@@ -278,223 +282,132 @@
 
             <div id="activityViewRoot"></div>
 
-            <!-- =========================================================
-                 VIEW 1: GROUPED BY ADMIN EMAIL (DEFAULT)
-            ========================================================= -->
-            <div id="groupedViewContainer" class="admin-group-container">
-                <% adminGroups.forEach(function(adm) { %>
-                    <div 
-                        class="admin-group-card" 
-                        id="admin-group-block-<%= adm.email.replace(/[@.]/g, '-') %>"
-                        data-admin-email="<%= adm.email.toLowerCase() %>"
-                    >
-                        <!-- Admin Group Header -->
-                        <div class="ag-header">
-                            <div class="ag-user-identity">
-                                <div class="ag-avatar" style="background: <%= adm.avatarBg %>;">
-                                    <i class="<%= adm.icon %>"></i>
-                                </div>
-                                <div class="ag-user-details">
-                                    <h4>
-                                        <%= adm.name %>
-                                        <span class="role-tag <%= adm.roleClass %>"><%= adm.role %></span>
-                                    </h4>
-                                    <div class="ag-email-text">
-                                        <i class="fa-regular fa-envelope"></i> <%= adm.email %>
+            <!-- ACTIVITIES LIST CONTAINER (10 ITEMS PER PAGE) -->
+            <div id="activitiesListContainer" class="activities-list-container">
+                <% if (activities && activities.length > 0) { %>
+                    <% activities.forEach(function(act) { %>
+                        <div class="activity-feed-card" id="activity-<%= act._id %>">
+                            <div class="afc-header">
+                                <div class="afc-user">
+                                    <div class="afc-avatar" style="background: <%= act.avatarBg || 'linear-gradient(135deg, #0b4ea2 0%, #083d80 100%)' %>;">
+                                        <i class="<%= act.adminIcon || 'fa-solid fa-user-shield' %>"></i>
                                     </div>
+                                    <div class="afc-user-info">
+                                        <div class="afc-name-wrap">
+                                            <span class="afc-name"><%= act.adminName || 'Admin' %></span>
+                                            <span class="role-tag <%= act.adminRoleClass || 'custom' %>"><%= act.adminRole || 'Administrator' %></span>
+                                        </div>
+                                        <div class="afc-email"><%= act.adminEmail %></div>
+                                    </div>
+                                </div>
+
+                                <div class="afc-tags">
+                                    <span class="act-section-badge">
+                                        <i class="<%= act.sectionIcon || 'fa-solid fa-cube' %>" style="color: #0b4ea2;"></i>
+                                        <%= act.section %>
+                                    </span>
+                                    <span class="act-type-tag <%= act.actionType %>">
+                                        <% if (act.actionType === 'create') { %>+ Added
+                                        <% } else if (act.actionType === 'update') { %>✎ Modified
+                                        <% } else if (act.actionType === 'delete') { %>✕ Removed
+                                        <% } else { %><%= act.actionType %><% } %>
+                                    </span>
                                 </div>
                             </div>
 
-                            <div class="ag-metrics">
-                                <span class="ag-pill ag-pill-total group-total-pill">
-                                    <i class="fa-solid fa-list-check"></i> <span class="group-count-num"><%= adm.activities.length %></span> Actions
-                                </span>
-                                <% if (adm.stats.creates > 0) { %>
-                                    <span class="ag-pill ag-pill-create">
-                                        <i class="fa-solid fa-plus"></i> <%= adm.stats.creates %> Added
-                                    </span>
-                                <% } %>
-                                <% if (adm.stats.updates > 0) { %>
-                                    <span class="ag-pill ag-pill-update">
-                                        <i class="fa-solid fa-pen"></i> <%= adm.stats.updates %> Edited
-                                    </span>
-                                <% } %>
-                                <% if (adm.stats.deletes > 0) { %>
-                                    <span class="ag-pill ag-pill-delete">
-                                        <i class="fa-solid fa-trash"></i> <%= adm.stats.deletes %> Removed
-                                    </span>
+                            <div class="afc-body">
+                                <h4 class="afc-title"><%= act.action %></h4>
+                                <% if (act.details) { %>
+                                    <p class="afc-details"><%= act.details %></p>
                                 <% } %>
                             </div>
-                        </div>
 
-                        <!-- List of All Modifications by this Admin -->
-                        <div class="ag-activities-list">
-                            <% if (adm.activities && adm.activities.length > 0) { %>
-                                <% adm.activities.forEach(function(act) { %>
-                                    <div 
-                                        class="activity-row-item item-filter-target"
-                                        data-admin="<%= (act.adminEmail || '').toLowerCase() %>"
-                                        data-section="<%= act.section || '' %>"
-                                        data-type="<%= act.actionType || '' %>"
-                                        data-search="<%= ((act.action || '') + ' ' + (act.details || '') + ' ' + (act.section || '') + ' ' + (act.adminName || '')).toLowerCase() %>"
-                                    >
-                                        <!-- Action Type Icon -->
-                                        <div class="act-type-icon act-type-<%= act.actionType %>">
-                                            <% if (act.actionType === 'create') { %>
-                                                <i class="fa-solid fa-plus"></i>
-                                            <% } else if (act.actionType === 'delete') { %>
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            <% } else if (act.actionType === 'login') { %>
-                                                <i class="fa-solid fa-right-to-bracket"></i>
-                                            <% } else { %>
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                            <% } %>
-                                        </div>
-
-                                        <!-- Main Info -->
-                                        <div class="act-main-info">
-                                            <div class="act-header-line">
-                                                <!-- Section Badge -->
-                                                <span class="act-section-badge">
-                                                    <i class="<%= act.sectionIcon || 'fa-solid fa-cube' %>" style="color: #0b4ea2;"></i>
-                                                    <%= act.section %>
-                                                </span>
-
-                                                <!-- Action Title -->
-                                                <h5 class="act-title"><%= act.action %></h5>
-
-                                                <!-- Action Type Tag -->
-                                                <span class="act-type-tag <%= act.actionType %>">
-                                                    <% if (act.actionType === 'create') { %>+ Added
-                                                    <% } else if (act.actionType === 'update') { %>✎ Modified
-                                                    <% } else if (act.actionType === 'delete') { %>✕ Removed
-                                                    <% } else { %><%= act.actionType %><% } %>
-                                                </span>
-                                            </div>
-
-                                            <!-- Details Description -->
-                                            <p class="act-details">
-                                                <%= act.details %>
-                                            </p>
-
-                                            <!-- Metadata (Time, IP, Date) -->
-                                            <div class="act-meta-line">
-                                                <span class="act-time-pill">
-                                                    <i class="fa-regular fa-clock"></i> <%= act.timeAgo %>
-                                                </span>
-                                                <span>&bull;</span>
-                                                <span>
-                                                    <i class="fa-regular fa-calendar"></i> <%= act.exactTime %>
-                                                </span>
-                                                <% if (act.ip) { %>
-                                                    <span>&bull;</span>
-                                                    <span>
-                                                        <i class="fa-solid fa-network-wired"></i> IP: <%= act.ip %>
-                                                    </span>
-                                                <% } %>
-                                            </div>
-                                        </div>
-                                    </div>
-                                <% }); %>
-                            <% } else { %>
-                                <div class="empty-group-state">
-                                    <i class="fa-regular fa-clipboard" style="font-size: 26px; margin-bottom: 8px; display: block; color: #cbd5e1;"></i>
-                                    No modifications recorded for <strong><%= adm.name %></strong> in the last 10 days.
+                            <div class="afc-footer">
+                                <div class="afc-meta">
+                                    <span class="afc-time-ago">
+                                        <i class="fa-regular fa-clock"></i> <%= act.timeAgo %>
+                                    </span>
+                                    <span>&bull;</span>
+                                    <span class="afc-exact-date">
+                                        <i class="fa-regular fa-calendar"></i> <%= act.exactTime %>
+                                    </span>
+                                    <% if (act.ip) { %>
+                                        <span>&bull;</span>
+                                        <span class="afc-ip">
+                                            <i class="fa-solid fa-network-wired"></i> IP: <%= act.ip %>
+                                        </span>
+                                    <% } %>
                                 </div>
-                            <% } %>
-                        </div>
-                    </div>
-                <% }); %>
-
-                <!-- Empty Filter Results Box for Grouped View -->
-                <div class="empty-results-box" id="emptyGroupedNotice" style="display: none;">
-                    <i class="fa-solid fa-folder-open"></i>
-                    <h4>No Activities Match Your Filter</h4>
-                    <p>Try clearing your keyword search or adjusting the module / action filter.</p>
-                    <button type="button" class="btn-filter-reset" onclick="resetAllClientFilters()" style="background:#0b4ea2; color:#fff; border:none; padding:9px 18px;">
-                        Reset All Filters
-                    </button>
-                </div>
-            </div>
-
-            <!-- =========================================================
-                 VIEW 2: CHRONOLOGICAL TIMELINE VIEW (HIDDEN INITIALLY)
-            ========================================================= -->
-            <div id="timelineViewContainer" class="timeline-container" style="display: none;">
-                <% const dateKeys = Object.keys(dateGroups); %>
-                <% if (dateKeys && dateKeys.length > 0) { %>
-                    <% dateKeys.forEach(function(dateKey) { %>
-                        <div class="timeline-date-block" data-date-block="<%= dateKey %>">
-                            <!-- Date Divider Header -->
-                            <div class="date-divider">
-                                <span class="date-badge">
-                                    <i class="fa-regular fa-calendar-check"></i> <%= dateKey %>
-                                </span>
-                                <div class="date-line"></div>
                             </div>
-
-                            <!-- List of items for this date -->
-                            <% dateGroups[dateKey].forEach(function(act) { %>
-                                <% 
-                                    const matchAdm = adminGroups.find(a => a.email.toLowerCase() === (act.adminEmail || '').toLowerCase());
-                                    const bg = matchAdm ? matchAdm.avatarBg : 'linear-gradient(135deg, #64748b 0%, #475569 100%)';
-                                    const icon = matchAdm ? matchAdm.icon : 'fa-solid fa-user-shield';
-                                %>
-                                <div 
-                                    class="timeline-card item-filter-target"
-                                    data-admin="<%= (act.adminEmail || '').toLowerCase() %>"
-                                    data-section="<%= act.section || '' %>"
-                                    data-type="<%= act.actionType || '' %>"
-                                    data-search="<%= ((act.action || '') + ' ' + (act.details || '') + ' ' + (act.section || '') + ' ' + (act.adminName || '')).toLowerCase() %>"
-                                >
-                                    <!-- User Badge on Left -->
-                                    <div class="tl-user-badge">
-                                        <div class="tl-avatar" style="background: <%= bg %>;">
-                                            <i class="<%= icon %>"></i>
-                                        </div>
-                                        <div style="min-width: 0;">
-                                            <div class="tl-user-name"><%= act.adminName || 'Admin' %></div>
-                                            <div class="tl-user-email"><%= act.adminEmail %></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Main Activity Body -->
-                                    <div class="tl-body">
-                                        <div class="act-header-line">
-                                            <span class="act-section-badge">
-                                                <i class="<%= act.sectionIcon || 'fa-solid fa-cube' %>" style="color: #0b4ea2;"></i>
-                                                <%= act.section %>
-                                            </span>
-                                            <h5 class="act-title"><%= act.action %></h5>
-                                            <span class="act-type-tag <%= act.actionType %>">
-                                                <% if (act.actionType === 'create') { %>+ Added
-                                                <% } else if (act.actionType === 'update') { %>✎ Modified
-                                                <% } else if (act.actionType === 'delete') { %>✕ Removed
-                                                <% } else { %><%= act.actionType %><% } %>
-                                            </span>
-                                        </div>
-                                        <p class="act-details"><%= act.details %></p>
-                                    </div>
-
-                                    <!-- Timestamp on Right -->
-                                    <div class="tl-time-block">
-                                        <div style="font-weight: 700; color: #1e293b;"><%= act.timeAgo %></div>
-                                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;"><%= act.exactTime %></div>
-                                    </div>
-                                </div>
-                            <% }); %>
                         </div>
                     <% }); %>
                 <% } %>
+            </div>
 
-                <!-- Empty Filter Results Box for Timeline View -->
-                <div class="empty-results-box" id="emptyTimelineNotice" style="display: none;">
-                    <i class="fa-solid fa-timeline"></i>
-                    <h4>No Activities Match Your Filter</h4>
-                    <p>Try adjusting your search keywords or filter dropdowns.</p>
-                    <button type="button" class="btn-filter-reset" onclick="resetAllClientFilters()" style="background:#0b4ea2; color:#fff; border:none; padding:9px 18px;">
-                        Reset All Filters
+            <!-- EMPTY RESULTS BOX -->
+            <div class="empty-results-box" id="emptyNotice" style="<%= activities && activities.length > 0 ? 'display: none;' : 'display: block;' %>">
+                <i class="fa-solid fa-folder-open"></i>
+                <h4>No Activities Found</h4>
+                <p>Try adjusting your search terms or filter dropdowns above.</p>
+                <button type="button" class="btn-filter-reset" onclick="resetAllClientFilters()" style="background:#0b4ea2; color:#fff; border:none; padding:9px 18px;">
+                    Reset All Filters
+                </button>
+            </div>
+
+            <!-- =========================================================
+                 PAGINATION & LOAD MORE CONTROLS
+            ========================================================= -->
+            <div class="pagination-section" id="paginationSection" style="<%= pagination.totalCount === 0 ? 'display: none;' : '' %>">
+                <!-- Load More Button (+10 items) -->
+                <div class="load-more-wrap">
+                    <button 
+                        type="button" 
+                        class="btn-load-more" 
+                        id="btnLoadMore" 
+                        onclick="loadMoreActivities()"
+                        <%= !pagination.hasNextPage ? 'disabled' : '' %>
+                    >
+                        <i class="fa-solid fa-angles-down" id="loadMoreIcon"></i>
+                        <span id="loadMoreBtnText">
+                            <%= pagination.hasNextPage ? 'Load More Activities (+10)' : 'All ' + pagination.totalCount + ' Activities Loaded' %>
+                        </span>
+                        <span class="load-more-badge" id="loadMoreCountBadge">
+                            <%= pagination.endIndex %> / <%= pagination.totalCount %>
+                        </span>
                     </button>
+                </div>
+
+                <!-- Pagination Page Navigation Bar -->
+                <div class="pagination-bar">
+                    <div class="pagination-info" id="paginationBarInfo">
+                        Showing <strong><%= pagination.startIndex %> - <%= pagination.endIndex %></strong> of <strong><%= pagination.totalCount %></strong> activities
+                    </div>
+
+                    <div class="pagination-controls">
+                        <button 
+                            type="button" 
+                            class="page-nav-btn" 
+                            id="btnPrevPage" 
+                            onclick="goToPage(state.page - 1)" 
+                            <%= !pagination.hasPrevPage ? 'disabled' : '' %>
+                        >
+                            <i class="fa-solid fa-chevron-left"></i> Previous
+                        </button>
+
+                        <div class="page-numbers-list" id="pageNumbersList">
+                            <!-- Injected by JavaScript -->
+                        </div>
+
+                        <button 
+                            type="button" 
+                            class="page-nav-btn" 
+                            id="btnNextPage" 
+                            onclick="goToPage(state.page + 1)" 
+                            <%= !pagination.hasNextPage ? 'disabled' : '' %>
+                        >
+                            Next <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -502,48 +415,378 @@
     </main>
 
     <!-- =========================================================
-         INSTANT CLIENT-SIDE FILTERING & INTERACTION SCRIPT (NO RELOAD)
+         PAGINATED ACTIVITY AUDIT LOG INTERACTION SCRIPT
     ========================================================= -->
     <script>
-        let currentActiveEmail = 'all';
+        // Central client state
+        const state = {
+            page: <%= pagination.page || 1 %>,
+            limit: <%= pagination.limit || 10 %>,
+            email: '<%= currentEmail || "all" %>',
+            section: '<%= currentSection || "all" %>',
+            actionType: '<%= currentActionType || "all" %>',
+            search: '<%= currentSearch || "" %>',
+            totalCount: <%= pagination.totalCount || 0 %>,
+            totalPages: <%= pagination.totalPages || 1 %>,
+            hasNextPage: <%= pagination.hasNextPage ? 'true' : 'false' %>,
+            hasPrevPage: <%= pagination.hasPrevPage ? 'true' : 'false' %>,
+            startIndex: <%= pagination.startIndex || 0 %>,
+            endIndex: <%= pagination.endIndex || 0 %>,
+            activities: <%- JSON.stringify(activities || []) %>,
+            viewMode: 'feed', // 'feed' or 'timeline'
+            isLoading: false,
+        };
 
-        // 1. One-click selection from the 4 Admin Overview Cards
-        function selectAdminFilter(email) {
-            const emailSelect = document.getElementById('emailFilter');
-            
-            // If clicking the same active card, toggle back to all
-            if (currentActiveEmail === email) {
-                currentActiveEmail = 'all';
-                if (emailSelect) emailSelect.value = 'all';
-            } else {
-                currentActiveEmail = email;
-                if (emailSelect) emailSelect.value = email;
+        let searchDebounceTimeout = null;
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Render individual card for Feed View
+        function renderFeedCard(act) {
+            let actionBadge = act.actionType;
+            if (act.actionType === 'create') actionBadge = '+ Added';
+            else if (act.actionType === 'update') actionBadge = '✎ Modified';
+            else if (act.actionType === 'delete') actionBadge = '✕ Removed';
+
+            return `
+            <div class="activity-feed-card" id="activity-${act._id}">
+                <div class="afc-header">
+                    <div class="afc-user">
+                        <div class="afc-avatar" style="background: ${act.avatarBg || 'linear-gradient(135deg, #0b4ea2 0%, #083d80 100%)'};">
+                            <i class="${escapeHtml(act.adminIcon || 'fa-solid fa-user-shield')}"></i>
+                        </div>
+                        <div class="afc-user-info">
+                            <div class="afc-name-wrap">
+                                <span class="afc-name">${escapeHtml(act.adminName || 'Admin')}</span>
+                                <span class="role-tag ${escapeHtml(act.adminRoleClass || 'custom')}">${escapeHtml(act.adminRole || 'Administrator')}</span>
+                            </div>
+                            <div class="afc-email">${escapeHtml(act.adminEmail || '')}</div>
+                        </div>
+                    </div>
+
+                    <div class="afc-tags">
+                        <span class="act-section-badge">
+                            <i class="${escapeHtml(act.sectionIcon || 'fa-solid fa-cube')}" style="color: #0b4ea2;"></i>
+                            ${escapeHtml(act.section || 'General')}
+                        </span>
+                        <span class="act-type-tag ${escapeHtml(act.actionType || 'update')}">
+                            ${actionBadge}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="afc-body">
+                    <h4 class="afc-title">${escapeHtml(act.action || 'Activity Recorded')}</h4>
+                    ${act.details ? `<p class="afc-details">${escapeHtml(act.details)}</p>` : ''}
+                </div>
+
+                <div class="afc-footer">
+                    <div class="afc-meta">
+                        <span class="afc-time-ago">
+                            <i class="fa-regular fa-clock"></i> ${escapeHtml(act.timeAgo || 'Recently')}
+                        </span>
+                        <span>&bull;</span>
+                        <span class="afc-exact-date">
+                            <i class="fa-regular fa-calendar"></i> ${escapeHtml(act.exactTime || '')}
+                        </span>
+                        ${act.ip ? `<span>&bull;</span><span class="afc-ip"><i class="fa-solid fa-network-wired"></i> IP: ${escapeHtml(act.ip)}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+
+        // Render individual card for Timeline View
+        function renderTimelineCard(act) {
+            let actionBadge = act.actionType;
+            if (act.actionType === 'create') actionBadge = '+ Added';
+            else if (act.actionType === 'update') actionBadge = '✎ Modified';
+            else if (act.actionType === 'delete') actionBadge = '✕ Removed';
+
+            return `
+            <div class="timeline-card">
+                <div class="tl-user-badge">
+                    <div class="tl-avatar" style="background: ${act.avatarBg || 'linear-gradient(135deg, #0b4ea2 0%, #083d80 100%)'};">
+                        <i class="${escapeHtml(act.adminIcon || 'fa-solid fa-user-shield')}"></i>
+                    </div>
+                    <div>
+                        <div class="tl-user-name">${escapeHtml(act.adminName || 'Admin')}</div>
+                        <div class="tl-user-email">${escapeHtml(act.adminEmail || '')}</div>
+                    </div>
+                </div>
+
+                <div class="tl-body">
+                    <div class="act-header-line">
+                        <span class="act-section-badge">
+                            <i class="${escapeHtml(act.sectionIcon || 'fa-solid fa-cube')}" style="color: #0b4ea2;"></i>
+                            ${escapeHtml(act.section || 'General')}
+                        </span>
+                        <h5 class="act-title">${escapeHtml(act.action || 'Activity')}</h5>
+                        <span class="act-type-tag ${escapeHtml(act.actionType || 'update')}">
+                            ${actionBadge}
+                        </span>
+                    </div>
+                    ${act.details ? `<p class="act-details">${escapeHtml(act.details)}</p>` : ''}
+                </div>
+
+                <div class="tl-time-block">
+                    <div style="font-weight: 700; color: #1e293b;">${escapeHtml(act.timeAgo || 'Recently')}</div>
+                    <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${escapeHtml(act.exactTime || '')}</div>
+                </div>
+            </div>
+            `;
+        }
+
+        // Render activities to DOM
+        function renderActivities() {
+            const container = document.getElementById('activitiesListContainer');
+            const emptyNotice = document.getElementById('emptyNotice');
+            const paginationSection = document.getElementById('paginationSection');
+
+            if (!state.activities || state.activities.length === 0) {
+                container.innerHTML = '';
+                if (emptyNotice) emptyNotice.style.display = 'block';
+                if (paginationSection) paginationSection.style.display = 'none';
+                return;
             }
 
-            applyClientFilters();
+            if (emptyNotice) emptyNotice.style.display = 'none';
+            if (paginationSection) paginationSection.style.display = 'flex';
 
-            // Smooth scroll down to the activity list
-            const target = document.getElementById('activityViewRoot');
-            if (target) {
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (state.viewMode === 'feed') {
+                container.innerHTML = state.activities.map(renderFeedCard).join('');
+            } else {
+                // Group by dateKey
+                const dateGroups = {};
+                state.activities.forEach(act => {
+                    const k = act.dateKey || 'Recent';
+                    if (!dateGroups[k]) dateGroups[k] = [];
+                    dateGroups[k].push(act);
+                });
+
+                let html = '';
+                Object.keys(dateGroups).forEach(dateKey => {
+                    html += `
+                    <div class="timeline-date-block">
+                        <div class="date-divider">
+                            <span class="date-badge">
+                                <i class="fa-regular fa-calendar-check"></i> ${escapeHtml(dateKey)}
+                            </span>
+                            <div class="date-line"></div>
+                        </div>
+                        ${dateGroups[dateKey].map(renderTimelineCard).join('')}
+                    </div>
+                    `;
+                });
+                container.innerHTML = html;
             }
         }
 
-        // 2. Core client-side filtering engine (Zero page reload)
-        function applyClientFilters() {
+        // Render pagination buttons and info bar
+        function renderPaginationControls() {
+            // Status strip
+            const statusText = document.getElementById('filterStatusText');
+            const clearBtn = document.getElementById('btnClearActiveFilter');
+            const hasActiveFilter = (state.email !== 'all' || state.section !== 'all' || state.actionType !== 'all' || state.search !== '');
+
+            if (clearBtn) clearBtn.style.display = hasActiveFilter ? 'inline-block' : 'none';
+
+            if (statusText) {
+                if (state.totalCount === 0) {
+                    statusText.innerHTML = `No activities found matching your filters.`;
+                } else {
+                    let desc = `Showing <strong>${state.startIndex} - ${state.endIndex}</strong> of <strong>${state.totalCount} activities</strong> (Page ${state.page} of ${state.totalPages})`;
+                    if (state.email !== 'all') desc += ` for <strong>${escapeHtml(state.email)}</strong>`;
+                    if (state.section !== 'all') desc += ` in <strong>${escapeHtml(state.section)}</strong>`;
+                    if (state.actionType !== 'all') desc += ` (${escapeHtml(state.actionType.toUpperCase())})`;
+                    if (state.search) desc += ` matching "<strong>${escapeHtml(state.search)}</strong>"`;
+                    statusText.innerHTML = desc;
+                }
+            }
+
+            // Load more button
+            const btnLoadMore = document.getElementById('btnLoadMore');
+            const loadMoreText = document.getElementById('loadMoreBtnText');
+            const loadMoreBadge = document.getElementById('loadMoreCountBadge');
+
+            if (btnLoadMore && loadMoreText && loadMoreBadge) {
+                if (state.hasNextPage) {
+                    btnLoadMore.disabled = false;
+                    loadMoreText.textContent = 'Load More Activities (+10)';
+                    loadMoreBadge.textContent = `${state.endIndex} / ${state.totalCount}`;
+                } else {
+                    btnLoadMore.disabled = true;
+                    loadMoreText.textContent = state.totalCount > 0 ? `All ${state.totalCount} Activities Loaded` : 'No Activities to Load';
+                    loadMoreBadge.textContent = `${state.totalCount} / ${state.totalCount}`;
+                }
+            }
+
+            // Pagination info bar
+            const barInfo = document.getElementById('paginationBarInfo');
+            if (barInfo) {
+                barInfo.innerHTML = `Showing <strong>${state.startIndex} - ${state.endIndex}</strong> of <strong>${state.totalCount}</strong> activities`;
+            }
+
+            const btnPrev = document.getElementById('btnPrevPage');
+            const btnNext = document.getElementById('btnNextPage');
+            if (btnPrev) btnPrev.disabled = !state.hasPrevPage || state.isLoading;
+            if (btnNext) btnNext.disabled = !state.hasNextPage || state.isLoading;
+
+            // Page numbers
+            const pageList = document.getElementById('pageNumbersList');
+            if (pageList) {
+                let pagesHtml = '';
+                const total = state.totalPages;
+                const current = state.page;
+
+                if (total <= 7) {
+                    for (let i = 1; i <= total; i++) {
+                        pagesHtml += `<button type="button" class="page-num-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                    }
+                } else {
+                    pagesHtml += `<button type="button" class="page-num-btn ${1 === current ? 'active' : ''}" onclick="goToPage(1)">1</button>`;
+
+                    let start = Math.max(2, current - 1);
+                    let end = Math.min(total - 1, current + 1);
+
+                    if (start > 2) pagesHtml += `<span class="page-num-btn ellipsis">&hellip;</span>`;
+
+                    for (let i = start; i <= end; i++) {
+                        pagesHtml += `<button type="button" class="page-num-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+                    }
+
+                    if (end < total - 1) pagesHtml += `<span class="page-num-btn ellipsis">&hellip;</span>`;
+
+                    pagesHtml += `<button type="button" class="page-num-btn ${total === current ? 'active' : ''}" onclick="goToPage(${total})">${total}</button>`;
+                }
+                pageList.innerHTML = pagesHtml;
+            }
+        }
+
+        // Fetch page from API (Zero full reload)
+        async function fetchPage(pageNum, isAppend = false) {
+            if (state.isLoading) return;
+            state.isLoading = true;
+
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const loadMoreIcon = document.getElementById('loadMoreIcon');
+            if (loadingIndicator) loadingIndicator.style.display = 'inline-flex';
+            if (loadMoreIcon) loadMoreIcon.className = 'fa-solid fa-spinner fa-spin';
+
+            try {
+                const params = new URLSearchParams({
+                    page: pageNum,
+                    limit: state.limit,
+                    email: state.email,
+                    section: state.section,
+                    actionType: state.actionType,
+                    search: state.search,
+                });
+
+                const res = await fetch(`/api/activity-logs?${params.toString()}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    state.page = data.pagination.page;
+                    state.totalCount = data.pagination.totalCount;
+                    state.totalPages = data.pagination.totalPages;
+                    state.hasNextPage = data.pagination.hasNextPage;
+                    state.hasPrevPage = data.pagination.hasPrevPage;
+
+                    if (isAppend) {
+                        state.activities = [...state.activities, ...data.activities];
+                        state.startIndex = 1;
+                        state.endIndex = Math.min(state.activities.length, state.totalCount);
+                    } else {
+                        state.activities = data.activities;
+                        state.startIndex = data.pagination.startIndex;
+                        state.endIndex = data.pagination.endIndex;
+                    }
+
+                    renderActivities();
+                    renderPaginationControls();
+
+                    if (!isAppend) {
+                        const target = document.getElementById('activityViewRoot');
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching activity logs:', err);
+            } finally {
+                state.isLoading = false;
+                if (loadingIndicator) loadingIndicator.style.display = 'none';
+                if (loadMoreIcon) loadMoreIcon.className = 'fa-solid fa-angles-down';
+            }
+        }
+
+        // Go to specific page
+        function goToPage(pageNum) {
+            if (pageNum < 1 || pageNum > state.totalPages || state.isLoading) return;
+            fetchPage(pageNum, false);
+        }
+
+        // Load next 10 items
+        function loadMoreActivities() {
+            if (!state.hasNextPage || state.isLoading) return;
+            fetchPage(state.page + 1, true);
+        }
+
+        // Handle dropdown filter changes
+        function handleFilterChange() {
             const emailSelect = document.getElementById('emailFilter');
             const sectionSelect = document.getElementById('sectionFilter');
             const actionTypeSelect = document.getElementById('actionTypeFilter');
-            const searchInput = document.getElementById('searchInput');
 
-            const selectedEmail = (emailSelect ? emailSelect.value : 'all').toLowerCase().trim();
-            const selectedSection = (sectionSelect ? sectionSelect.value : 'all').trim();
-            const selectedType = (actionTypeSelect ? actionTypeSelect.value : 'all').trim();
-            const searchKeyword = (searchInput ? searchInput.value : '').toLowerCase().trim();
+            state.email = emailSelect ? emailSelect.value : 'all';
+            state.section = sectionSelect ? sectionSelect.value : 'all';
+            state.actionType = actionTypeSelect ? actionTypeSelect.value : 'all';
 
-            currentActiveEmail = selectedEmail;
+            updateOverviewCardsActive();
+            state.page = 1;
+            fetchPage(1, false);
+        }
 
-            // Update active state visuals on the 4 overview cards
+        // Handle search input with debounce
+        function handleSearchInput() {
+            clearTimeout(searchDebounceTimeout);
+            searchDebounceTimeout = setTimeout(() => {
+                const searchInput = document.getElementById('searchInput');
+                state.search = searchInput ? searchInput.value.trim() : '';
+                state.page = 1;
+                fetchPage(1, false);
+            }, 350);
+        }
+
+        // One-click filter from the 4 Overview Cards
+        function selectAdminFilter(email) {
+            const emailSelect = document.getElementById('emailFilter');
+
+            if (state.email.toLowerCase() === email.toLowerCase()) {
+                state.email = 'all';
+                if (emailSelect) emailSelect.value = 'all';
+            } else {
+                state.email = email;
+                if (emailSelect) emailSelect.value = email;
+            }
+
+            updateOverviewCardsActive();
+            state.page = 1;
+            fetchPage(1, false);
+        }
+
+        // Sync card active states
+        function updateOverviewCardsActive() {
             const allAdminCards = document.querySelectorAll('.admin-profile-card');
             allAdminCards.forEach(card => {
                 card.classList.remove('active-filtered');
@@ -554,8 +797,8 @@
                 }
             });
 
-            if (selectedEmail !== 'all') {
-                const activeCardId = 'admin-overview-card-' + selectedEmail.replace(/[@.]/g, '-');
+            if (state.email !== 'all') {
+                const activeCardId = 'admin-overview-card-' + state.email.replace(/[@.]/g, '-');
                 const activeCard = document.getElementById(activeCardId);
                 if (activeCard) {
                     activeCard.classList.add('active-filtered');
@@ -566,109 +809,9 @@
                     }
                 }
             }
-
-            // Filter items in Grouped View
-            const adminGroupBlocks = document.querySelectorAll('.admin-group-card');
-            let totalVisibleItems = 0;
-
-            adminGroupBlocks.forEach(groupBlock => {
-                const groupEmail = (groupBlock.getAttribute('data-admin-email') || '').toLowerCase();
-                const itemsInGroup = groupBlock.querySelectorAll('.activity-row-item');
-                let visibleInThisGroup = 0;
-
-                // If filtering by a specific email and this block doesn't match, hide whole block
-                if (selectedEmail !== 'all' && groupEmail !== selectedEmail) {
-                    groupBlock.style.display = 'none';
-                    return;
-                }
-
-                itemsInGroup.forEach(item => {
-                    const itemAdmin = item.getAttribute('data-admin') || '';
-                    const itemSection = item.getAttribute('data-section') || '';
-                    const itemType = item.getAttribute('data-type') || '';
-                    const itemSearch = item.getAttribute('data-search') || '';
-
-                    const matchesEmail = (selectedEmail === 'all' || itemAdmin === selectedEmail);
-                    const matchesSection = (selectedSection === 'all' || itemSection === selectedSection);
-                    const matchesType = (selectedType === 'all' || itemType === selectedType);
-                    const matchesSearch = (!searchKeyword || itemSearch.includes(searchKeyword));
-
-                    if (matchesEmail && matchesSection && matchesType && matchesSearch) {
-                        item.style.display = 'flex';
-                        visibleInThisGroup++;
-                        totalVisibleItems++;
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-
-                // Update count pill on group header
-                const countSpan = groupBlock.querySelector('.group-count-num');
-                if (countSpan) countSpan.textContent = visibleInThisGroup;
-
-                // Show or hide this admin group block
-                if (visibleInThisGroup > 0) {
-                    groupBlock.style.display = 'block';
-                } else {
-                    groupBlock.style.display = 'none';
-                }
-            });
-
-            // Filter items in Timeline View
-            const timelineCards = document.querySelectorAll('.timeline-card');
-            timelineCards.forEach(card => {
-                const itemAdmin = card.getAttribute('data-admin') || '';
-                const itemSection = card.getAttribute('data-section') || '';
-                const itemType = card.getAttribute('data-type') || '';
-                const itemSearch = card.getAttribute('data-search') || '';
-
-                const matchesEmail = (selectedEmail === 'all' || itemAdmin === selectedEmail);
-                const matchesSection = (selectedSection === 'all' || itemSection === selectedSection);
-                const matchesType = (selectedType === 'all' || itemType === selectedType);
-                const matchesSearch = (!searchKeyword || itemSearch.includes(searchKeyword));
-
-                if (matchesEmail && matchesSection && matchesType && matchesSearch) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            // Hide empty timeline date blocks
-            const timelineDateBlocks = document.querySelectorAll('.timeline-date-block');
-            timelineDateBlocks.forEach(block => {
-                const visibleInDate = block.querySelectorAll('.timeline-card[style*="display: flex"], .timeline-card:not([style*="display: none"])');
-                block.style.display = visibleInDate.length > 0 ? 'block' : 'none';
-            });
-
-            // Update live status strip text
-            const statusText = document.getElementById('filterStatusText');
-            const clearBtn = document.getElementById('btnClearActiveFilter');
-            const emptyGrouped = document.getElementById('emptyGroupedNotice');
-            const emptyTimeline = document.getElementById('emptyTimelineNotice');
-
-            const hasActiveFilter = (selectedEmail !== 'all' || selectedSection !== 'all' || selectedType !== 'all' || searchKeyword !== '');
-
-            if (statusText) {
-                if (hasActiveFilter) {
-                    let desc = `Showing <strong>${totalVisibleItems} matching activities</strong>`;
-                    if (selectedEmail !== 'all') desc += ` for <strong>${selectedEmail}</strong>`;
-                    if (selectedSection !== 'all') desc += ` in <strong>${selectedSection}</strong>`;
-                    if (selectedType !== 'all') desc += ` (${selectedType.toUpperCase()})`;
-                    if (searchKeyword) desc += ` matching "<strong>${searchKeyword}</strong>"`;
-                    statusText.innerHTML = desc;
-                    if (clearBtn) clearBtn.style.display = 'inline-block';
-                } else {
-                    statusText.innerHTML = `Showing all <strong>${totalVisibleItems} activities</strong> across all 4 admin accounts in the last 10 days.`;
-                    if (clearBtn) clearBtn.style.display = 'none';
-                }
-            }
-
-            if (emptyGrouped) emptyGrouped.style.display = totalVisibleItems === 0 ? 'block' : 'none';
-            if (emptyTimeline) emptyTimeline.style.display = totalVisibleItems === 0 ? 'block' : 'none';
         }
 
-        // 3. Reset All Filters (Instant - No reload)
+        // Reset all filters
         function resetAllClientFilters() {
             const emailSelect = document.getElementById('emailFilter');
             const sectionSelect = document.getElementById('sectionFilter');
@@ -680,31 +823,34 @@
             if (actionTypeSelect) actionTypeSelect.value = 'all';
             if (searchInput) searchInput.value = '';
 
-            currentActiveEmail = 'all';
-            applyClientFilters();
+            state.email = 'all';
+            state.section = 'all';
+            state.actionType = 'all';
+            state.search = '';
+
+            updateOverviewCardsActive();
+            state.page = 1;
+            fetchPage(1, false);
         }
 
-        // 4. View Switcher Tabs (Grouped vs Timeline)
+        // Switch View Tab (Feed vs Timeline)
         function switchView(view) {
-            const groupedContainer = document.getElementById('groupedViewContainer');
-            const timelineContainer = document.getElementById('timelineViewContainer');
-            const tabGroupedBtn = document.getElementById('tabGroupedBtn');
+            state.viewMode = view;
+            const tabFeedBtn = document.getElementById('tabFeedBtn');
             const tabTimelineBtn = document.getElementById('tabTimelineBtn');
 
             if (view === 'timeline') {
-                if (groupedContainer) groupedContainer.style.display = 'none';
-                if (timelineContainer) timelineContainer.style.display = 'block';
-                if (tabGroupedBtn) tabGroupedBtn.classList.remove('active');
+                if (tabFeedBtn) tabFeedBtn.classList.remove('active');
                 if (tabTimelineBtn) tabTimelineBtn.classList.add('active');
             } else {
-                if (groupedContainer) groupedContainer.style.display = 'block';
-                if (timelineContainer) timelineContainer.style.display = 'none';
                 if (tabTimelineBtn) tabTimelineBtn.classList.remove('active');
-                if (tabGroupedBtn) tabGroupedBtn.classList.add('active');
+                if (tabFeedBtn) tabFeedBtn.classList.add('active');
             }
+
+            renderActivities();
         }
 
-        // 5. Initial setup on page load
+        // Initial setup on page load
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('responsiveSidebar');
             const isMobile = window.innerWidth <= 992;
@@ -717,8 +863,8 @@
                 }
             }
 
-            // Run initial filter check to sync visible counts
-            applyClientFilters();
+            updateOverviewCardsActive();
+            renderPaginationControls();
         });
     </script>
 </body>

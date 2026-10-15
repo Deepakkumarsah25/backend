@@ -118,29 +118,15 @@ novalidate
 
 <option value="">Select Category</option>
 
-<option value="State President" <%= organisation.category==="State President" ? "selected" : "" %>>State President</option>
+<% categories.forEach(function(c) { %>
+  <option value="<%= c.title %>" <%= organisation.category === c.title ? "selected" : "" %>>
+    <%= c.title %>
+  </option>
+<% }) %>
 
-<option value="State Office Bearers" <%= organisation.category==="State Office Bearers" ? "selected" : "" %>>State Office Bearers</option>
-
-<option value="District Presidents" <%= organisation.category==="District Presidents" ? "selected" : "" %>>District Presidents</option>
-
-<option value="State Executive Members" <%= organisation.category==="State Executive Members" ? "selected" : "" %>>State Executive Members</option>
-
-<option value="Spokespersons" <%= organisation.category==="Spokespersons" ? "selected" : "" %>>Spokespersons</option>
-
-<option value="Morchas & Cells" <%= organisation.category==="Morchas & Cells" ? "selected" : "" %>>Morchas & Cells</option>
-
-<option value="Permanent Invitees" <%= organisation.category==="Permanent Invitees" ? "selected" : "" %>>Permanent Invitees</option>
-
-<option value="Special Invitees" <%= organisation.category==="Special Invitees" ? "selected" : "" %>>Special Invitees</option>
-
-<option value="Committees" <%= organisation.category==="Committees" ? "selected" : "" %>>Committees</option>
-
-<option value="State Prabhari" <%= organisation.category==="State Prabhari" ? "selected" : "" %>>State Prabhari</option>
-
-<option value="State General Secretary (ORG.)" <%= organisation.category==="State General Secretary (ORG.)" ? "selected" : "" %>>State General Secretary (ORG.)</option>
-
-<option value="Departments" <%= organisation.category==="Departments" ? "selected" : "" %>>Departments</option>
+<% if (organisation.category && !categories.some(c => c.title === organisation.category)) { %>
+  <option value="<%= organisation.category %>" selected><%= organisation.category %></option>
+<% } %>
 
 </select>
 <span class="error-text" id="categoryError">Please select a category.</span>

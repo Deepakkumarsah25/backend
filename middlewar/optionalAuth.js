@@ -1,31 +1,64 @@
 import {
   getBearerToken,
   resolveFirebaseUser,
-  unauthorized,
   verifyFirebaseToken,
 } from "./firebaseAuth.js";
 
+/*
+  OPTIONAL AUTH — works with Bearer tokens or x-dev-uid / x-user-uid headers.
+  Resolves/creates the User and attaches req.user.
+  If absent or unauthenticated, req.user = null and the request proceeds as a guest.
+*/
 export const optionalAuth = async (req, res, next) => {
-  if (req.headers.authorization === undefined) {
-    req.user = null;
-    return next();
-  }
-
-  const auth = getBearerToken(req);
-  if (auth.error) return unauthorized(res, auth.error);
-
-  let decodedToken;
   try {
-    decodedToken = await verifyFirebaseToken(auth.token);
-  } catch {
-    return unauthorized(res, "Invalid or expired authentication token.");
-  }
+    const devUid =
+      req.headers["x-dev-uid"] ||
+      req.headers["x-user-uid"] ||
+      req.headers["uid"] ||
+      null;
 
-  try {
-    req.user = await resolveFirebaseUser(decodedToken);
+    if (devUid) {
+      req.user = await resolveFirebaseUser(
+        { uid: String(devUid) },
+        {
+          name: req.headers["x-dev-name"] || req.headers["x-user-name"],
+          email: req.headers["x-dev-email"] || req.headers["x-user-email"],
+          phone: req.headers["x-dev-phone"] || req.headers["x-user-phone"],
+          photoURL: req.headers["x-dev-photo"] || req.headers["x-user-photo"],
+        }
+      );
+      return next();
+    }
+
+    if (!req.headers.authorization) {
+      req.user = null;
+      return next();
+    }
+
+    const auth = getBearerToken(req);
+    if (auth.error) {
+      req.user = null;
+      return next();
+    }
+
+    let decodedToken;
+    try {
+      decodedToken = await verifyFirebaseToken(auth.token);
+    } catch {
+      req.user = null;
+      return next();
+    }
+
+    req.user = await resolveFirebaseUser(decodedToken, {
+      name: req.headers["x-dev-name"] || req.headers["x-user-name"],
+      email: req.headers["x-dev-email"] || req.headers["x-user-email"],
+      phone: req.headers["x-dev-phone"] || req.headers["x-user-phone"],
+      photoURL: req.headers["x-dev-photo"] || req.headers["x-user-photo"],
+    });
     return next();
   } catch (error) {
-    console.error("Optional authenticated user resolution failed.", error?.message);
-    return res.status(500).json({ success: false, message: "Authentication could not be completed." });
+    console.error("optionalAuth resolution failed, continuing as guest:", error?.message);
+    req.user = null;
+    return next();
   }
 };

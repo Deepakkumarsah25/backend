@@ -333,21 +333,24 @@ export const addSection = async (req, res) => {
       req.file
     );
 
-    const page =
+    let page =
       await CmsPage.findOne({
         pageKey,
       });
 
     if (!page) {
-
       console.log(
-        "PAGE NOT FOUND:",
+        "PAGE NOT FOUND, CREATING NEW CMS PAGE FOR:",
         pageKey
       );
 
-      return res.redirect(
-        "/cms"
-      );
+      page = await CmsPage.create({
+        pageKey,
+        title: "",
+        introText: "",
+        bannerImage: "",
+        sections: [],
+      });
     }
 
     let imageUrl = "";

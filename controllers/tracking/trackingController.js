@@ -5,6 +5,7 @@ import Route from "../../models/Route.js";
 import Driver from "../../models/Driver.js";
 import Worker from "../../models/Worker.js";
 import User from "../../models/User.js";
+import Join from "../../models/joinmodel.js";
 
 import { findNearbyWorkers } from "../../services/routeMatchingService.js";
 
@@ -13,6 +14,12 @@ import { sendEmail } from "../../services/emailService.js";
 import { createMemberNotification } from "../../services/notificationService.js";
 
 import { sendPushNotificationToUser } from "../../services/pushNotificationService.js";
+
+/* =========================================================
+   TRACKING RADIUS (KM)
+========================================================= */
+
+const TRACKING_RADIUS_KM = Number(process.env.TRACKING_RADIUS_KM || 20);
 
 /* =========================================================
    PUBLIC BASE URL
@@ -132,28 +139,7 @@ const buildWorkerEmailHtml = ({
     .content {
       padding: 30px;
     }
-
-    .info-box {
-      background: #f8fafc;
-      padding: 15px;
-      border-radius: 10px;
-      margin-top: 15px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 14px 24px;
-      background: #0d6efd;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    .btn-green {
-      background: #16a34a;
-    }
+  </style>
 
     .footer {
       background: #f1f5f9;
@@ -193,7 +179,7 @@ const buildWorkerEmailHtml = ({
 
       <p>
         वीआईपी पार्टी का वाहन
-        आपके क्षेत्र के 10 किलोमीटर
+        आपके क्षेत्र के 20 किलोमीटर
         के दायरे में है।
       </p>
 
@@ -202,56 +188,6 @@ const buildWorkerEmailHtml = ({
         और आसपास के लोगों तक
         कार्यक्रम की जानकारी पहुँचाएँ।
       </p>
-
-      <div class="info-box">
-
-        <p>
-          <strong>मार्ग:</strong>
-          ${route?.routeName || "वीआईपी पार्टी मार्ग"}
-        </p>
-
-        <p>
-          <strong>गति:</strong>
-          ${Number(numericSpeed || 0).toFixed(2)} किमी/घंटा
-        </p>
-
-        <p>
-          <strong>गंतव्य:</strong>
-          ${endLocation}
-        </p>
-
-        <p>
-          <strong>समय:</strong>
-          ${new Date().toLocaleString("hi-IN")}
-        </p>
-
-      </div>
-
-      <center>
-
-        <a
-          class="btn"
-          href="${trackUrl}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          📍 लाइव ट्रैकिंग देखें
-        </a>
-
-        <br>
-
-        <a
-          class="btn btn-green"
-          href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-            endLocation,
-          )}&travelmode=driving"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          🧭 मार्ग नेविगेशन खोलें
-        </a>
-
-      </center>
 
     </div>
 
@@ -275,34 +211,107 @@ const buildWorkerEmailHtml = ({
 /* =========================================================
    MEMBER MATCH + DETAILED APP NOTIFICATION
 
-   Worker is an admin/contact record. User is the logged-in
-   Firebase account. We match by email first, then phone.
+   Worker is an admin/contact record (from /member).
+   User is the logged-in app account.
+   We match by:
+   1. Email (case-insensitive)
+   2. Phone (flexible 10-digit match: +91, 91, 0, exact)
+   3. Join model (membership applications linked to User)
+   4. Full Name + District (fallback)
 ========================================================= */
+
+const normalizePhone = (val) => {
+  if (!val) return "";
+  const digits = String(val).replace(/\D/g, "");
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+};
+
+const escapeRegex = (value = "") => {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
 
 const findMemberUserForWorker = async (worker) => {
   const email = String(worker?.email || "")
     .trim()
     .toLowerCase();
 
-  const phone = String(worker?.phone || "").trim();
+  const rawPhone = String(worker?.phone || "").trim();
+  const cleanPhone = normalizePhone(rawPhone);
 
+  // 1. Match by Email first if provided (prefer account with active fcmToken)
   if (email) {
     const byEmail = await User.findOne({
       email: {
-        $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+        $regex: `^${escapeRegex(email)}$`,
         $options: "i",
       },
-    });
+    }).sort({ fcmToken: -1, updatedAt: -1, createdAt: -1 });
 
     if (byEmail) return byEmail;
   }
 
-  if (phone) {
+  // 2. Match by Phone in User collection (flexible match for 10 digits, prefer account with active fcmToken)
+  if (cleanPhone && cleanPhone.length === 10) {
+    const phoneRegex = new RegExp(`(?:\\+?91|0)?${cleanPhone}$`);
     const byPhone = await User.findOne({
-      phone,
-    });
+      phone: { $regex: phoneRegex },
+    }).sort({ fcmToken: -1, updatedAt: -1, createdAt: -1 });
 
     if (byPhone) return byPhone;
+  } else if (rawPhone) {
+    const byRawPhone = await User.findOne({ phone: rawPhone }).sort({
+      fcmToken: -1,
+      updatedAt: -1,
+      createdAt: -1,
+    });
+    if (byRawPhone) return byRawPhone;
+  }
+
+  // 3. Fallback: Match via Join model (membership applications that might have mobile/email linked to userId)
+  try {
+    const joinQueries = [];
+    if (cleanPhone && cleanPhone.length === 10) {
+      const phoneRegex = new RegExp(`(?:\\+?91|0)?${cleanPhone}$`);
+      joinQueries.push({ mobile: { $regex: phoneRegex } });
+      joinQueries.push({ mobile: cleanPhone });
+      joinQueries.push({ mobile: `+91${cleanPhone}` });
+    }
+    if (email) {
+      joinQueries.push({
+        email: { $regex: `^${escapeRegex(email)}$`, $options: "i" },
+      });
+    }
+
+    if (joinQueries.length > 0) {
+      const joinApp = await Join.findOne({ $or: joinQueries }).lean();
+      if (joinApp) {
+        if (joinApp.userId) {
+          const userFromJoin = await User.findById(joinApp.userId);
+          if (userFromJoin) return userFromJoin;
+        }
+        if (joinApp.uid) {
+          const userFromJoinUid = await User.findOne({ uid: joinApp.uid }).sort({
+            fcmToken: -1,
+            updatedAt: -1,
+            createdAt: -1,
+          });
+          if (userFromJoinUid) return userFromJoinUid;
+        }
+      }
+    }
+  } catch (joinErr) {
+    console.error("JOIN MODEL MATCH ERROR:", joinErr);
+  }
+
+  // 4. Fallback: Match by Full Name and District if provided
+  if (worker?.fullName && worker?.district) {
+    try {
+      const byNameDistrict = await User.findOne({
+        name: { $regex: `^${escapeRegex(worker.fullName.trim())}$`, $options: "i" },
+        district: { $regex: `^${escapeRegex(worker.district.trim())}$`, $options: "i" },
+      }).sort({ fcmToken: -1, updatedAt: -1, createdAt: -1 });
+      if (byNameDistrict) return byNameDistrict;
+    } catch (_) {}
   }
 
   return null;
@@ -319,7 +328,15 @@ const sendMemberAppNotification = async ({
   try {
     const user = await findMemberUserForWorker(worker);
 
-    if (!user || !user.membershipId) {
+    if (!user) {
+      console.log(
+        "ℹ️ No registered App User found for worker:",
+        worker?.fullName,
+        "| Phone:",
+        worker?.phone,
+        "| Email:",
+        worker?.email
+      );
       return {
         member: false,
         userId: null,
@@ -328,114 +345,77 @@ const sendMemberAppNotification = async ({
     }
 
     const numericSpeed = Number(speed || 0);
+    const destination = route?.endLocation || "Destination";
+    const routeName = route?.routeName || "वीआईपी पार्टी मार्ग";
 
-    const destination =
-      route?.endLocation || "Destination";
+    const title = "🚩 वीआईपी पार्टी वाहन सूचना";
+    const message = `वीआईपी पार्टी का वाहन आपके क्षेत्र के ${TRACKING_RADIUS_KM} किलोमीटर के दायरे में है (${routeName})। कृपया आवश्यक तैयारी रखें और आसपास के लोगों तक जानकारी पहुँचाएँ।`;
 
-    const title =
-      "🚗 VIP पार्टी वाहन अलर्ट";
+    // 1. Create In-App Notification (always saved in DB for the member's notification screen)
+    const notification = await createMemberNotification({
+      userId: user._id,
+      title,
+      message,
+      type: "route",
+      relatedId: routeId,
+      actionType: "tracking",
+      deepLink: "",
+      actionUrl: trackUrl || "",
+      metadata: {
+        workerName: worker?.fullName || "",
+        routeName,
+        speed: Number(numericSpeed || 0).toFixed(2),
+        destination,
+        trackUrl: trackUrl || "",
+        routeId: String(routeId),
+        time: new Date().toLocaleString("hi-IN"),
+      },
+    });
 
-    const message =
-      "VIP पार्टी का वाहन आपके क्षेत्र से लगभग 10 किलोमीटर के दायरे में पहुँच चुका है।";
-
-    const notification =
-      await createMemberNotification({
-        userId: user._id,
-
-        title,
-
-        message,
-
-        type: "route",
-
-        relatedId: routeId,
-
-        actionType: "tracking",
-
-        deepLink: `/track/${routeId}`,
-
-        actionUrl: trackUrl,
-
-        metadata: {
-          workerName:
-            worker?.fullName || "",
-
-          routeName:
-            route?.routeName ||
-            "VIP Party Route",
-
-          speed: numericSpeed,
-
-          destination,
-
-          time: new Date().toISOString(),
-
-          trackUrl,
-
-          navigationUrl,
-        },
-      });
-
+    // 2. Send Push Notification to device (if FCM token is available)
     await sendPushNotificationToUser({
       userId: user._id,
-
       title,
-
       body: message,
-
       data: {
         type: "route",
-
         actionType: "tracking",
-
         routeId: String(routeId),
-
-        deepLink: `/track/${routeId}`,
-
-        actionUrl: trackUrl,
-
+        notificationId: notification?._id ? String(notification._id) : "",
+        screen: "/notifications",
+        actionUrl: String(trackUrl || ""),
         title,
-
         message,
       },
     });
 
-    console.log(
-      "✅ MEMBER APP NOTIFICATION SENT:",
-      {
-        worker: worker?.fullName,
-
-        userId: String(user._id),
-
-        membershipId: user.membershipId,
-      },
-    );
+    console.log("✅ MEMBER APP NOTIFICATION SENT:", {
+      worker: worker?.fullName,
+      userId: String(user._id),
+      fcmToken: user.fcmToken ? "YES" : "NO",
+      membershipId: user.membershipId || "N/A",
+    });
 
     return {
       member: true,
-
       userId: user._id,
-
       notification,
     };
   } catch (error) {
-    console.error(
-      "MEMBER APP NOTIFICATION ERROR:",
-      error,
-    );
-
+    console.error("MEMBER APP NOTIFICATION ERROR:", error);
     return {
       member: false,
-
       userId: null,
-
       notification: null,
     };
   }
 };
 
 /* =========================================================
-   SEND EMAIL TO NEARBY WORKERS
+   SEND EMAIL & APP NOTIFICATIONS TO NEARBY WORKERS / MEMBERS
+   Both operations run independently:
+   - App Notification is sent to any member not already notified in this route run.
+   - Email is sent to any worker not already emailed in this route run.
 ========================================================= */
 
 const sendNearbyWorkerEmails = async ({
@@ -445,159 +425,117 @@ const sendNearbyWorkerEmails = async ({
   nearbyWorkers,
   speed,
 }) => {
-  const sentIds = new Set(
-    (route.emailSentWorkerIds || []).map(
-      (id) => String(id),
-    ),
+  const emailSentIds = new Set(
+    (route.emailSentWorkerIds || []).map((id) => String(id))
   );
 
-  const trackUrl =
-    buildTrackUrl(req, routeId);
+  const notifSentIds = new Set(
+    (route.notificationSentWorkerIds || []).map((id) => String(id))
+  );
+
+  const trackUrl = buildTrackUrl(req, routeId);
 
   let emailSent = 0;
   let emailFailed = 0;
+  let notificationSent = 0;
 
   for (const worker of nearbyWorkers) {
-    const workerId =
-      String(worker._id);
+    const workerId = String(worker._id);
 
-    if (sentIds.has(workerId)) {
-      continue;
-    }
-
-    const trackUrlForMember =
-      buildTrackUrl(req, routeId);
-
-    const navigationUrlForMember =
-      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-        route?.endLocation ||
-          "Destination",
+    /* =========================================
+       1. APP NOTIFICATION FOR MEMBER (INDEPENDENT)
+    ========================================= */
+    if (!notifSentIds.has(workerId)) {
+      const trackUrlForMember = buildTrackUrl(req, routeId);
+      const navigationUrlForMember = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+        route?.endLocation || "Destination"
       )}&travelmode=driving`;
 
-    const notificationAlreadySent =
-      (
-        route.notificationSentWorkerIds ||
-        []
-      ).some(
-        (id) =>
-          String(id) ===
-          String(worker._id),
-      );
-
-    let memberResult = {
-      member: false,
-    };
-
-    if (!notificationAlreadySent) {
-      memberResult =
-        await sendMemberAppNotification({
+      try {
+        const memberResult = await sendMemberAppNotification({
           worker,
-
           route,
-
           routeId,
-
           speed,
-
-          trackUrl:
-            trackUrlForMember,
-
-          navigationUrl:
-            navigationUrlForMember,
+          trackUrl: trackUrlForMember,
+          navigationUrl: navigationUrlForMember,
         });
 
-      if (memberResult.member) {
-        await Route.findByIdAndUpdate(
-          routeId,
-          {
+        if (memberResult.member) {
+          await Route.findByIdAndUpdate(routeId, {
             $addToSet: {
-              notificationSentWorkerIds:
-                worker._id,
+              notificationSentWorkerIds: worker._id,
             },
-          },
-        );
+          });
 
-        if (
-          Array.isArray(
-            route.notificationSentWorkerIds,
-          )
-        ) {
-          route.notificationSentWorkerIds.push(
-            worker._id,
-          );
+          notifSentIds.add(workerId);
+
+          if (Array.isArray(route.notificationSentWorkerIds)) {
+            route.notificationSentWorkerIds.push(worker._id);
+          }
+
+          notificationSent += 1;
         }
+      } catch (notifErr) {
+        console.error("APP NOTIFICATION ERROR FOR WORKER:", worker.fullName, notifErr);
       }
     }
 
-    if (!worker.email) {
-      console.log(
-        "SKIP EMAIL - no email:",
-        worker.fullName,
-      );
+    /* =========================================
+       2. EMAIL ALERT FOR WORKER (INDEPENDENT)
+    ========================================= */
+    if (emailSentIds.has(workerId)) {
+      continue;
+    }
 
+    if (!worker.email) {
+      console.log("SKIP EMAIL - no email:", worker.fullName);
       continue;
     }
 
     try {
       await sendEmail(
         worker.email,
-
         "🚗 VIP पार्टी वाहन अलर्ट",
-
         buildWorkerEmailHtml({
           worker,
-
           route,
-
           numericSpeed: speed,
-
           trackUrl,
-        }),
+        })
       );
 
-      await Worker.findByIdAndUpdate(
-        worker._id,
-        {
-          lastAlertAt: new Date(),
+      await Worker.findByIdAndUpdate(worker._id, {
+        lastAlertAt: new Date(),
+      });
+
+      emailSentIds.add(workerId);
+
+      await Route.findByIdAndUpdate(routeId, {
+        $addToSet: {
+          emailSentWorkerIds: worker._id,
         },
-      );
+      });
 
-      sentIds.add(workerId);
-
-      await Route.findByIdAndUpdate(
-        routeId,
-        {
-          $addToSet: {
-            emailSentWorkerIds:
-              worker._id,
-          },
-        },
-      );
+      if (Array.isArray(route.emailSentWorkerIds)) {
+        route.emailSentWorkerIds.push(worker._id);
+      }
 
       emailSent += 1;
 
-      console.log(
-        "✅ EMAIL SENT:",
-        worker.email,
-      );
+      console.log("✅ EMAIL SENT:", worker.email);
     } catch (error) {
       emailFailed += 1;
-
-      console.error(
-        "❌ EMAIL SEND FAILED:",
-        worker.email,
-      );
-
+      console.error("❌ EMAIL SEND FAILED:", worker.email);
       console.error(error);
     }
   }
 
   return {
     emailSent,
-
     emailFailed,
-
-    sentIds,
+    notificationSent,
+    sentIds: emailSentIds,
   };
 };
 
@@ -708,7 +646,7 @@ export const trackingStatus = async (
 
             Number(route.currentLng),
 
-            10,
+            TRACKING_RADIUS_KM,
           );
       } catch (workerError) {
         console.error(
@@ -961,6 +899,9 @@ export const startTracking = async (
     route.emailSentWorkerIds =
       [];
 
+    route.notificationSentWorkerIds =
+      [];
+
     await route.save();
 
     const selectedDriverId =
@@ -1004,7 +945,7 @@ export const startTracking = async (
       await findNearbyWorkers(
         startLat,
         startLng,
-        10,
+        TRACKING_RADIUS_KM,
       );
 
     const emailResult =
@@ -1354,7 +1295,7 @@ export const updateTracking = async (
 
           numericLng,
 
-          10,
+          TRACKING_RADIUS_KM,
         );
 
       console.log(

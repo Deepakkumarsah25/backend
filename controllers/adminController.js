@@ -6,6 +6,7 @@ import {
   getLastTwoEditors,
   getRecentActivities,
   getLast10DaysActivities,
+  getPaginatedActivities,
 } from "../services/activityService.js";
 
 export const loginAdmin = async (req, res) => {
@@ -225,16 +226,21 @@ export const createAdmin = async (req, res) => {
 };
 
 /**
- * Controller to render the 10 Days Admin Activity Logs page
+ * Controller to render the 10 Days Admin Activity Logs page (Default page 1, 10 items)
  */
 export const getActivityLogsPage = async (req, res) => {
   try {
-    const { email, section, actionType, search } = req.query;
+    const { email, section, actionType, search, page, limit } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
+
     const data = await getLast10DaysActivities({
       email: email || "all",
       section: section || "all",
       actionType: actionType || "all",
       search: search || "",
+      page: pageNum,
+      limit: limitNum,
     });
 
     res.render("activityLogs", {
@@ -244,14 +250,25 @@ export const getActivityLogsPage = async (req, res) => {
       currentSection: section || "all",
       currentActionType: actionType || "all",
       currentSearch: search || "",
+      currentPage: pageNum,
+      currentLimit: limitNum,
     });
   } catch (error) {
     console.error("Error loading activity logs page:", error);
     res.render("activityLogs", {
       activities: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        totalCount: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+        startIndex: 0,
+        endIndex: 0,
+      },
       totalCount: 0,
       adminGroups: [],
-      dateGroups: {},
       allSections: [],
       stats: { total10Days: 0, todayCount: 0, activeAdminsCount: 0, topSection: "N/A" },
       pageTitle: "Admin Activity Logs (Last 10 Days)",
@@ -259,7 +276,53 @@ export const getActivityLogsPage = async (req, res) => {
       currentSection: "all",
       currentActionType: "all",
       currentSearch: "",
+      currentPage: 1,
+      currentLimit: 10,
       filters: {},
+    });
+  }
+};
+
+/**
+ * API Endpoint: Return 10 activity logs at a time with pagination and filtering
+ * GET /api/activity-logs?page=1&limit=10&email=all&section=all&actionType=all&search=
+ */
+export const getActivityLogsApi = async (req, res) => {
+  try {
+    const { email, section, actionType, search, page, limit } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
+
+    const result = await getPaginatedActivities({
+      email: email || "all",
+      section: section || "all",
+      actionType: actionType || "all",
+      search: search || "",
+      page: pageNum,
+      limit: limitNum,
+    });
+
+    return res.json({
+      success: true,
+      ...result,
+    });
+  } catch (error) {
+    console.error("Error in getActivityLogsApi:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch activity logs",
+      error: error.message,
+      activities: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        totalCount: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+        startIndex: 0,
+        endIndex: 0,
+      },
     });
   }
 };

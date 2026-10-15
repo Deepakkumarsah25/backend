@@ -108,29 +108,9 @@ novalidate
 
 <option value="">Select Category</option>
 
-<option value="State President">State President</option>
-
-<option value="State Office Bearers">State Office Bearers</option>
-
-<option value="District Presidents">District Presidents</option>
-
-<option value="State Executive Members">State Executive Members</option>
-
-<option value="Spokespersons">Spokespersons</option>
-
-<option value="Morchas & Cells">Morchas & Cells</option>
-
-<option value="Permanent Invitees">Permanent Invitees</option>
-
-<option value="Special Invitees">Special Invitees</option>
-
-<option value="Committees">Committees</option>
-
-<option value="State Prabhari">State Prabhari</option>
-
-<option value="State General Secretary (ORG.)">State General Secretary (ORG.)</option>
-
-<option value="Departments">Departments</option>
+<% categories.forEach(function(c) { %>
+  <option value="<%= c.title %>"><%= c.title %></option>
+<% }) %>
 
 </select>
 <span class="error-text" id="categoryError">Please select a category.</span>
