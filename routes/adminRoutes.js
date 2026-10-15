@@ -15,6 +15,7 @@ import {
 
 import {
   getAllJoinApplications,
+  getJoinAgents,
   getJoinApplicationById,
   deleteJoinApplication,
   renderJoinAdminPage,
@@ -172,6 +173,12 @@ router.get(
   "/joinmember/data",
   requireAdmin,
   getAllJoinApplications
+);
+
+router.get(
+  "/joinmember/agents",
+  requireAdmin,
+  getJoinAgents
 );
 
 router.get(

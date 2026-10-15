@@ -9,6 +9,7 @@ const joinSchema = new mongoose.Schema(
       index: true,
     },
     uid: { type: String, default: "" },
+    legacyVolunteerId: { type: mongoose.Schema.Types.ObjectId, sparse: true, unique: true },
 
     // Set only when a logged-in agent created this record via Add Member.
     addedBy: {
@@ -94,6 +95,12 @@ const joinSchema = new mongoose.Schema(
     areaOfInterest: { type: String, default: "" },
     availableTime: { type: String, default: "" },
     previousExperience: { type: String, default: "" },
+    previousExperienceDetails: { type: String, default: "" },
+    volunteerTypes: [{ type: String }],
+    otherTypeDetail: { type: String, default: "" },
+    skills: { type: String, default: "" },
+    availability: { type: String, default: "" },
+    groundActivity: { type: Boolean, default: false },
 
     declarationAccepted: { type: Boolean, required: true, default: true },
   },

@@ -372,8 +372,33 @@
       </div>
     </div>
 
+    <!-- Separate, searchable, paginated submitter directory -->
+    <section style="margin: 18px 0 24px; padding: 18px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;">
+        <div>
+          <h2 style="margin: 0; color: #1e293b; font-size: 18px;">Users Who Added Members</h2>
+          <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Search users, see their totals, and open their complete member list.</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <input id="agentSearchInput" type="search" placeholder="Search name, phone or email" onkeypress="if(event.key === 'Enter') loadAgents(1)" style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 240px;" />
+          <button type="button" class="btn-filter" onclick="loadAgents(1)">Search users</button>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table style="min-width: 760px;">
+          <thead><tr><th>User</th><th>Phone</th><th>Email</th><th>Account Type</th><th>Total Added</th><th>Actions</th></tr></thead>
+          <tbody id="agentsTableBody"><tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">Loading users...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button id="agentsPrevBtn" onclick="changeAgentPage(-1)" disabled>Previous</button>
+        <span id="agentsPageLabel">Page 1</span>
+        <button id="agentsNextBtn" onclick="changeAgentPage(1)" disabled>Next</button>
+      </div>
+    </section>
+
     <!-- Toolbar Filters -->
-    <div class="toolbar-card">
+    <div class="toolbar-card" id="applicationsSection">
       <input type="text" id="searchInput" placeholder="Search name, mobile, email, member ID, blood group, PIN..." onkeypress="if(event.key === 'Enter') loadApplications(1)" />
 
       <select id="statusFilter" onchange="loadApplications(1)">
@@ -391,9 +416,16 @@
         <option value="quick_member">Quick Member</option>
       </select>
 
+      <select id="sourceFilter" onchange="onSourceFilterChange()">
+        <option value="">All Applications</option>
+        <option value="self">Self-added users</option>
+        <option value="agent">Agent-added users</option>
+      </select>
+
       <button class="btn-filter" onclick="loadApplications(1)">Search</button>
       <button class="btn-reset" onclick="resetFilters()">Reset</button>
     </div>
+    <p id="applicationScopeNote" style="display:none; margin: -8px 0 12px; color:#475569; font-size:14px;"></p>
 
     <!-- Table -->
     <div class="table-responsive">
@@ -404,6 +436,7 @@
             <th>Applicant Name</th>
             <th>Mobile</th>
             <th>Category</th>
+            <th>User Type</th>
             <th>Blood Group</th>
             <th>Status</th>
             <th>Member ID</th>
@@ -428,6 +461,7 @@
                 </td>
                 <td><%= app.mobile %></td>
                 <td><span class="badge badge-type"><%= (app.type || 'party_member').replace('_', ' ').toUpperCase() %></span></td>
+                <td><span class="badge <%= app.addedBy ? 'badge-type' : 'badge-approved' %>"><%= app.addedBy ? 'Added by Agent' : 'Self User' %></span></td>
                 <td>
                   <% if (app.bloodGroup) { %>
                     <span class="badge badge-blood"><%= app.bloodGroup %></span>
@@ -460,7 +494,7 @@
               </tr>
             <% }); %>
           <% } else { %>
-            <tr><td colspan="9" style="text-align:center; padding: 24px; color: #64748b;">No applications found.</td></tr>
+            <tr><td colspan="10" style="text-align:center; padding: 24px; color: #64748b;">No applications found.</td></tr>
           <% } %>
         </tbody>
       </table>
@@ -488,11 +522,82 @@
   <script>
     let currentPage = 1;
     let totalPages = 1;
+    let currentAgentPage = 1;
+    let totalAgentPages = 1;
+    let selectedAgentId = "";
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+    })[char]);
+
+    async function loadAgents(page = 1) {
+      currentAgentPage = page;
+      const search = document.getElementById("agentSearchInput").value.trim();
+      const params = new URLSearchParams({ page, limit: 10, search });
+
+      try {
+        const res = await fetch(`/joinmember/agents?${params.toString()}`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message || "Failed to load users.");
+
+        const tbody = document.getElementById("agentsTableBody");
+        if (!json.data.length) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">No users have added members yet.</td></tr>';
+        } else {
+          tbody.innerHTML = json.data.map((agent) => `
+            <tr data-agent-id="${agent._id}">
+              <td><strong>${escapeHtml(agent.name || "Unnamed user")}</strong><div style="font-size:12px;color:#64748b;">${escapeHtml(agent.uid || "")}</div></td>
+              <td>${escapeHtml(agent.phone || "-")}</td>
+              <td>${escapeHtml(agent.email || "-")}</td>
+              <td><span class="badge ${agent.isAgent ? "badge-approved" : "badge-type"}">${agent.isAgent ? "Verified agent" : "Member submitter"}</span></td>
+              <td><strong>${agent.memberCount}</strong></td>
+              <td><button type="button" class="btn-view" onclick="filterByAgent('${agent._id}')">View members</button></td>
+            </tr>
+          `).join("");
+        }
+
+        currentAgentPage = json.pagination.page;
+        totalAgentPages = json.pagination.totalPages;
+        document.getElementById("agentsPageLabel").textContent = `Page ${currentAgentPage} of ${totalAgentPages} (${json.pagination.total} users)`;
+        document.getElementById("agentsPrevBtn").disabled = currentAgentPage <= 1;
+        document.getElementById("agentsNextBtn").disabled = currentAgentPage >= totalAgentPages;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("agentsTableBody").innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#b91c1c;">Could not load users. Try again.</td></tr>';
+      }
+    }
+
+    function changeAgentPage(delta) {
+      const next = currentAgentPage + delta;
+      if (next < 1 || next > totalAgentPages) return;
+      loadAgents(next);
+    }
 
     function resetFilters() {
       document.getElementById("searchInput").value = "";
       document.getElementById("statusFilter").value = "";
       document.getElementById("typeFilter").value = "";
+      document.getElementById("sourceFilter").value = "";
+      selectedAgentId = "";
+      document.getElementById("applicationScopeNote").style.display = "none";
+      loadApplications(1);
+    }
+
+    function onSourceFilterChange() {
+      const source = document.getElementById("sourceFilter").value;
+      if (source !== "agent") selectedAgentId = "";
+      const note = document.getElementById("applicationScopeNote");
+      if (source === "agent" && selectedAgentId) {
+        const agentRow = document.querySelector(`#agentsTableBody tr[data-agent-id="${selectedAgentId}"]`);
+        const agentName = agentRow?.querySelector("td strong")?.textContent?.trim() || "selected user";
+        note.textContent = `Showing all applications added by ${agentName}.`;
+      } else {
+        note.textContent = source === "self"
+          ? "Showing self-added applications."
+          : source === "agent"
+            ? "Showing all agent-added applications."
+            : "Showing all applications.";
+      }
+      note.style.display = "block";
       loadApplications(1);
     }
 
@@ -501,13 +606,15 @@
       const type = document.getElementById("typeFilter").value;
       const status = document.getElementById("statusFilter").value;
       const search = document.getElementById("searchInput").value;
-
+      const source = document.getElementById("sourceFilter").value;
       const params = new URLSearchParams({
         page,
         limit: 20,
         type,
         status,
         search,
+        source,
+        addedBy: selectedAgentId
       });
 
       try {
@@ -542,7 +649,7 @@
       tbody.innerHTML = "";
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 24px; color: #64748b;">No applications match your filter.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding: 24px; color: #64748b;">No applications match your filter.</td></tr>`;
         return;
       }
 
@@ -564,6 +671,7 @@
           </td>
           <td>${app.mobile}</td>
           <td><span class="badge badge-type">${typeDisplay}</span></td>
+          <td><span class="badge ${app.addedBy ? "badge-type" : "badge-approved"}">${app.addedBy ? "Added by Agent" : "Self User"}</span></td>
           <td>${app.bloodGroup ? `<span class="badge badge-blood">${app.bloodGroup}</span>` : `<span style="color: #94a3b8;">-</span>`}</td>
           <td><span class="badge badge-${statusClass}">${status}</span></td>
           <td>
@@ -579,6 +687,20 @@
         `;
         tbody.appendChild(tr);
       });
+    }
+    function filterByAgent(agentId) {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("statusFilter").value = "";
+      document.getElementById("typeFilter").value = "";
+      document.getElementById("sourceFilter").value = "agent";
+      selectedAgentId = agentId;
+      const agentRow = document.querySelector(`#agentsTableBody tr[data-agent-id="${agentId}"]`);
+      const agentName = agentRow?.querySelector("td strong")?.textContent?.trim() || "selected user";
+      const note = document.getElementById("applicationScopeNote");
+      note.textContent = `Showing all applications added by ${agentName}.`;
+      note.style.display = "block";
+      loadApplications(1);
+      document.getElementById("applicationsSection").scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function changePage(delta) {
@@ -631,6 +753,7 @@
             <div class="detail-item"><div class="detail-label">Alternate Mobile</div><div class="detail-val">${a.alternateMobile || "-"}</div></div>
             <div class="detail-item"><div class="detail-label">WhatsApp Number</div><div class="detail-val">${a.whatsappNumber || "-"}</div></div>
             <div class="detail-item"><div class="detail-label">Occupation</div><div class="detail-val">${a.occupation || "-"}</div></div>
+            <div class="detail-item"><div class="detail-label">Application Source</div><div class="detail-val">${a.addedBy ? `Added by ${a.addedBy.name || a.addedBy.phone || a.addedBy.email || a.addedBy.uid}` : "Self application"}</div></div>
           </div>
 
           <h4 style="margin: 16px 0 10px; color: #0d47a1; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px;">Address & Constituency</h4>
@@ -656,10 +779,15 @@
           ${a.type === "volunteer_member" ? `
             <h4 style="margin: 16px 0 10px; color: #0d47a1; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px;">Volunteer Details</h4>
             <div class="detail-grid">
-              <div class="detail-item"><div class="detail-label">Profession</div><div class="detail-val">${a.profession || "-"}</div></div>
+              <div class="detail-item"><div class="detail-label">Relevant Skill</div><div class="detail-val">${a.skills || a.profession || "-"}</div></div>
               <div class="detail-item"><div class="detail-label">Area of Interest</div><div class="detail-val">${a.areaOfInterest || "-"}</div></div>
               <div class="detail-item"><div class="detail-label">Available Time</div><div class="detail-val">${a.availableTime || "-"}</div></div>
               <div class="detail-item"><div class="detail-label">Previous Experience</div><div class="detail-val">${a.previousExperience || "-"}</div></div>
+              ${a.previousExperienceDetails ? `<div class="detail-item"><div class="detail-label">Experience Details</div><div class="detail-val">${a.previousExperienceDetails}</div></div>` : ""}
+              <div class="detail-item"><div class="detail-label">Volunteer Types</div><div class="detail-val">${Array.isArray(a.volunteerTypes) && a.volunteerTypes.length ? a.volunteerTypes.join(", ") : "-"}</div></div>
+              <div class="detail-item"><div class="detail-label">Other Type</div><div class="detail-val">${a.otherTypeDetail || "-"}</div></div>
+              <div class="detail-item"><div class="detail-label">Availability</div><div class="detail-val">${a.availability || "-"}</div></div>
+              <div class="detail-item"><div class="detail-label">Ground Activity</div><div class="detail-val">${a.groundActivity ? "Yes" : "No"}</div></div>
             </div>
           ` : ""}
 
@@ -761,6 +889,8 @@
         alert("Something went wrong while deleting.");
       }
     }
+
+    loadAgents(1);
   </script>
 </body>
 </html>

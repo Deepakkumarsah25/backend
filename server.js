@@ -25,7 +25,6 @@ import mediaGalleryRoutes from "./routes/mediaGalleryRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import searchRoutes from "./routes/searchRoutes.js";
 import joinRoutes from "./routes/joinRoutes.js";
-import VolunteerRoutes from "./routes/volunteer/volunteerRoutes.js";
 import agentRoutes from "./routes/agentRoutes.js";
 import organisationRoutes from "./routes/organisationRoutes.js";
 import morchaRoutes from "./routes/morchaRoutes.js";
@@ -47,8 +46,8 @@ import grievanceRoutes, {
   adminGrievanceRouter,
 } from "./routes/Grievance/Grievanceroutes.js";
 
-import Volunteer from "./models/Volunteer.js";
 import { seedAdminsAndActivities } from "./services/activityService.js";
+import { migrateLegacyVolunteers } from "./services/migrateLegacyVolunteers.js";
 import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
 
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
@@ -223,11 +222,6 @@ app.use("/api", videoRoutes);
 app.use("/api", albumRoutes);
 
 app.use("/api/join", joinRoutes);
-
-app.use(
-  "/api/volunteer",
-  VolunteerRoutes
-);
 
 /* =========================================================
    AGENT / DELETE ACCOUNT ROUTES
@@ -475,6 +469,11 @@ mongoose
     console.log(
       "✅ MongoDB Connected"
     );
+    try {
+      await migrateLegacyVolunteers();
+    } catch (migrationErr) {
+      console.error("Legacy volunteer migration error:", migrationErr);
+    }
     try {
       await seedAdminsAndActivities();
     } catch (seedErr) {
