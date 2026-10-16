@@ -1,4 +1,5 @@
 import Join from "../models/joinmodel.js";
+import mongoose from "mongoose";
 import User from "../models/User.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
 import { generateMemberId } from "../services/memberId.js";
@@ -66,8 +67,18 @@ export const applyForMembership = async (req, res) => {
       areaOfInterest,
       availableTime,
       previousExperience,
+      previousExperienceDetails,
+      volunteerTypes,
+      otherTypeDetail,
+      skills,
+      availability,
+      groundActivity,
       declarationAccepted,
     } = req.body;
+
+    // Only trusted backend routes may attach an agent. The public form cannot
+    // choose or overwrite this attribution from request data.
+    const addedBy = req.joinAddedBy || null;
 
     // 1. Validation
     if (!fullName || !fullName.trim()) {
@@ -85,14 +96,11 @@ export const applyForMembership = async (req, res) => {
       });
     }
 
-    // 2. Check for existing application by User ID or Mobile
+    // Agent-created applications are matched by the applicant's mobile. A
+    // self-application can also match the logged-in account identity.
     const queryConditions = [{ mobile: cleanMobile }];
-    if (user?._id) {
-      queryConditions.push({ userId: user._id });
-    }
-    if (user?.uid) {
-      queryConditions.push({ uid: user.uid });
-    }
+    if (!req.joinAddedBy && user?._id) queryConditions.push({ userId: user._id });
+    if (!req.joinAddedBy && user?.uid) queryConditions.push({ uid: user.uid });
 
     const existing = await Join.findOne({ $or: queryConditions });
 
@@ -135,8 +143,9 @@ export const applyForMembership = async (req, res) => {
     const normalizedType = normalizeType(type);
 
     const applicationPayload = {
-      userId: user?._id || null,
-      uid: user?.uid || "",
+      userId: req.joinAddedBy ? req.joinApplicant?._id || null : user?._id || null,
+      uid: req.joinAddedBy ? req.joinApplicant?.uid || "" : user?.uid || "",
+      addedBy,
       mode: "full",
       type: normalizedType,
       status: "Pending",
@@ -168,6 +177,19 @@ export const applyForMembership = async (req, res) => {
       areaOfInterest: (areaOfInterest || "").trim(),
       availableTime: (availableTime || "").trim(),
       previousExperience: (previousExperience || "").trim(),
+      previousExperienceDetails: (previousExperienceDetails || "").trim(),
+      volunteerTypes: (() => {
+        try {
+          const types = typeof volunteerTypes === "string" ? JSON.parse(volunteerTypes) : volunteerTypes;
+          return Array.isArray(types) ? types.map((value) => String(value).trim()).filter(Boolean) : [];
+        } catch {
+          return [];
+        }
+      })(),
+      otherTypeDetail: (otherTypeDetail || "").trim(),
+      skills: (skills || "").trim(),
+      availability: (availability || "").trim(),
+      groundActivity: groundActivity === true || groundActivity === "true" || groundActivity === 1,
       declarationAccepted:
         declarationAccepted === true ||
         declarationAccepted === "true" ||
@@ -179,7 +201,7 @@ export const applyForMembership = async (req, res) => {
     if (existing && existing.status === "Rejected") {
       application = await Join.findByIdAndUpdate(
         existing._id,
-        { $set: applicationPayload },
+        { $set: { ...applicationPayload, addedBy: existing.addedBy || addedBy } },
         { new: true }
       );
     } else {
@@ -217,18 +239,11 @@ export const getMyApplicationStatus = async (req, res) => {
       });
     }
     const queryConditions = [];
-
     if (user?._id) queryConditions.push({ userId: user._id });
     if (user?.uid) queryConditions.push({ uid: user.uid });
     if (user?.phone) {
       const cleanPhone = String(user.phone).replace(/\D/g, "").slice(-10);
       if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
-    }
-
-    const { mobile } = req.query;
-    if (mobile) {
-      const cleanQMobile = String(mobile).replace(/\D/g, "").slice(-10);
-      if (cleanQMobile) queryConditions.push({ mobile: cleanQMobile });
     }
 
     if (queryConditions.length === 0) {
@@ -517,97 +532,128 @@ export const rejectJoinApplication = async (req, res) => {
  *******************************************************/
 export const getAllJoinApplications = async (req, res) => {
   try {
-    const {
-      search = "",
-      status = "",
-      type = "",
-      page = 1,
-      limit = 20,
-    } = req.query;
-
+    const { search = "", status = "", type = "", page = 1, limit = 20 } = req.query;
     const query = {};
-
-    if (status && ["Pending", "Approved", "Rejected"].includes(status)) {
-      query.status = status;
+    const source = req.query.source;
+    if (source && !["self", "agent"].includes(source)) {
+      return res.status(400).json({ success: false, message: "Invalid application source." });
     }
-
-    if (type) {
-      query.type = normalizeType(type);
+    if (source === "self") query.addedBy = null;
+    if (source === "agent") query.addedBy = { $ne: null };
+    if (req.query.addedBy) {
+      if (!mongoose.isValidObjectId(req.query.addedBy)) {
+        return res.status(400).json({ success: false, message: "Invalid agent ID." });
+      }
+      if (source === "self") {
+        return res.status(400).json({ success: false, message: "Agent filter cannot be used with self applications." });
+      }
+      query.addedBy = req.query.addedBy;
     }
+    if (status && ["Pending", "Approved", "Rejected"].includes(status)) query.status = status;
+    if (type) query.type = normalizeType(type);
 
-    const cleanSearch = String(search || "")
-      .trim()
-      .slice(0, MAX_SEARCH_LENGTH);
-
+    const cleanSearch = String(search || "").trim().slice(0, MAX_SEARCH_LENGTH);
     if (cleanSearch) {
       const regex = new RegExp(escapeRegex(cleanSearch), "i");
       query.$or = [
-        { fullName: regex },
-        { mobile: regex },
-        { email: regex },
-        { memberId: regex },
-        { district: regex },
-        { state: regex },
-        { bloodGroup: regex },
-        { pinCode: regex },
+        { fullName: regex }, { mobile: regex }, { email: regex }, { memberId: regex },
+        { district: regex }, { state: regex }, { bloodGroup: regex }, { pinCode: regex },
       ];
     }
 
     const pageNum = Math.max(parseInt(page, 10) || 1, 1);
-    const limitNum = Math.min(
-      Math.max(parseInt(limit, 10) || 20, 1),
-      MAX_PAGE_LIMIT
-    );
+    const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), MAX_PAGE_LIMIT);
     const skip = (pageNum - 1) * limitNum;
-
-    const [applications, total, pendingCount, approvedCount, rejectedCount] =
-      await Promise.all([
-        Join.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
-        Join.countDocuments(query),
-        Join.countDocuments({ status: "Pending" }),
-        Join.countDocuments({ status: "Approved" }),
-        Join.countDocuments({ status: "Rejected" }),
-      ]);
+    const [applications, total, pendingCount, approvedCount, rejectedCount] = await Promise.all([
+      Join.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
+      Join.countDocuments(query),
+      Join.countDocuments({ status: "Pending" }),
+      Join.countDocuments({ status: "Approved" }),
+      Join.countDocuments({ status: "Rejected" }),
+    ]);
 
     return res.status(200).json({
       success: true,
       data: applications,
-      counts: {
-        total,
-        pending: pendingCount,
-        approved: approvedCount,
-        rejected: rejectedCount,
-      },
+      counts: { total, pending: pendingCount, approved: approvedCount, rejected: rejectedCount },
+      pagination: { total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) },
+    });
+  } catch (err) {
+    console.error("getAllJoinApplications error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch applications." });
+  }
+};
+
+export const getJoinAgents = async (req, res) => {
+  try {
+    const search = String(req.query.search || "").trim().slice(0, MAX_SEARCH_LENGTH);
+    const pageNum = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const limitNum = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), MAX_PAGE_LIMIT);
+    const skip = (pageNum - 1) * limitNum;
+    const addedByIds = await Join.distinct("addedBy", { addedBy: { $ne: null } });
+    const userQuery = { _id: { $in: addedByIds } };
+
+    if (search) {
+      const regex = new RegExp(escapeRegex(search), "i");
+      userQuery.$or = [
+        { name: regex },
+        { phone: regex },
+        { email: regex },
+        { uid: regex },
+      ];
+    }
+
+    const [agents, total] = await Promise.all([
+      User.find(userQuery)
+        .select("name email phone uid isAgent")
+        .sort({ name: 1, phone: 1, _id: 1 })
+        .skip(skip)
+        .limit(limitNum)
+        .lean(),
+      User.countDocuments(userQuery),
+    ]);
+    const agentCounts = agents.length
+      ? await Join.aggregate([
+          { $match: { addedBy: { $in: agents.map((agent) => agent._id) } } },
+          { $group: { _id: "$addedBy", memberCount: { $sum: 1 } } },
+        ])
+      : [];
+    const countsByAgent = new Map(agentCounts.map((item) => [String(item._id), item.memberCount]));
+
+    return res.status(200).json({
+      success: true,
+      data: agents.map((agent) => ({
+        ...agent,
+        memberCount: countsByAgent.get(String(agent._id)) || 0,
+      })),
       pagination: {
         total,
         page: pageNum,
         limit: limitNum,
-        totalPages: Math.ceil(total / limitNum),
+        totalPages: Math.max(Math.ceil(total / limitNum), 1),
       },
     });
   } catch (err) {
-    console.error("getAllJoinApplications error:", err);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch applications.",
-    });
+    console.error("getJoinAgents error:", err);
+    return res.status(500).json({ success: false, message: "Failed to fetch member submitters." });
   }
 };
 
-/*******************************************************
- * ADMIN — GET BY ID
- *
- * GET /joinmember/:id
- *******************************************************/
 export const getJoinApplicationById = async (req, res) => {
   try {
-    const application = await Join.findById(req.params.id);
+    const application = await Join.findById(req.params.id).lean();
 
     if (!application) {
       return res.status(404).json({
         success: false,
         message: "Application not found.",
       });
+    }
+
+    if (application.addedBy) {
+      application.addedBy = await User.findById(application.addedBy)
+        .select("name email phone uid isAgent")
+        .lean();
     }
 
     return res.status(200).json({
@@ -659,15 +705,13 @@ export const deleteJoinApplication = async (req, res) => {
  *******************************************************/
 export const renderJoinAdminPage = async (req, res) => {
   try {
-    const [applications, total, pendingCount, approvedCount, rejectedCount] =
-      await Promise.all([
+    const [applications, total, pendingCount, approvedCount, rejectedCount] = await Promise.all([
         Join.find({}).sort({ createdAt: -1 }).limit(20).lean(),
         Join.countDocuments({}),
         Join.countDocuments({ status: "Pending" }),
         Join.countDocuments({ status: "Approved" }),
         Join.countDocuments({ status: "Rejected" }),
       ]);
-
     res.render("joinmember", {
       applications,
       total,
@@ -681,12 +725,6 @@ export const renderJoinAdminPage = async (req, res) => {
     res.status(500).send("Failed to load join requests page.");
   }
 };
-
-/*******************************************************
- * AGENT — ADD MEMBER (PRESERVED)
- *
- * POST /api/join/add-member
- *******************************************************/
 export const addMemberByAgent = async (req, res) => {
   try {
     const agentUser = req.user;
@@ -712,76 +750,14 @@ export const addMemberByAgent = async (req, res) => {
       }
     }
 
-    const {
-      fullName,
-      mobile,
-      state,
-      district,
-      bloodGroup,
-      pinCode,
-      dob,
-      address,
-    } = req.body;
-
-    if (!fullName?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Full name is required.",
-      });
+    const cleanMobile = String(req.body.mobile || "").replace(/\D/g, "").slice(-10);
+    if (cleanMobile) {
+      const possiblePhones = [cleanMobile, `91${cleanMobile}`, `+91${cleanMobile}`];
+      req.joinApplicant = await User.findOne({ phone: { $in: possiblePhones } }).select("_id uid").lean();
     }
 
-    if (!/^[6-9]\d{9}$/.test(mobile || "")) {
-      return res.status(400).json({
-        success: false,
-        message: "Enter a valid 10-digit mobile number.",
-      });
-    }
-
-    const existing = await Join.findOne({
-      mobile: mobile.trim(),
-    });
-
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: "A member with this mobile number already exists.",
-        memberId: existing.memberId,
-      });
-    }
-
-    let photoPath = "";
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      photoPath = result.secure_url;
-    }
-
-    // Add Member via Membership Drive: Does NOT auto-generate a card or auto-approve!
-    // Card is only issued after admin approval.
-    const application = await Join.create({
-      mode: "quick",
-      type: "quick_member",
-      status: "Pending",
-      memberId: null,
-      profilePhoto: photoPath,
-      fullName: fullName.trim(),
-      mobile: mobile.trim(),
-      state: state || "",
-      district: district || "",
-      bloodGroup: (bloodGroup || "").trim().toUpperCase(),
-      pinCode: pinCode || "",
-      dob: dob ? new Date(dob) : null,
-      address: address || "",
-      declarationAccepted: true,
-      addedBy: agentUser._id,
-      approvedAt: null,
-    });
-
-    return res.status(201).json({
-      success: true,
-      message: "Member added successfully. Membership card is subject to admin verification and approval.",
-      memberId: null,
-      data: application,
-    });
+    req.joinAddedBy = agentUser._id;
+    return applyForMembership(req, res);
   } catch (err) {
     console.error("addMemberByAgent error:", err);
     return res.status(500).json({
@@ -835,6 +811,8 @@ export const getMyAddedMembers = async (req, res) => {
     const listProjection = {
       _id: 1,
       memberId: 1,
+      type: 1,
+      addedBy: 1,
       fullName: 1,
       mobile: 1,
       state: 1,
