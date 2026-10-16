@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सहयोग एवं दान सेटिंग्स (Support Us Settings) - VIP Admin</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    
+    <style>
+        :root {
+            --primary: #0b4ea2;
+            --primary-dark: #073570;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --card-border: #e2e8f0;
+            --bg-gray: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .settings-container {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title-box h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title-box p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn-view-site {
+            background: #fff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            transition: all 0.2s;
+        }
+
+        .btn-view-site:hover {
+            background: #f0f7ff;
+        }
+
+        .btn-donations-list {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13.5px;
+            box-shadow: 0 4px 12px rgba(11, 78, 162, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-donations-list:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* Success Alert */
+        .alert-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Layout Grid */
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            padding: 28px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            margin-bottom: 24px;
+        }
+
+        .section-heading {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .section-heading i {
+            color: var(--primary);
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 640px) {
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .form-group .hint {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.1);
+        }
+
+        .form-input.font-mono {
+            font-family: monospace;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .submit-bar {
+            background: #fff;
+            padding: 20px 28px;
+            border-radius: 16px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            bottom: 20px;
+            z-index: 10;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #0b4ea2, #0284c7);
+            color: #fff;
+            padding: 12px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(11, 78, 162, 0.3);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(11, 78, 162, 0.4);
+        }
+
+        /* Live Preview Card */
+        .preview-sticky {
+            position: sticky;
+            top: 90px;
+        }
+
+        .preview-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 2px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        .preview-header {
+            background: linear-gradient(135deg, #0b4ea2, #002e54);
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .preview-body {
+            padding: 20px;
+        }
+
+        .preview-account-box {
+            background: #eff6ff;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            margin: 14px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <%- include('../common/header.ejs') %>
+
+    <!-- Sidebar -->
+    <%- include('../common/sidebar.ejs') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="settings-container">
+            
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-title-box">
+                    <h1>
+                        <i class="fa-solid fa-hand-holding-dollar" style="color: #f59e0b;"></i>
+                        सहयोग एवं दान सेटिंग्स (Support Us Settings)
+                    </h1>
+                    <p>यहाँ से बैंक खाता, IFSC कोड, UPI ID व दान पृष्ठ की जानकारी बदलें। सेव करते ही मुख्य वेबसाइट पर तुरंत लाइव अपडेट होगा।</p>
+                </div>
+
+                <div class="header-actions">
+                    <a href="http://localhost:3000/donate" target="_blank" class="btn-view-site">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        वेबसाइट पर देखें (Live Page)
+                    </a>
+                    <a href="/admin/website/donations" class="btn-donations-list">
+                        <i class="fa-solid fa-receipt"></i>
+                        प्राप्त दान सूची (<%= stats.totalRecords %>)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Success Alert -->
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert-success">
+                    <i class="fa-solid fa-circle-check text-xl"></i>
+                    <span>बधाई! दान एवं बैंक खाता विवरण सफलतापूर्वक अपडेट कर दिया गया है। मुख्य वेबसाइट पर डेटा तुरंत बदल चुका है।</span>
+                </div>
+            <% } %>
+
+            <!-- Form & Live Preview Grid -->
+            <form method="POST" action="/admin/website/support-settings/update">
+                <div class="layout-grid">
+                    
+                    <!-- Left Column: Settings Form -->
+                    <div class="form-column">
+                        
+                        <!-- 1. Bank Account Details (Most Important) -->
+                        <div class="form-card">
+                            <div class="section-heading">
+                                <i class="fa-solid fa-building-columns"></i>
+                                <span>आधिकारिक बैंक खाता विवरण (Official Bank Account)</span>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label>खाता धारक का नाम (Account Name - English)</label>
+                                    <input type="text" name="accountName" value="<%= settings.accountName %>" class="form-input" required id="inpAccName">
+                                    <div class="hint">जैसे: Vikassheel Insaan Party</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>खाता धारक का नाम (Account Name - Hindi)</label>
+                                    <input type="text" name="accountNameHindi" value="<%= settings.accountNameHindi %>" class="form-input" id="inpAccNameHi">
+                                    <div class="hint">जैसे: विकासशील इंसान पार्टी</div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label>बैंक का नाम (Bank Name)</label>
+                                    <input type="text" name="bankName" value="<%= settings.bankName %>" class="form-input" required id="inpBankName">
+                                    <div class="hint">जैसे: State Bank of India</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>बैंक का नाम (हिंदी में)</label>
+                                    <input type="text" name="bankNameHindi" value="<%= settings.bankNameHindi %>" class="form-input">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>शाखा का नाम एवं पता (Branch Location)</label>
+                                <input type="text" name="branchName" value="<%= settings.branchName %>" class="form-input" required id="inpBranch">
+                                <div class="hint">जैसे: 06, Patliputra Colony, Patna या Boring Road Branch, Patna</div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label style="color: #0b4ea2; font-weight: 800;">खाता संख्या (Account Number)</label>
+                                    <input type="text" name="accountNumber" value="<%= settings.accountNumber %>" class="form-input font-mono" required id="inpAccNum" style="border-color: #3b82f6; background: #eff6ff;">
+                                    <div class="hint">यह नंबर दान पृष्ठ पर प्रमुखता से प्रदर्शित होगा।</div>
+                                </div>
+                                <div class="form-group">
+                                    <label style="color: #0b4ea2; font-weight: 800;">आई.एफ.सी. कोड (IFSC Code)</label>
+                                    <input type="text" name="ifscCode" value="<%= settings.ifscCode %>" class="form-input font-mono" required id="inpIfsc" style="border-color: #3b82f6; background: #eff6ff;">
+                                    <div class="hint">जैसे: SBIN0001513</div>
+                                </div>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label>यूपीआई आईडी (UPI ID / VPA)</label>
+                                    <input type="text" name="upiId" value="<%= settings.upiId %>" class="form-input font-mono" placeholder="vipparty@sbi" id="inpUpi">
+                                    <div class="hint">GPay, PhonePe, Paytm द्वारा दान प्राप्त करने हेतु</div>
+                                </div>
+                                <div class="form-group">
+                                    <label>क्यूआर कोड इमेज URL (QR Code Image URL)</label>
+                                    <input type="text" name="qrCodeUrl" value="<%= settings.qrCodeUrl %>" class="form-input" placeholder="/images/vip-upi-qr.png" id="inpQr">
+                                    <div class="hint">इमेज पाथ या लिंक डालें (खाली रहने पर डिफ़ॉल्ट दिखेगा)</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 10px;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                    <input type="checkbox" name="isVerified" <%= settings.isVerified ? 'checked' : '' %> style="width: 18px; height: 18px; accent-color: var(--success);">
+                                    <span style="font-size: 13.5px; font-weight: 700; color: #065f46;">
+                                        <i class="fa-solid fa-circle-check text-green-600"></i>
+                                        वेरिफाइड बैज दिखाएं (Show 'Verified ✓' Badge)
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- 2. Page Content & Notices -->
+                        <div class="form-card">
+                            <div class="section-heading">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                                <span>पेज शीर्षक एवं प्रेरणा संदेश (Page Headers & Text)</span>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label>पेज का मुख्य शीर्षक (Header Title)</label>
+                                    <input type="text" name="pageTitle" value="<%= settings.pageTitle %>" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>उप-शीर्षक (Header Subtitle)</label>
+                                    <input type="text" name="pageSubtitle" value="<%= settings.pageSubtitle %>" class="form-input" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>प्रेरणादायक संदेश (Inspirational Message)</label>
+                                <textarea name="inspirationalMessage" rows="3" class="form-input" style="resize: vertical;"><%= settings.inspirationalMessage %></textarea>
+                                <div class="hint">पार्टी लोगो के ठीक नीचे दिखने वाला मुख्य संदेश</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label style="color: #b45309;">आधिकारिक सूचना / चेतावनी बॉक्स (Notice Box Text)</label>
+                                <textarea name="noticeText" rows="2" class="form-input" style="resize: vertical; border-color: #fde68a; background: #fffbeb;"><%= settings.noticeText %></textarea>
+                                <div class="hint">जैसे: 'केवल इसी आधिकारिक बैंक खाते में दान करें। किसी अन्य व्यक्ति को नकद देने से बचें।'</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>आयकर धारा 80GGC कर छूट सूचना (80GGC Tax Exemption Note)</label>
+                                <textarea name="taxExemptionNotice" rows="2" class="form-input" style="resize: vertical;"><%= settings.taxExemptionNotice %></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Right Column: Live Mockup Preview -->
+                    <div class="preview-sticky">
+                        <div class="preview-card">
+                            <div class="preview-header">
+                                <span style="font-size: 11px; font-weight: 800; background: rgba(255,255,255,0.2); padding: 3px 8px; border-radius: 99px; text-transform: uppercase;">
+                                    लाइव प्रीव्यू (Live Preview)
+                                </span>
+                                <h3 style="margin-top: 8px; font-size: 18px; font-weight: 800;">दान करें / Donate</h3>
+                                <p style="font-size: 12px; opacity: 0.85;">पार्टी को मजबूत बनाने में अपना योगदान दें</p>
+                            </div>
+                            <div class="preview-body">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                    <span style="font-weight: 800; font-size: 15px; color: var(--text-dark);">बैंक खाता विवरण</span>
+                                    <span style="background: #d1fae5; color: #065f46; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 99px;">
+                                        ✓ Verified
+                                    </span>
+                                </div>
+
+                                <div style="font-size: 12px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Account Name</div>
+                                <div style="font-weight: 800; color: #0f172a; font-size: 14px;" id="prevAccName"><%= settings.accountName %></div>
+
+                                <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+                                    <div>
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">Bank</div>
+                                        <div style="font-weight: 700; font-size: 13px;" id="prevBank"><%= settings.bankName %></div>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">IFSC Code</div>
+                                        <div style="font-weight: 800; font-family: monospace; font-size: 14px; color: #0b4ea2;" id="prevIfsc"><%= settings.ifscCode %></div>
+                                    </div>
+                                </div>
+
+                                <div class="preview-account-box">
+                                    <div style="font-size: 11px; color: #1e40af; font-weight: 700; text-transform: uppercase;">Account Number</div>
+                                    <div style="font-size: 22px; font-weight: 900; font-family: monospace; color: #1d4ed8;" id="prevAccNum"><%= settings.accountNumber %></div>
+                                </div>
+
+                                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; padding: 10px; text-align: center; margin-top: 10px;">
+                                    <div style="font-size: 11px; color: var(--text-muted); font-weight: 700;">UPI ID (GPay / PhonePe / Paytm)</div>
+                                    <div style="font-weight: 800; font-family: monospace; color: #0f172a; font-size: 13px;" id="prevUpi"><%= settings.upiId %></div>
+                                </div>
+
+                                <div style="margin-top: 14px; font-size: 11.5px; color: #64748b; background: #fffbeb; border: 1px solid #fde68a; padding: 8px 12px; border-radius: 8px;">
+                                    <i class="fa-solid fa-circle-info" style="color: #f59e0b;"></i>
+                                    <span>केवल इसी आधिकारिक बैंक खाते में दान करें।</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Sticky Bottom Action Bar -->
+                <div class="submit-bar">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl text-primary"></i>
+                        <span style="font-size: 13.5px; font-weight: 600; color: var(--text-muted);">बदलाव करने के बाद सेव बटन दबाएं</span>
+                    </div>
+                    <button type="submit" class="btn-save">
+                        <i class="fa-solid fa-check"></i>
+                        <span>सेटिंग्स सेव करें (Save & Update Website)</span>
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </main>
+
+    <!-- Sync Live Preview Script -->
+    <script>
+        document.getElementById('inpAccName').addEventListener('input', function() {
+            document.getElementById('prevAccName').textContent = this.value || 'Vikassheel Insaan Party';
+        });
+        document.getElementById('inpBankName').addEventListener('input', function() {
+            document.getElementById('prevBank').textContent = this.value || 'State Bank of India';
+        });
+        document.getElementById('inpAccNum').addEventListener('input', function() {
+            document.getElementById('prevAccNum').textContent = this.value || '41982736450';
+        });
+        document.getElementById('inpIfsc').addEventListener('input', function() {
+            document.getElementById('prevIfsc').textContent = this.value.toUpperCase() || 'SBIN0001513';
+        });
+        document.getElementById('inpUpi').addEventListener('input', function() {
+            document.getElementById('prevUpi').textContent = this.value || 'vipparty@sbi';
+        });
+    </script>
+</body>
+</html>

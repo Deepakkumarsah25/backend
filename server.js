@@ -54,6 +54,7 @@ import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
 
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 import adminFormsRoutes from "./routes/adminFormsRoutes.js";
+import websiteRoutes from "./routes/websiteRoutes.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -205,8 +206,9 @@ app.use(userRoutes);
 app.use("/api/users", userRoutes);
 
 /*
-  ADMIN & FORMS HUB
+  ADMIN, WEBSITE & FORMS HUB
 */
+app.use("/admin/website", websiteRoutes);
 app.use("/admin/forms", adminFormsRoutes);
 app.use("/forms", adminFormsRoutes);
 app.use("/", adminRoutes);

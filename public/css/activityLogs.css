@@ -966,3 +966,316 @@ body {
         text-align: left;
     }
 }
+
+/* =========================================================
+   PAGINATED ACTIVITY CARDS & FEED VIEW
+========================================================= */
+.activity-feed-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1.5px solid #e2e8f0;
+    padding: 16px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.025);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.activity-feed-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+    border-color: #cbd5e1;
+}
+
+.afc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.afc-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.afc-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.afc-user-info {
+    min-width: 0;
+}
+
+.afc-name-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.afc-name {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.afc-email {
+    font-size: 11.5px;
+    color: #0b4ea2;
+    font-weight: 600;
+}
+
+.afc-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.afc-body {
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 14px;
+    border-left: 3px solid #0b4ea2;
+}
+
+.afc-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.afc-details {
+    font-size: 12.5px;
+    color: #475569;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.afc-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11.5px;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.afc-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.afc-time-ago {
+    font-weight: 700;
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.afc-exact-date {
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.afc-ip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #94a3b8;
+}
+
+/* =========================================================
+   PAGINATION CONTROLS & LOAD MORE STYLES
+========================================================= */
+.pagination-section {
+    margin-top: 26px;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.load-more-wrap {
+    display: flex;
+    justify-content: center;
+}
+
+.btn-load-more {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #0b4ea2 0%, #083d80 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(11, 78, 162, 0.28);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-load-more:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(11, 78, 162, 0.38);
+    background: linear-gradient(135deg, #0d5bbd 0%, #094796 100%);
+}
+
+.btn-load-more:disabled {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.load-more-badge {
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.btn-load-more:disabled .load-more-badge {
+    background: #cbd5e1;
+    color: #64748b;
+}
+
+.pagination-bar {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 12px 20px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.025);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.pagination-info {
+    font-size: 13px;
+    color: #475569;
+}
+
+.pagination-info strong {
+    color: #0f172a;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.page-nav-btn {
+    padding: 7px 14px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.page-nav-btn:hover:not(:disabled) {
+    background: #0b4ea2;
+    color: #ffffff;
+    border-color: #0b4ea2;
+}
+
+.page-nav-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #f1f5f9;
+}
+
+.page-numbers-list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.page-num-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #334155;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-num-btn:hover:not(.active):not(.ellipsis) {
+    background: #eff6ff;
+    color: #0b4ea2;
+    border-color: #bfdbfe;
+}
+
+.page-num-btn.active {
+    background: #0b4ea2;
+    color: #ffffff;
+    border-color: #0b4ea2;
+    box-shadow: 0 3px 8px rgba(11, 78, 162, 0.25);
+}
+
+.page-num-btn.ellipsis {
+    border: none;
+    background: transparent;
+    cursor: default;
+    color: #94a3b8;
+    width: 24px;
+}
+
+.loading-indicator-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0b4ea2;
+    background: #eff6ff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #bfdbfe;
+}

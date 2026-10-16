@@ -243,26 +243,139 @@ export const getRecentActivities = async (limit = 10) => {
   }
 };
 
+// 4 Primary Admins definition
+export const primaryAdmins = [
+  {
+    email: "admin@vipparty.com",
+    name: "Mukesh Sahani",
+    role: "Super Admin",
+    roleClass: "super",
+    avatarBg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+    icon: "fa-solid fa-crown",
+  },
+  {
+    email: "editor@vipparty.com",
+    name: "Vikram Sharma",
+    role: "Content Editor",
+    roleClass: "editor",
+    avatarBg: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+    icon: "fa-solid fa-pen-nib",
+  },
+  {
+    email: "manager@vipparty.com",
+    name: "Pooja Dhakad",
+    role: "Operations Manager",
+    roleClass: "manager",
+    avatarBg: "linear-gradient(135deg, #10b981 0%, #047857 100%)",
+    icon: "fa-solid fa-briefcase",
+  },
+  {
+    email: "media@vipparty.com",
+    name: "Ravi Verma",
+    role: "Media Coordinator",
+    roleClass: "media",
+    avatarBg: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
+    icon: "fa-solid fa-photo-film",
+  },
+];
+
+export const getAdminMeta = (email = "", fallbackName = "", fallbackRole = "") => {
+  const cleanEmail = (email || "").toLowerCase().trim();
+  const match = primaryAdmins.find((p) => p.email.toLowerCase() === cleanEmail);
+  if (match) {
+    return {
+      name: match.name,
+      role: match.role,
+      roleClass: match.roleClass,
+      avatarBg: match.avatarBg,
+      icon: match.icon,
+    };
+  }
+  return {
+    name: fallbackName || "Admin",
+    role: fallbackRole || "Administrator",
+    roleClass: "custom",
+    avatarBg: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
+    icon: "fa-solid fa-user-shield",
+  };
+};
+
 /**
- * Fetch and format last 10 days activities with grouping and statistics
+ * Fetch paginated activities with 10 logs per page and comprehensive filtering
  */
-export const getLast10DaysActivities = async (filters = {}) => {
+export const getPaginatedActivities = async ({
+  email = "all",
+  section = "all",
+  actionType = "all",
+  search = "",
+  page = 1,
+  limit = 10,
+} = {}) => {
   try {
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 10));
+    const skip = (pageNum - 1) * limitNum;
+
     const tenDaysAgo = new Date();
     tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
     tenDaysAgo.setHours(0, 0, 0, 0);
 
-    // 1. Fetch ALL activities in the last 10 days for accurate 4-admin overview cards & global stats
-    const allTenDaysRaw = await AdminActivity.find({
+    const filter = {
       createdAt: { $gte: tenDaysAgo },
-    })
+    };
+
+    if (email && email.trim() !== "" && email.trim().toLowerCase() !== "all") {
+      filter.adminEmail = email.trim().toLowerCase();
+    }
+
+    if (section && section.trim() !== "" && section.trim() !== "all") {
+      filter.section = section.trim();
+    }
+
+    if (actionType && actionType.trim() !== "" && actionType.trim() !== "all") {
+      filter.actionType = actionType.trim();
+    }
+
+    if (search && search.trim() !== "") {
+      const q = search.trim();
+      const escapedQ = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { action: { $regex: escapedQ, $options: "i" } },
+        { details: { $regex: escapedQ, $options: "i" } },
+        { section: { $regex: escapedQ, $options: "i" } },
+        { adminName: { $regex: escapedQ, $options: "i" } },
+        { adminEmail: { $regex: escapedQ, $options: "i" } },
+      ];
+    }
+
+    const totalCount = await AdminActivity.countDocuments(filter);
+    const totalPages = Math.ceil(totalCount / limitNum) || 1;
+
+    // Fetch ONLY the requested 10 records from database
+    const rawActivities = await AdminActivity.find(filter)
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limitNum)
       .lean();
 
-    const formattedAll = allTenDaysRaw.map((act) => {
+    const activities = rawActivities.map((act) => {
       const d = new Date(act.createdAt);
+      const adminMeta = getAdminMeta(act.adminEmail, act.adminName, act.adminRole);
       return {
-        ...act,
+        _id: act._id,
+        adminEmail: act.adminEmail,
+        adminName: adminMeta.name,
+        adminRole: adminMeta.role,
+        adminRoleClass: adminMeta.roleClass,
+        avatarBg: adminMeta.avatarBg,
+        adminIcon: adminMeta.icon,
+        section: act.section || "General",
+        sectionIcon: act.sectionIcon || getSectionIcon(act.section),
+        action: act.action || "Activity",
+        details: act.details || "",
+        actionType: act.actionType || "update",
+        ip: act.ip || "",
+        createdAt: act.createdAt,
         timeAgo: formatTimeAgo(act.createdAt) || "Recently",
         exactTime: formatExactDate(act.createdAt) || "Recent update",
         dateKey: !isNaN(d.getTime())
@@ -275,49 +388,60 @@ export const getLast10DaysActivities = async (filters = {}) => {
       };
     });
 
-    // 4 Primary Admins definition
-    const primaryEmails = [
-      {
-        email: "admin@vipparty.com",
-        name: "Mukesh Sahani",
-        role: "Super Admin",
-        roleClass: "super",
-        avatarBg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-        icon: "fa-solid fa-crown",
+    return {
+      activities,
+      pagination: {
+        page: pageNum,
+        limit: limitNum,
+        totalCount,
+        totalPages,
+        hasNextPage: pageNum < totalPages,
+        hasPrevPage: pageNum > 1,
+        startIndex: totalCount > 0 ? skip + 1 : 0,
+        endIndex: Math.min(skip + activities.length, totalCount),
       },
-      {
-        email: "editor@vipparty.com",
-        name: "Vikram Sharma",
-        role: "Content Editor",
-        roleClass: "editor",
-        avatarBg: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-        icon: "fa-solid fa-pen-nib",
+    };
+  } catch (error) {
+    console.error("❌ Error fetching paginated activities:", error);
+    return {
+      activities: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        totalCount: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+        startIndex: 0,
+        endIndex: 0,
       },
-      {
-        email: "manager@vipparty.com",
-        name: "Pooja Dhakad",
-        role: "Operations Manager",
-        roleClass: "manager",
-        avatarBg: "linear-gradient(135deg, #10b981 0%, #047857 100%)",
-        icon: "fa-solid fa-briefcase",
-      },
-      {
-        email: "media@vipparty.com",
-        name: "Ravi Verma",
-        role: "Media Coordinator",
-        roleClass: "media",
-        avatarBg: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
-        icon: "fa-solid fa-photo-film",
-      },
-    ];
+    };
+  }
+};
 
-    // Build grouped data by admin from FULL 10-day dataset (Unbiased by filters)
-    const adminGroups = primaryEmails.map((adm) => {
-      const userActs = formattedAll.filter(
+/**
+ * Fetch overview summary statistics and page 1 activities (10 items) for initial render
+ */
+export const getLast10DaysActivities = async (filters = {}) => {
+  try {
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+    tenDaysAgo.setHours(0, 0, 0, 0);
+
+    // 1. Fetch lightweight overview dataset for 4-admin cards and KPI bar
+    const allOverviewRaw = await AdminActivity.find({
+      createdAt: { $gte: tenDaysAgo },
+    })
+      .select("adminEmail actionType section createdAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // 4 Primary Admins overview calculation
+    const adminGroups = primaryAdmins.map((adm) => {
+      const userActs = allOverviewRaw.filter(
         (a) => (a.adminEmail || "").toLowerCase() === adm.email.toLowerCase()
       );
 
-      // Type counts (excluding pure login logs for meaningful change metrics)
       const contentActs = userActs.filter((a) => a.actionType !== "login");
       const creates = userActs.filter((a) => a.actionType === "create").length;
       const updates = userActs.filter((a) => a.actionType === "update").length;
@@ -326,59 +450,14 @@ export const getLast10DaysActivities = async (filters = {}) => {
       return {
         ...adm,
         totalActions: contentActs.length > 0 ? contentActs.length : userActs.length,
-        activities: userActs,
         stats: { creates, updates, deletes },
-        lastActiveTime: userActs[0] ? userActs[0].timeAgo : "No activity in last 10 days",
+        lastActiveTime: userActs[0] ? formatTimeAgo(userActs[0].createdAt) : "No activity in last 10 days",
       };
     });
 
-    // 2. Build filtered activities list for initial render
-    let filteredActivities = [...formattedAll];
-
-    if (filters.email && filters.email.trim() !== "" && filters.email.trim() !== "all") {
-      filteredActivities = filteredActivities.filter(
-        (a) => (a.adminEmail || "").toLowerCase() === filters.email.toLowerCase().trim()
-      );
-    }
-
-    if (filters.section && filters.section.trim() !== "" && filters.section.trim() !== "all") {
-      filteredActivities = filteredActivities.filter(
-        (a) => (a.section || "").trim() === filters.section.trim()
-      );
-    }
-
-    if (filters.actionType && filters.actionType.trim() !== "" && filters.actionType.trim() !== "all") {
-      filteredActivities = filteredActivities.filter(
-        (a) => (a.actionType || "").trim() === filters.actionType.trim()
-      );
-    }
-
-    if (filters.search && filters.search.trim()) {
-      const q = filters.search.trim().toLowerCase();
-      filteredActivities = filteredActivities.filter((a) => {
-        return (
-          (a.action || "").toLowerCase().includes(q) ||
-          (a.details || "").toLowerCase().includes(q) ||
-          (a.section || "").toLowerCase().includes(q) ||
-          (a.adminName || "").toLowerCase().includes(q) ||
-          (a.adminEmail || "").toLowerCase().includes(q)
-        );
-      });
-    }
-
-    // Group filtered activities by Date (Day)
-    const dateGroups = {};
-    filteredActivities.forEach((a) => {
-      const k = a.dateKey;
-      if (!dateGroups[k]) {
-        dateGroups[k] = [];
-      }
-      dateGroups[k].push(a);
-    });
-
-    // Sections list for filtering (distinct sections across last 10 days)
+    // Distinct sections across last 10 days
     const allSectionsSet = new Set();
-    formattedAll.forEach((a) => {
+    allOverviewRaw.forEach((a) => {
       if (a.section && a.section !== "Admin Authentication") {
         allSectionsSet.add(a.section);
       }
@@ -388,11 +467,11 @@ export const getLast10DaysActivities = async (filters = {}) => {
     // Global stats across 10 days
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const todayCount = formattedAll.filter((a) => new Date(a.createdAt) >= today && a.actionType !== "login").length;
+    const todayCount = allOverviewRaw.filter((a) => new Date(a.createdAt) >= today && a.actionType !== "login").length;
 
     // Top modified section
     const secCount = {};
-    formattedAll.forEach((a) => {
+    allOverviewRaw.forEach((a) => {
       if (a.section && a.section !== "Admin Authentication") {
         secCount[a.section] = (secCount[a.section] || 0) + 1;
       }
@@ -406,16 +485,25 @@ export const getLast10DaysActivities = async (filters = {}) => {
       }
     });
 
+    // 2. Fetch ONLY 10 activities for the requested page
+    const paginatedResult = await getPaginatedActivities({
+      email: filters.email || "all",
+      section: filters.section || "all",
+      actionType: filters.actionType || "all",
+      search: filters.search || "",
+      page: filters.page || 1,
+      limit: filters.limit || 10,
+    });
+
     return {
-      activities: filteredActivities,
-      allActivities: formattedAll, // complete dataset for instant client-side filtering
-      totalCount: filteredActivities.length,
+      activities: paginatedResult.activities,
+      pagination: paginatedResult.pagination,
+      totalCount: paginatedResult.pagination.totalCount,
       adminGroups,
-      dateGroups,
       allSections,
       stats: {
-        total10Days: formattedAll.filter((a) => a.actionType !== "login").length || formattedAll.length,
-        todayCount: todayCount || formattedAll.filter((a) => new Date(a.createdAt) >= today).length,
+        total10Days: allOverviewRaw.filter((a) => a.actionType !== "login").length || allOverviewRaw.length,
+        todayCount: todayCount || allOverviewRaw.filter((a) => new Date(a.createdAt) >= today).length,
         activeAdminsCount: adminGroups.filter((g) => g.totalActions > 0).length,
         topSection,
       },
@@ -425,9 +513,18 @@ export const getLast10DaysActivities = async (filters = {}) => {
     console.error("❌ Error fetching 10 days activities:", error);
     return {
       activities: [],
+      pagination: {
+        page: 1,
+        limit: 10,
+        totalCount: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPrevPage: false,
+        startIndex: 0,
+        endIndex: 0,
+      },
       totalCount: 0,
       adminGroups: [],
-      dateGroups: {},
       allSections: [],
       stats: { total10Days: 0, todayCount: 0, activeAdminsCount: 0, topSection: "N/A" },
       filters,

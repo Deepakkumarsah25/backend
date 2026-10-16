@@ -60,38 +60,27 @@
            ACTIVITY LOGS (LAST 10 DAYS)
       ========================== -->
       <li class="sidebar-item">
-
         <a href="/activity-logs" class="sidebar-link direct-link" id="sidebarActivityLogLink">
-          <span class="sidebar-link-left">
-            <span class="sidebar-icon">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-            </span>
-
-            <span class="sidebar-text">
-              10-Day Activity Log
-            </span>
+          <span class="sidebar-icon">
+            <i class="fa-solid fa-clock-rotate-left"></i>
           </span>
-
-          <span class="sidebar-badge"
-            style="background: rgba(255, 255, 255, 0.22); color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto;">
-            10 Days
-          </span>
+          <span class="sidebar-text"> 10-Day Activity Log </span>
         </a>
 
       </li>
 
 
       <!-- =========================
-           FORMS & APPLICATIONS HUB
+           WEBSITE MANAGEMENT (वेबसाइट प्रबंधन)
       ========================== -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
-            <span class="sidebar-icon" style="color: #f59e0b;">
-              <i class="fa-solid fa-clipboard-list"></i>
+            <span class="sidebar-icon" style="color: #38bdf8;">
+              <i class="fa-solid fa-globe"></i>
             </span>
 
-            <span class="sidebar-text"> Forms (फ़ॉर्म्स प्रबंधन) </span>
+            <span class="sidebar-text"> Website (वेबसाइट) </span>
           </span>
 
           <span class="sidebar-badge"
@@ -103,6 +92,10 @@
         </button>
 
         <ul class="sidebar-submenu">
+          <!-- Forms Hub Section Header -->
+          <li style="padding: 8px 16px 2px 16px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
+            <span><i class="fa-solid fa-clipboard-list mr-1" style="color: #f59e0b;"></i> फ़ॉर्म्स प्रबंधन (Forms)</span>
+          </li>
           <li>
             <a href="/admin/forms">
               <i class="fa-solid fa-table-cells-large"></i>
@@ -149,6 +142,23 @@
             <a href="/admin/forms?type=users">
               <i class="fa-solid fa-user-check"></i>
               <span>Web Users (पंजीकृत यूजर्स)</span>
+            </a>
+          </li>
+
+          <!-- Support Us / Donate Section Header -->
+          <li style="padding: 10px 16px 2px 16px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 6px;">
+            <span><i class="fa-solid fa-hand-holding-heart mr-1" style="color: #f43f5e;"></i> सहयोग / दान (Support Us)</span>
+          </li>
+          <li>
+            <a href="/admin/website/support-settings">
+              <i class="fa-solid fa-building-columns"></i>
+              <span>Bank & Page Settings (खाता व पेज)</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/website/donations">
+              <i class="fa-solid fa-receipt"></i>
+              <span>Received Donations (प्राप्त दान सूची)</span>
             </a>
           </li>
         </ul>
@@ -201,11 +211,11 @@
           </li>
 
           <li>
-  <a href="/organisation/categories/manage">
-    <i class="fas fa-list"></i>
-    <span>Organisation Categories</span>
-  </a>
-</li>
+            <a href="/organisation/categories/manage">
+              <i class="fas fa-list"></i>
+              <span>Organisation Categories</span>
+            </a>
+          </li>
 
           <li>
             <a href="/morcha">
