@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" width="1200" height="1500">
+  <defs>
+    <linearGradient id="ambedkarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c4a6e"/>
+      <stop offset="50%" stop-color="#082f49"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="gold3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#ambedkarGrad)"/>
+  <circle cx="600" cy="580" r="260" fill="#0369a1" stroke="url(#gold3)" stroke-width="6"/>
+
+  <g transform="translate(600, 110)">
+    <rect x="-240" y="-36" width="480" height="72" rx="36" fill="#082f49" stroke="url(#gold3)" stroke-width="2"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="24" font-weight="900" fill="#38bdf8" text-anchor="middle">★ भारत रत्न व संविधान निर्माता ★</text>
+  </g>
+
+  <!-- Silhouette: Suit & Glasses -->
+  <g transform="translate(600, 580)">
+    <circle cx="0" cy="-30" r="100" fill="#fed7aa"/>
+    <!-- Glasses -->
+    <rect x="-55" y="-45" width="40" height="30" rx="6" fill="none" stroke="#0f172a" stroke-width="5"/>
+    <rect x="15" y="-45" width="40" height="30" rx="6" fill="none" stroke="#0f172a" stroke-width="5"/>
+    <line x1="-15" y1="-30" x2="15" y2="-30" stroke="#0f172a" stroke-width="5"/>
+    <!-- Suit -->
+    <path d="M-140,200 C-140,120 -80,80 0,80 C80,80 140,120 140,200 Z" fill="#1e3a8a"/>
+    <polygon points="0,95 -25,200 25,200" fill="#dc2626"/>
+  </g>
+
+  <g transform="translate(600, 880)">
+    <rect x="-180" y="-24" width="360" height="48" rx="24" fill="#0284c7"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">सामाजिक न्याय के अग्रदूत</text>
+  </g>
+
+  <text x="600" y="1030" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="58" font-weight="900" fill="#ffffff" text-anchor="middle">बाबा साहेब डॉ. भीमराव अंबेडकर</text>
+  <text x="600" y="1090" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="32" font-weight="700" fill="#38bdf8" text-anchor="middle">DR. B.R. AMBEDKAR</text>
+
+  <text x="600" y="1170" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="600" fill="#e0f2fe" text-anchor="middle">"शिक्षित बनो, संगठित रहो, संघर्ष करो"</text>
+  <text x="600" y="1220" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="500" fill="#7dd3fc" text-anchor="middle">समतामूलक भारत के निर्माण की प्रेरणा</text>
+
+  <rect x="0" y="1380" width="1200" height="120" fill="#020617"/>
+  <line x1="0" y1="1380" x2="1200" y2="1380" stroke="url(#gold3)" stroke-width="4"/>
+  <text x="80" y="1450" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">विकासशील इंसान पार्टी (VIP)</text>
+  <text x="1120" y="1450" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="20" font-weight="700" fill="#38bdf8" text-anchor="end">CONSTITUTIONAL GUIDE ARCHIVE</text>
+</svg>

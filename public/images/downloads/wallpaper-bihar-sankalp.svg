@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="wp3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#021c38"/>
+      <stop offset="50%" stop-color="#003566"/>
+      <stop offset="100%" stop-color="#001426"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#wp3Grad)"/>
+
+  <g transform="translate(540, 260)">
+    <text x="0" y="0" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="100" font-weight="300" fill="#ffffff" text-anchor="middle">12:30</text>
+    <text x="0" y="55" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="500" fill="#fbbf24" text-anchor="middle">स्वाभिमानी बिहार संकल्प</text>
+  </g>
+
+  <!-- Central Map & Boat Illustration -->
+  <g transform="translate(540, 880)">
+    <circle cx="0" cy="0" r="240" fill="#002244" stroke="#f59e0b" stroke-width="4"/>
+    <text x="0" y="-40" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="70" font-weight="900" fill="#ffffff" text-anchor="middle">बिहार</text>
+    <text x="0" y="30" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="34" font-weight="700" fill="#38bdf8" text-anchor="middle">नव-निर्माण</text>
+    <!-- Boat -->
+    <path d="M-80,90 C-40,130 40,130 80,90 Z" fill="#f59e0b"/>
+  </g>
+
+  <text x="540" y="1320" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="52" font-weight="900" fill="#ffffff" text-anchor="middle">स्वाभिमानी बिहार</text>
+  <text x="540" y="1390" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="36" font-weight="800" fill="#fbbf24" text-anchor="middle">समान अधिकार, सम्पूर्ण विकास</text>
+  <text x="540" y="1460" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="24" font-weight="500" fill="#cbd5e1" text-anchor="middle">हर हाथ को काम, हर वर्ग को सम्मान</text>
+
+  <text x="540" y="1600" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="24" font-weight="800" fill="#38bdf8" text-anchor="middle">VIKASSHEEL INSAAN PARTY</text>
+
+  <rect x="440" y="1860" width="200" height="6" rx="3" fill="#ffffff" opacity="0.7"/>
+</svg>

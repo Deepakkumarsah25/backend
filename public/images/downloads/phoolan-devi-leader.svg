@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" width="1200" height="1500">
+  <defs>
+    <linearGradient id="phoolanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#831843"/>
+      <stop offset="50%" stop-color="#4c0519"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fde047"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#phoolanGrad)"/>
+  <circle cx="600" cy="580" r="260" fill="#701a75" stroke="url(#gold2)" stroke-width="6"/>
+
+  <g transform="translate(600, 110)">
+    <rect x="-240" y="-36" width="480" height="72" rx="36" fill="#4c0519" stroke="url(#gold2)" stroke-width="2"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="24" font-weight="900" fill="#fbbf24" text-anchor="middle">★ नारी शक्ति व स्वाभिमान की प्रतीक ★</text>
+  </g>
+
+  <!-- Silhouette & Scarf -->
+  <g transform="translate(600, 580)">
+    <circle cx="0" cy="-30" r="100" fill="#fed7aa"/>
+    <!-- Red Headband -->
+    <rect x="-105" y="-70" width="210" height="35" rx="10" fill="#dc2626"/>
+    <path d="M-130,190 C-130,110 -70,80 0,80 C70,80 130,110 130,190 Z" fill="#15803d"/>
+  </g>
+
+  <g transform="translate(600, 880)">
+    <rect x="-180" y="-24" width="360" height="48" rx="24" fill="#f59e0b"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="900" fill="#001426" text-anchor="middle">पूर्व सांसद, मिर्ज़ापुर</text>
+  </g>
+
+  <text x="600" y="1030" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="62" font-weight="900" fill="#ffffff" text-anchor="middle">वीरांगना फूलन देवी</text>
+  <text x="600" y="1090" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="32" font-weight="700" fill="#fbbf24" text-anchor="middle">VEERANGANA PHOOLAN DEVI</text>
+
+  <text x="600" y="1170" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="600" fill="#fce7f3" text-anchor="middle">शोषितों, पीड़ितों और महिलाओं के हक व सम्मान की अडिग आवाज</text>
+  <text x="600" y="1220" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="500" fill="#f9a8d4" text-anchor="middle">अन्याय के खिलाफ कभी न झुकने वाला क्रांतिकारी जीवन</text>
+
+  <rect x="0" y="1380" width="1200" height="120" fill="#0f172a"/>
+  <line x1="0" y1="1380" x2="1200" y2="1380" stroke="url(#gold2)" stroke-width="4"/>
+  <text x="80" y="1450" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">विकासशील इंसान पार्टी (VIP)</text>
+  <text x="1120" y="1450" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="20" font-weight="700" fill="#fbbf24" text-anchor="end">INSPIRATIONAL LEADERS ARCHIVE</text>
+</svg>

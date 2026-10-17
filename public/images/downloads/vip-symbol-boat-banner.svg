@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="boatGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#001a33"/>
+      <stop offset="50%" stop-color="#003366"/>
+      <stop offset="100%" stop-color="#001020"/>
+    </linearGradient>
+    <linearGradient id="gold4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#boatGrad)"/>
+
+  <!-- Giant Glowing Boat Emblem Center -->
+  <g transform="translate(960, 420)">
+    <circle cx="0" cy="0" r="240" fill="#002244" stroke="url(#gold4)" stroke-width="8"/>
+    <!-- Water Waves -->
+    <path d="M-180,90 Q-90,60 0,90 Q90,120 180,90" fill="none" stroke="#38bdf8" stroke-width="8"/>
+    <!-- Boat Hull -->
+    <path d="M-140,40 C-80,110 80,110 140,40 C100,75 -100,75 -140,40 Z" fill="#fbbf24"/>
+    <!-- Mast & Sail -->
+    <line x1="-15" y1="40" x2="-15" y2="-120" stroke="#f8fafc" stroke-width="8"/>
+    <path d="M-15,35 L-15,-110 L65,-15 Z" fill="#38bdf8"/>
+    <polygon points="-15,-110 -65,-30 -15,-30" fill="#f8fafc" opacity="0.9"/>
+  </g>
+
+  <text x="960" y="760" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="68" font-weight="900" fill="#ffffff" text-anchor="middle">हमारा चुनाव चिह्न: नाव (BOAT)</text>
+  <text x="960" y="830" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="34" font-weight="700" fill="#fbbf24" text-anchor="middle">विकास, विश्वास और सामाजिक स्वाभिमान का प्रतीक</text>
+  <text x="960" y="890" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="500" fill="#94a3b8" text-anchor="middle">विकासशील इंसान पार्टी (VIP) - बिहार के भविष्य का मजबूत संकल्प</text>
+
+  <rect x="0" y="980" width="1920" height="100" fill="#000c18"/>
+  <line x1="0" y1="980" x2="1920" y2="980" stroke="url(#gold4)" stroke-width="4"/>
+  <text x="960" y="1040" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="24" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="2">OFFICIAL ELECTION SYMBOL HIGH-RES BANNER</text>
+</svg>

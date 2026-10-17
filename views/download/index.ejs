@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        <%= currentCategory === 'leaders-photo' ? 'Leaders Photo Management' :
+            currentCategory === 'infographics-banner' ? 'Infographics & Banner Management' :
+            currentCategory === 'quotes' ? 'Quotes Management' :
+            'Mobile Wallpaper Management' %> - VIP Admin
+    </title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <!-- Sidebar CSS -->
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <style>
+        :root {
+            --primary: #0b4ea2;
+            --primary-dark: #073b7d;
+            --primary-light: #eff6ff;
+            --accent: #f59e0b;
+            --live-green: #10b981;
+            --danger-red: #ef4444;
+            --off-gray: #94a3b8;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --card-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--ink);
+        }
+
+        /* Main Content Container - Properly offset from sidebar */
+        .main-content {
+            margin-left: 270px;
+            min-height: 100vh;
+            padding: 30px;
+            background: #f8fafc;
+            transition: margin-left 0.25s ease;
+        }
+
+        body.sidebar-collapsed .main-content {
+            margin-left: 78px;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                margin-left: 0 !important;
+                padding: 85px 16px 30px;
+            }
+        }
+
+        /* Page Header */
+        .page-header-wrap {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.3px;
+            margin-bottom: 4px;
+        }
+
+        .page-title .title-icon-box {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #fff;
+            border-radius: 12px;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(11, 78, 162, 0.2);
+            flex-shrink: 0;
+        }
+
+        .page-sub {
+            color: var(--muted);
+            font-size: 13.5px;
+            margin-bottom: 0;
+        }
+
+        /* Four Category Navigation Tabs (Strictly no 'All' option) */
+        .category-nav-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            padding: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .category-nav-pills .cat-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 9px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--muted);
+            transition: all 0.2s ease;
+        }
+
+        .category-nav-pills .cat-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .category-nav-pills .cat-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 3px 10px rgba(11, 78, 162, 0.25);
+        }
+
+        .category-nav-pills .cat-btn .badge-pill {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.08);
+            color: inherit;
+        }
+
+        .category-nav-pills .cat-btn.active .badge-pill {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+        }
+
+        /* Cards */
+        .card {
+            border: 1px solid var(--border);
+            border-radius: var(--card-radius);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+            background: #ffffff;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .card-header-custom {
+            padding: 16px 22px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header-custom h5 {
+            margin: 0;
+            font-size: 15.5px;
+            font-weight: 700;
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .card-header-custom h5 i {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .card-body-custom {
+            padding: 22px;
+        }
+
+        /* Form Controls */
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--ink);
+            font-size: 13px;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 10px;
+            height: 44px;
+            border: 1.5px solid var(--border);
+            font-size: 13.5px;
+            transition: all 0.2s;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.12);
+        }
+
+        textarea.form-control {
+            height: 86px !important;
+            resize: none;
+        }
+
+        /* Live Preview Container */
+        .preview-wrapper {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            height: 310px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 12px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .preview-wrapper.has-image {
+            border-style: solid;
+            border-color: var(--border);
+            background: #0f172a;
+        }
+
+        .preview-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .preview-placeholder {
+            color: var(--muted);
+        }
+
+        .preview-placeholder i {
+            font-size: 42px;
+            margin-bottom: 10px;
+            color: #94a3b8;
+        }
+
+        .preview-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .preview-info-box {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            font-size: 12.5px;
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Custom Toggle Switch */
+        .custom-switch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .custom-switch input {
+            width: 2.2em;
+            height: 1.2em;
+            cursor: pointer;
+        }
+
+        /* Buttons */
+        .btn-primary-custom {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: #ffffff;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(11, 78, 162, 0.25);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn-primary-custom:hover {
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(11, 78, 162, 0.35);
+        }
+
+        .btn-secondary-custom {
+            background: #ffffff;
+            color: var(--muted);
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-secondary-custom:hover {
+            background: #f8fafc;
+            color: var(--ink);
+        }
+
+        /* Data Table Styling */
+        .table-responsive {
+            border-radius: 0 0 var(--card-radius) var(--card-radius);
+        }
+
+        .table {
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            font-weight: 700;
+            border-bottom: 1.5px solid var(--border);
+            padding: 12px 14px;
+            white-space: nowrap;
+        }
+
+        .table tbody td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13.5px;
+            color: var(--ink);
+        }
+
+        .table tbody tr:hover {
+            background: #f8fafd;
+        }
+
+        .table-thumb {
+            width: 58px;
+            height: 58px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #0f172a;
+            display: block;
+        }
+
+        .table-thumb.wallpaper-thumb {
+            height: 72px;
+            width: 44px;
+        }
+
+        /* Category Badges */
+        .badge-cat {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 9px;
+            border-radius: 6px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .badge-cat-leaders-photo {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+        .badge-cat-infographics-banner {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+        .badge-cat-quotes {
+            background: #f5f3ff;
+            color: #6d28d9;
+            border: 1px solid #ddd6fe;
+        }
+        .badge-cat-mobile-wallpaper {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+
+        .badge-live-custom {
+            background: #ecfdf5;
+            color: #059669;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 11px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid #a7f3d0;
+        }
+
+        .badge-hidden-custom {
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 5px 11px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+        }
+
+        /* Action Buttons */
+        .action-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .action-btn-edit {
+            background: #eff6ff;
+            color: var(--primary);
+        }
+        .action-btn-edit:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .action-btn-delete {
+            background: #fef2f2;
+            color: var(--danger-red);
+        }
+        .action-btn-delete:hover {
+            background: var(--danger-red);
+            color: #ffffff;
+        }
+
+        .action-btn-download {
+            background: #ecfdf5;
+            color: var(--live-green);
+        }
+        .action-btn-download:hover {
+            background: var(--live-green);
+            color: #ffffff;
+        }
+
+        /* Edit Mode Banner */
+        #editModeNotice {
+            display: none;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: var(--primary);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar Include -->
+    <%- include('../common/sidebar') %>
+
+    <!-- Main Content Panel (Properly Offset) -->
+    <div class="main-content">
+        <div class="container-fluid p-0">
+
+            <!-- Page Title Bar -->
+            <div class="page-header-wrap">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div>
+                        <h2 class="page-title">
+                            <span class="title-icon-box">
+                                <i class="fa-solid <%= 
+                                    currentCategory === 'leaders-photo' ? 'fa-camera-retro' :
+                                    currentCategory === 'infographics-banner' ? 'fa-chart-pie' :
+                                    currentCategory === 'quotes' ? 'fa-quote-left' :
+                                    'fa-mobile-screen' %>"></i>
+                            </span>
+                            <%= currentCategory === 'leaders-photo' ? 'Leaders Photo Management' :
+                                currentCategory === 'infographics-banner' ? 'Infographics & Banner Management' :
+                                currentCategory === 'quotes' ? 'Quotes Management' :
+                                'Mobile Wallpaper Management' %>
+                        </h2>
+                        <p class="page-sub">
+                            Manage official high-resolution media assets and downloads for the VIP web portal
+                        </p>
+                    </div>
+
+                    <!-- Direct View on Website Link -->
+                    <a href="http://localhost:3000/download/<%= currentCategory %>" target="_blank" class="btn btn-secondary-custom d-inline-flex align-items-center gap-2">
+                        <i class="fa-solid fa-arrow-up-right-from-square text-primary"></i>
+                        <span>View on Website</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Category Navigation Tabs (Strictly 4 sections, no 'All') -->
+            <div class="category-nav-pills">
+                <a href="/admin/downloads/leaders-photo" class="cat-btn <%= currentCategory === 'leaders-photo' ? 'active' : '' %>">
+                    <i class="fa-solid fa-camera-retro"></i>
+                    <span>Leaders Photo</span>
+                    <% if (typeof stats !== 'undefined' && stats.leadersPhotoCount) { %>
+                        <span class="badge-pill"><%= stats.leadersPhotoCount %></span>
+                    <% } %>
+                </a>
+
+                <a href="/admin/downloads/infographics-banner" class="cat-btn <%= currentCategory === 'infographics-banner' ? 'active' : '' %>">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Infographics & Banner</span>
+                    <% if (typeof stats !== 'undefined' && stats.infographicsCount) { %>
+                        <span class="badge-pill"><%= stats.infographicsCount %></span>
+                    <% } %>
+                </a>
+
+                <a href="/admin/downloads/quotes" class="cat-btn <%= currentCategory === 'quotes' ? 'active' : '' %>">
+                    <i class="fa-solid fa-quote-left"></i>
+                    <span>Quotes</span>
+                    <% if (typeof stats !== 'undefined' && stats.quotesCount) { %>
+                        <span class="badge-pill"><%= stats.quotesCount %></span>
+                    <% } %>
+                </a>
+
+                <a href="/admin/downloads/mobile-wallpaper" class="cat-btn <%= currentCategory === 'mobile-wallpaper' ? 'active' : '' %>">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <span>Mobile Wallpaper</span>
+                    <% if (typeof stats !== 'undefined' && stats.wallpaperCount) { %>
+                        <span class="badge-pill"><%= stats.wallpaperCount %></span>
+                    <% } %>
+                </a>
+            </div>
+
+            <!-- Notifications -->
+            <% if (typeof successMsg !== 'undefined' && successMsg) { %>
+                <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="fa-solid fa-circle-check text-success fs-5"></i>
+                    <div><%= successMsg %></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <% if (typeof errorMsg !== 'undefined' && errorMsg) { %>
+                <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm d-flex align-items-center gap-2 mb-4" role="alert">
+                    <i class="fa-solid fa-circle-exclamation text-danger fs-5"></i>
+                    <div><%= errorMsg %></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <% } %>
+
+            <!-- Top Row: Add/Edit Form (Left) & Image Preview (Right) -->
+            <div class="row g-4" id="formContainer">
+
+                <!-- Left Card: Add/Edit Form -->
+                <div class="col-lg-7">
+                    <div class="card h-100">
+                        <div class="card-header-custom">
+                            <h5 id="formTitle">
+                                <i class="fa-solid fa-circle-plus"></i>
+                                <span>Add New Item</span>
+                            </h5>
+                            <span class="badge bg-primary text-white" id="currentFormMode">New Item</span>
+                        </div>
+
+                        <div class="card-body-custom">
+
+                            <!-- Edit Active Alert -->
+                            <div id="editModeNotice">
+                                <span><i class="fa-solid fa-pen-to-square me-2"></i>You are currently editing this item</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="cancelEditTopBtn">Cancel</button>
+                            </div>
+
+                            <form id="downloadForm" action="/admin/downloads/add" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" id="itemId" name="itemId" value="">
+
+                                <!-- Title -->
+                                <div class="mb-3">
+                                    <label for="title">Title <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="title" name="title" required placeholder="e.g. Shri Mukesh Sahani - Son of Mallah">
+                                </div>
+
+                                <div class="row">
+                                    <!-- Category -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="category">Category <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="category" name="category" required>
+                                            <option value="leaders-photo" <%= currentCategory === 'leaders-photo' ? 'selected' : '' %>>Leaders Photo</option>
+                                            <option value="infographics-banner" <%= currentCategory === 'infographics-banner' ? 'selected' : '' %>>Infographics & Banner</option>
+                                            <option value="quotes" <%= currentCategory === 'quotes' ? 'selected' : '' %>>Quotes</option>
+                                            <option value="mobile-wallpaper" <%= currentCategory === 'mobile-wallpaper' ? 'selected' : '' %>>Mobile Wallpaper</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Author / Leader Name -->
+                                    <div class="col-md-6 mb-3">
+                                        <label for="author">Author / Leader Name</label>
+                                        <input type="text" class="form-control" id="author" name="author" placeholder="e.g. Shri Mukesh Sahani / VIP Media Cell">
+                                    </div>
+                                </div>
+
+                                <!-- Image Upload Option: File + URL -->
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="imageFile">Upload Image File</label>
+                                        <input type="file" class="form-control" id="imageFile" name="image" accept="image/*">
+                                        <small class="text-muted" style="font-size: 11px;">PNG, JPG, WEBP, SVG (Max 10MB)</small>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="imageUrl">Or Image URL</label>
+                                        <input type="text" class="form-control" id="imageUrl" name="imageUrl" placeholder="https://... or /images/downloads/...">
+                                    </div>
+                                </div>
+
+                                <!-- Caption / Description / Quote Text -->
+                                <div class="mb-3">
+                                    <label for="caption">Caption / Description / Quote Text</label>
+                                    <textarea class="form-control" id="caption" name="caption" placeholder="Provide description, quote text, or background details..."></textarea>
+                                </div>
+
+                                <!-- Publish Switch -->
+                                <div class="custom-switch mb-4">
+                                    <input class="form-check-input mt-0" type="checkbox" id="isPublished" name="isPublished" checked>
+                                    <label class="form-check-label mb-0" for="isPublished" style="cursor: pointer;">
+                                        <strong>Publish on Website</strong>
+                                        <span class="text-muted d-block" style="font-size: 11px;">When enabled, this item will immediately be visible on the public portal</span>
+                                    </label>
+                                </div>
+
+                                <!-- Submit & Reset Buttons -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <button class="btn btn-primary-custom" type="submit" id="submitBtn">
+                                        <i class="fa-solid fa-floppy-disk"></i>
+                                        <span id="btnSubmitText">Save Download</span>
+                                    </button>
+
+                                    <button type="button" class="btn btn-secondary-custom" id="resetBtn">
+                                        <i class="fa-solid fa-rotate-left me-1"></i>
+                                        <span>Reset</span>
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Card: Live Image Preview Area -->
+                <div class="col-lg-5">
+                    <div class="card h-100">
+                        <div class="card-header-custom">
+                            <h5>
+                                <i class="fa-solid fa-image"></i>
+                                <span>Live Image Preview</span>
+                            </h5>
+                            <span class="badge bg-light text-dark border" id="previewCategoryBadge">
+                                <%= currentCategory.replace('-', ' ').toUpperCase() %>
+                            </span>
+                        </div>
+
+                        <div class="card-body-custom d-flex flex-column justify-content-between">
+                            <!-- Preview Box -->
+                            <div class="preview-wrapper" id="previewContainer">
+                                <div class="preview-placeholder" id="previewPlaceholder">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <h6>No Image Selected</h6>
+                                    <p class="small text-muted mb-0">Select a local file or enter an image URL</p>
+                                </div>
+                                <img id="previewImg" src="" alt="Preview" style="display: none;">
+                                <span class="preview-badge" id="previewDimBadge" style="display: none;">HD</span>
+                            </div>
+
+                            <!-- Image Info Bar -->
+                            <div class="preview-info-box">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-circle-info text-primary"></i>
+                                    <span id="previewFileName">File Status: Waiting for input</span>
+                                </div>
+                                <span class="badge bg-secondary text-white" id="previewStatus">No Preview</span>
+                            </div>
+
+                            <!-- Section Guidelines -->
+                            <div class="p-3 bg-light rounded-3 mt-3 border" style="font-size: 12.5px;">
+                                <div class="fw-bold mb-1 text-primary">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Section Guidelines:
+                                </div>
+                                <ul class="mb-0 ps-3 text-muted">
+                                    <li><strong>Leaders Photo:</strong> High-resolution portraits of leadership</li>
+                                    <li><strong>Infographics & Banner:</strong> Campaign banners, posters, and flyers</li>
+                                    <li><strong>Quotes:</strong> Inspirational quotes and official statements</li>
+                                    <li><strong>Mobile Wallpaper:</strong> 9:16 smartphone lockscreen & homescreen backgrounds</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Full-Width Card: Download Items Data Table -->
+            <div class="card mt-4">
+                <div class="card-header-custom flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <h5>
+                            <i class="fa-solid fa-table-list"></i>
+                            <span><%= currentCategory === 'leaders-photo' ? 'Leaders Photo Items' :
+                                    currentCategory === 'infographics-banner' ? 'Infographics & Banner Items' :
+                                    currentCategory === 'quotes' ? 'Quotes Items' :
+                                    'Mobile Wallpaper Items' %></span>
+                        </h5>
+                        <span class="badge bg-primary rounded-pill"><%= items.length %> Items</span>
+                    </div>
+
+                    <!-- Search Filter Form -->
+                    <form action="/admin/downloads/<%= currentCategory %>" method="GET" class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-sm" style="max-width: 280px;">
+                            <input type="text" name="q" value="<%= searchQuery %>" class="form-control" placeholder="Search by title or author...">
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                        </div>
+                        <% if (searchQuery) { %>
+                            <a href="/admin/downloads/<%= currentCategory %>" class="btn btn-sm btn-outline-danger" title="Clear filter">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        <% } %>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width: 75px;">Image</th>
+                                <th>Title & Description</th>
+                                <th style="width: 160px;">Category</th>
+                                <th style="width: 110px;">Downloads</th>
+                                <th style="width: 110px;">Status</th>
+                                <th style="width: 140px;" class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="downloadTableBody">
+                            <% if (items && items.length > 0) { %>
+                                <% items.forEach(function(item) { %>
+                                    <tr id="row-<%= item._id %>"
+                                        data-id="<%= item._id %>"
+                                        data-title="<%= item.title %>"
+                                        data-category="<%= item.category %>"
+                                        data-imageurl="<%= item.imageUrl %>"
+                                        data-author="<%= item.author || '' %>"
+                                        data-caption="<%= item.caption || '' %>"
+                                        data-ispublished="<%= item.isPublished %>"
+                                    >
+                                        <td>
+                                            <img src="<%= item.imageUrl %>" alt="<%= item.title %>" class="table-thumb <%= item.category === 'mobile-wallpaper' ? 'wallpaper-thumb' : '' %>" onerror="this.src='/images/vip-logo.svg'">
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold text-dark"><%= item.title %></div>
+                                            <% if (item.author) { %>
+                                                <div class="small text-primary"><i class="fa-solid fa-user-tag me-1"></i><%= item.author %></div>
+                                            <% } %>
+                                            <% if (item.caption) { %>
+                                                <div class="small text-muted text-truncate" style="max-width: 380px;"><%= item.caption %></div>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="badge-cat badge-cat-<%= item.category %>">
+                                                <i class="fa-solid <%= 
+                                                    item.category === 'leaders-photo' ? 'fa-camera-retro' :
+                                                    item.category === 'infographics-banner' ? 'fa-chart-pie' :
+                                                    item.category === 'quotes' ? 'fa-quote-left' : 'fa-mobile-screen' %> me-1"></i>
+                                                <%= item.category.replace('-', ' ') %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="fa-solid fa-download text-success me-1"></i>
+                                                <span id="hits-<%= item._id %>"><%= item.downloadsCount || 0 %></span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="<%= item.isPublished ? 'badge-live-custom' : 'badge-hidden-custom' %>" onclick="togglePublishStatus('<%= item._id %>')" id="status-btn-<%= item._id %>">
+                                                <i class="fa-solid <%= item.isPublished ? 'fa-circle-check' : 'fa-circle-pause' %>"></i>
+                                                <span><%= item.isPublished ? 'Live' : 'Hidden' %></span>
+                                            </button>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="action-btn-group justify-content-end">
+                                                <!-- Edit Button -->
+                                                <button type="button" class="action-btn action-btn-edit" onclick="populateEditForm('<%= item._id %>')" title="Edit Item">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </button>
+
+                                                <!-- Direct Test Download Button -->
+                                                <a href="/api/downloads/track/<%= item._id %>" class="action-btn action-btn-download" title="Download File" target="_blank">
+                                                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                                                </a>
+
+                                                <!-- Delete Button Form -->
+                                                <form action="/admin/downloads/delete/<%= item._id %>" method="POST" class="d-inline" onsubmit="return confirmDelete('<%= item.title.replace(/'/g, "\\'") %>')">
+                                                    <button type="submit" class="action-btn action-btn-delete" title="Delete Item">
+                                                        <i class="fa-solid fa-trash-can"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="text-muted">
+                                            <i class="fa-solid fa-folder-open fs-1 mb-2 d-block text-secondary"></i>
+                                            <h5>No items found in this section</h5>
+                                            <p class="small mb-3">Use the form above to add a new item.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Client-Side Admin Interaction Logic -->
+    <script>
+        const form = document.getElementById('downloadForm');
+        const formTitle = document.getElementById('formTitle');
+        const currentFormMode = document.getElementById('currentFormMode');
+        const editModeNotice = document.getElementById('editModeNotice');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnSubmitText = document.getElementById('btnSubmitText');
+        const resetBtn = document.getElementById('resetBtn');
+        const cancelEditTopBtn = document.getElementById('cancelEditTopBtn');
+
+        // Fields
+        const itemIdInput = document.getElementById('itemId');
+        const titleInput = document.getElementById('title');
+        const categorySelect = document.getElementById('category');
+        const authorInput = document.getElementById('author');
+        const imageFileInput = document.getElementById('imageFile');
+        const imageUrlInput = document.getElementById('imageUrl');
+        const captionInput = document.getElementById('caption');
+        const isPublishedCheckbox = document.getElementById('isPublished');
+
+        // Preview Elements
+        const previewContainer = document.getElementById('previewContainer');
+        const previewPlaceholder = document.getElementById('previewPlaceholder');
+        const previewImg = document.getElementById('previewImg');
+        const previewDimBadge = document.getElementById('previewDimBadge');
+        const previewFileName = document.getElementById('previewFileName');
+        const previewStatus = document.getElementById('previewStatus');
+        const previewCategoryBadge = document.getElementById('previewCategoryBadge');
+
+        // Update Live Preview Image
+        function updatePreview(url, name = 'Selected Image', dim = 'HD') {
+            if (url && url.trim()) {
+                previewImg.src = url;
+                previewImg.style.display = 'block';
+                previewPlaceholder.style.display = 'none';
+                previewContainer.classList.add('has-image');
+                previewDimBadge.style.display = 'block';
+                previewDimBadge.textContent = dim || 'HD';
+                previewFileName.textContent = name;
+                previewStatus.className = 'badge bg-success text-white';
+                previewStatus.textContent = 'Preview Ready';
+            } else {
+                previewImg.style.display = 'none';
+                previewPlaceholder.style.display = 'block';
+                previewContainer.classList.remove('has-image');
+                previewDimBadge.style.display = 'none';
+                previewFileName.textContent = 'File Status: Waiting for input';
+                previewStatus.className = 'badge bg-secondary text-white';
+                previewStatus.textContent = 'No Preview';
+            }
+        }
+
+        // Listen for File Upload Selection
+        imageFileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    updatePreview(evt.target.result, file.name, 'Selected File');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Listen for URL Input Typing
+        imageUrlInput.addEventListener('input', function(e) {
+            if (this.value.trim()) {
+                updatePreview(this.value.trim(), 'Web URL Image', 'HD');
+            } else if (!imageFileInput.files.length) {
+                updatePreview('');
+            }
+        });
+
+        // Listen for Category Change
+        categorySelect.addEventListener('change', function() {
+            previewCategoryBadge.textContent = this.value.replace('-', ' ').toUpperCase();
+        });
+
+        // Reset to Add Mode
+        function resetForm() {
+            form.reset();
+            form.action = '/admin/downloads/add';
+            itemIdInput.value = '';
+            categorySelect.value = '<%= currentCategory %>';
+            formTitle.innerHTML = '<i class="fa-solid fa-circle-plus"></i> <span>Add New Item</span>';
+            currentFormMode.textContent = 'New Item';
+            currentFormMode.className = 'badge bg-primary text-white';
+            editModeNotice.style.display = 'none';
+            btnSubmitText.textContent = 'Save Download';
+            submitBtn.className = 'btn btn-primary-custom';
+            updatePreview('');
+        }
+
+        resetBtn.addEventListener('click', resetForm);
+        cancelEditTopBtn.addEventListener('click', resetForm);
+
+        // Populate Form for Editing
+        window.populateEditForm = function(id) {
+            const row = document.getElementById('row-' + id);
+            if (!row) return;
+
+            const title = row.getAttribute('data-title');
+            const category = row.getAttribute('data-category');
+            const imageurl = row.getAttribute('data-imageurl');
+            const author = row.getAttribute('data-author');
+            const caption = row.getAttribute('data-caption');
+            const ispublished = row.getAttribute('data-ispublished') === 'true';
+
+            // Set Form Action
+            form.action = '/admin/downloads/edit/' + id;
+            itemIdInput.value = id;
+
+            // Populate Fields
+            titleInput.value = title || '';
+            categorySelect.value = category || '<%= currentCategory %>';
+            authorInput.value = author || '';
+            imageUrlInput.value = imageurl || '';
+            captionInput.value = caption || '';
+            isPublishedCheckbox.checked = ispublished;
+
+            // Update UI State
+            formTitle.innerHTML = '<i class="fa-solid fa-pen-to-square text-warning"></i> <span>Edit Download Item</span>';
+            currentFormMode.textContent = 'Edit Mode';
+            currentFormMode.className = 'badge bg-warning text-dark';
+            editModeNotice.style.display = 'flex';
+            btnSubmitText.textContent = 'Update Item';
+            submitBtn.className = 'btn btn-warning text-dark fw-bold';
+
+            // Show Preview
+            previewCategoryBadge.textContent = category.replace('-', ' ').toUpperCase();
+            updatePreview(imageurl, title, 'HD');
+
+            // Smooth Scroll up to Form
+            document.getElementById('formContainer').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        // Confirm Delete (in English)
+        window.confirmDelete = function(title) {
+            return confirm(`Are you sure you want to delete "${title}" from the downloads collection?`);
+        };
+
+        // Toggle Publish Status via AJAX
+        window.togglePublishStatus = async function(id) {
+            const btn = document.getElementById('status-btn-' + id);
+            if (!btn) return;
+
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+
+            try {
+                const res = await fetch('/admin/downloads/toggle/' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const isPublished = data.isPublished;
+                    btn.className = isPublished ? 'badge-live-custom' : 'badge-hidden-custom';
+                    btn.innerHTML = `<i class="fa-solid ${isPublished ? 'fa-circle-check' : 'fa-circle-pause'}"></i> <span>${isPublished ? 'Live' : 'Hidden'}</span>`;
+                    
+                    const row = document.getElementById('row-' + id);
+                    if (row) {
+                        row.setAttribute('data-ispublished', isPublished);
+                    }
+                } else {
+                    alert('Status update failed: ' + (data.message || 'Error'));
+                }
+            } catch (err) {
+                alert('Server error occurred while updating status');
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            }
+        };
+
+        // Ensure Download section is automatically opened in sidebar
+        document.addEventListener('DOMContentLoaded', function() {
+            const downloadSidebarItem = document.getElementById('sidebarDownloadMenu');
+            if (downloadSidebarItem) {
+                downloadSidebarItem.classList.add('submenu-open');
+                const btn = downloadSidebarItem.querySelector('.sidebar-parent');
+                if (btn) {
+                    btn.classList.add('active-parent');
+                    btn.setAttribute('aria-expanded', 'true');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

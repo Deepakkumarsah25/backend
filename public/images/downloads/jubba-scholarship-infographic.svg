@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs>
+    <linearGradient id="schGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#022c22"/>
+      <stop offset="50%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#schGrad)"/>
+  
+  <rect x="50" y="50" width="980" height="980" rx="30" fill="none" stroke="#34d399" stroke-width="3"/>
+
+  <g transform="translate(540, 140)">
+    <rect x="-240" y="-30" width="480" height="60" rx="30" fill="#059669"/>
+    <text x="0" y="10" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="900" fill="#ffffff" text-anchor="middle">★ VIP जनकल्याणकारी योजना ★</text>
+  </g>
+
+  <text x="540" y="270" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="46" font-weight="900" fill="#fde047" text-anchor="middle">अमर शहीद जुब्बा सहनी</text>
+  <text x="540" y="340" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="52" font-weight="900" fill="#ffffff" text-anchor="middle">मेधा छात्रवृत्ति योजना</text>
+
+  <!-- Info Points Cards -->
+  <g transform="translate(100, 420)">
+    <rect x="0" y="0" width="880" height="110" rx="20" fill="#065f46" stroke="#10b981" stroke-width="2"/>
+    <circle cx="60" cy="55" r="30" fill="#34d399"/>
+    <text x="60" y="65" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="28" font-weight="900" fill="#022c22" text-anchor="middle">1</text>
+    <text x="120" y="48" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="800" fill="#ffffff">उच्च शिक्षा के लिए आर्थिक सहायता</text>
+    <text x="120" y="85" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="20" font-weight="500" fill="#a7f3d0">10वीं, 12वीं एवं स्नातक के मेधावी छात्र-छात्राओं को विशेष प्रोत्साहन</text>
+  </g>
+
+  <g transform="translate(100, 560)">
+    <rect x="0" y="0" width="880" height="110" rx="20" fill="#065f46" stroke="#10b981" stroke-width="2"/>
+    <circle cx="60" cy="55" r="30" fill="#34d399"/>
+    <text x="60" y="65" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="28" font-weight="900" fill="#022c22" text-anchor="middle">2</text>
+    <text x="120" y="48" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="800" fill="#ffffff">100% पारदर्शी ऑनलाइन आवेदन</text>
+    <text x="120" y="85" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="20" font-weight="500" fill="#a7f3d0">सीधे आधिकारिक पोर्टल vipparty.in/scholarship से आवेदन करें</text>
+  </g>
+
+  <g transform="translate(100, 700)">
+    <rect x="0" y="0" width="880" height="110" rx="20" fill="#065f46" stroke="#10b981" stroke-width="2"/>
+    <circle cx="60" cy="55" r="30" fill="#34d399"/>
+    <text x="60" y="65" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="28" font-weight="900" fill="#022c22" text-anchor="middle">3</text>
+    <text x="120" y="48" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="800" fill="#ffffff">बिहार के हर होनहार छात्र का भविष्य उज्ज्वल</text>
+    <text x="120" y="85" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="20" font-weight="500" fill="#a7f3d0">गरीबी के कारण अब किसी युवा की पढ़ाई नहीं रुकेगी</text>
+  </g>
+
+  <!-- Bottom CTA -->
+  <g transform="translate(540, 890)">
+    <rect x="-220" y="-35" width="440" height="70" rx="35" fill="#fde047"/>
+    <text x="0" y="10" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="900" fill="#022c22" text-anchor="middle">आज ही ऑनलाइन आवेदन करें</text>
+  </g>
+
+  <text x="540" y="990" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="20" font-weight="700" fill="#a7f3d0" text-anchor="middle">विकासशील इंसान पार्टी (VIP) छात्र कल्याण विंग</text>
+</svg>
