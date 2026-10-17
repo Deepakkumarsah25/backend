@@ -314,6 +314,58 @@
       </li>
 
       <!-- =========================
+           DOWNLOAD SECTION (डाउनलोड प्रबंधन)
+      ========================== -->
+      <li class="sidebar-item has-submenu" id="sidebarDownloadMenu">
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon" style="color: #38bdf8;">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+            </span>
+
+            <span class="sidebar-text"> Download </span>
+          </span>
+
+          <span class="sidebar-badge"
+            style="background: #0284c7; color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto; margin-right: 6px;">
+            4
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/admin/downloads/leaders-photo">
+              <i class="fa-solid fa-camera-retro" style="color: #60a5fa;"></i>
+              <span>Leaders Photo</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/downloads/infographics-banner">
+              <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i>
+              <span>Infographics & Banner</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/downloads/quotes">
+              <i class="fa-solid fa-quote-left" style="color: #818cf8;"></i>
+              <span>Quotes</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/downloads/mobile-wallpaper">
+              <i class="fa-solid fa-mobile-screen" style="color: #10b981;"></i>
+              <span>Mobile Wallpaper</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
            CONTENT MANAGEMENT
       ========================== -->
       <li class="sidebar-item has-submenu">
@@ -562,6 +614,18 @@
         }
       }
     });
+
+    if (currentPath.startsWith("/admin/downloads")) {
+      const dlItem = document.getElementById("sidebarDownloadMenu");
+      if (dlItem) {
+        dlItem.classList.add("submenu-open");
+        const btn = dlItem.querySelector(".sidebar-parent");
+        if (btn) {
+          btn.classList.add("active-parent");
+          btn.setAttribute("aria-expanded", "true");
+        }
+      }
+    }
 
     /* ==========================================
      ACCORDION

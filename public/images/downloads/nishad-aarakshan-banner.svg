@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="rallyBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#001428"/>
+      <stop offset="50%" stop-color="#004b87"/>
+      <stop offset="100%" stop-color="#001e38"/>
+    </linearGradient>
+    <linearGradient id="goldRibbon" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fde047"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#rallyBg)"/>
+
+  <!-- Top Ribbon -->
+  <rect x="0" y="0" width="1920" height="70" fill="#001426"/>
+  <text x="960" y="46" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="900" fill="#fbbf24" text-anchor="middle" letter-spacing="2">विकासशील इंसान पार्टी (VIP) आधिकारिक महाअभियान बैनर</text>
+
+  <!-- Left Boat Logo Graphic -->
+  <g transform="translate(240, 520)">
+    <circle cx="0" cy="0" r="160" fill="#002b54" stroke="url(#goldRibbon)" stroke-width="6"/>
+    <!-- Stylized Boat -->
+    <path d="M-90,30 C-50,80 50,80 90,30 C70,55 -70,55 -90,30 Z" fill="#fbbf24"/>
+    <path d="M-10,30 L-10,-70 L40,-10 Z" fill="#38bdf8"/>
+    <line x1="-10" y1="30" x2="-10" y2="-80" stroke="#f8fafc" stroke-width="4"/>
+    <text x="0" y="115" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="28" font-weight="900" fill="#ffffff" text-anchor="middle">VIP PARTY</text>
+  </g>
+
+  <!-- Main Headline -->
+  <g transform="translate(600, 260)">
+    <rect x="0" y="0" width="460" height="50" rx="25" fill="#dc2626"/>
+    <text x="230" y="34" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="900" fill="#ffffff" text-anchor="middle">★ ऐतिहासिक संकल्प महारैली ★</text>
+  </g>
+
+  <text x="600" y="420" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="84" font-weight="900" fill="#ffffff">निषाद आरक्षण संकल्प यात्रा</text>
+  <text x="600" y="520" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="52" font-weight="900" fill="#fbbf24">"आरक्षण नहीं तो गठबंधन नहीं, वोट नहीं!"</text>
+  
+  <text x="600" y="610" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="32" font-weight="600" fill="#cbd5e1">बिहार के निषाद, मल्लाह, बिंद, बेलदार और अति-पिछड़े समाज का हक लेकर रहेंगे।</text>
+  <text x="600" y="670" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="500" fill="#93c5fd">नेतृत्व: 'सन ऑफ मल्लाह' श्री मुकेश सहनी (राष्ट्रीय अध्यक्ष, वीआईपी)</text>
+
+  <!-- Call to action boxes -->
+  <g transform="translate(600, 740)">
+    <rect x="0" y="0" width="340" height="90" rx="16" fill="#f59e0b"/>
+    <text x="170" y="55" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="900" fill="#001426" text-anchor="middle">एकजुट हों, अधिकार पाएं</text>
+  </g>
+
+  <g transform="translate(980, 740)">
+    <rect x="0" y="0" width="360" height="90" rx="16" fill="#002b54" stroke="#38bdf8" stroke-width="2"/>
+    <text x="180" y="55" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="24" font-weight="800" fill="#ffffff" text-anchor="middle">JOIN: vipparty.in</text>
+  </g>
+
+  <!-- Bottom Strip -->
+  <rect x="0" y="960" width="1920" height="120" fill="#001020"/>
+  <line x1="0" y1="960" x2="1920" y2="960" stroke="url(#goldRibbon)" stroke-width="4"/>
+  <text x="80" y="1030" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="700" fill="#f8fafc">विकासशील इंसान पार्टी - सामाजिक न्याय एवं स्वाभिमान</text>
+  <text x="1840" y="1030" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="24" font-weight="700" fill="#fbbf24" text-anchor="end">HD DIGITAL BANNER (1920x1080)</text>
+</svg>

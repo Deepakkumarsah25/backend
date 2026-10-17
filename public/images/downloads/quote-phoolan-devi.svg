@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+  <defs>
+    <linearGradient id="quote3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4c0519"/>
+      <stop offset="50%" stop-color="#831843"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1080" height="1080" fill="url(#quote3Grad)"/>
+  <rect x="40" y="40" width="1000" height="1000" rx="30" fill="none" stroke="#f43f5e" stroke-width="2.5"/>
+
+  <text x="120" y="260" font-family="Georgia, serif" font-size="200" font-weight="900" fill="#f43f5e" opacity="0.3">“</text>
+
+  <g transform="translate(540, 140)">
+    <rect x="-220" y="-30" width="440" height="60" rx="30" fill="#881337"/>
+    <text x="0" y="10" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="24" font-weight="900" fill="#fecdd3" text-anchor="middle">★ संघर्ष एवं स्वाभिमान ★</text>
+  </g>
+
+  <text x="540" y="370" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle">
+    "हक और अधिकार मांगने से नहीं,
+  </text>
+  <text x="540" y="440" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="46" font-weight="900" fill="#fde047" text-anchor="middle">
+    छीनने से मिलता है!"
+  </text>
+
+  <text x="540" y="560" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="500" fill="#fbcfe8" text-anchor="middle">
+    अपने समाज के मान-सम्मान के लिए
+  </text>
+  <text x="540" y="610" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="500" fill="#fbcfe8" text-anchor="middle">
+    कभी किसी जुल्म के आगे मत झुको।
+  </text>
+  <text x="540" y="680" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="32" font-weight="800" fill="#ffffff" text-anchor="middle">
+    हिम्मत और संघर्ष ही सबसे बड़ी ताकत है।
+  </text>
+
+  <g transform="translate(540, 830)">
+    <circle cx="-160" cy="0" r="45" fill="#be123c"/>
+    <text x="-160" y="10" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="20" font-weight="900" fill="#ffffff" text-anchor="middle">वीरांगना</text>
+    <text x="-90" y="-8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="32" font-weight="900" fill="#ffffff" text-anchor="start">वीरांगना फूलन देवी</text>
+    <text x="-90" y="28" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="20" font-weight="600" fill="#fda4af" text-anchor="start">पूर्व सांसद एवं नारी स्वाभिमान की प्रतीक</text>
+  </g>
+
+  <text x="540" y="990" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="20" font-weight="700" fill="#fda4af" text-anchor="middle">विकासशील इंसान पार्टी (VIP)</text>
+</svg>

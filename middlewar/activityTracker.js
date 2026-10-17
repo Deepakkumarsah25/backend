@@ -104,10 +104,15 @@ export const activityTrackerMiddleware = (req, res, next) => {
         section = "Administration (Admin Agent)";
         action = "Updated Agent Verification Status";
         actionType = "update";
-      } else if (lowerUrl.includes("contact")) {
-        section = "Contact & Offices";
-        action = "Updated Contact Information / Office";
-        actionType = "update";
+      } else if (lowerUrl.includes("download")) {
+        section = "Downloads Management";
+        action = req.method === "DELETE" || lowerUrl.includes("delete")
+          ? "Deleted Download Item"
+          : lowerUrl.includes("edit")
+          ? "Updated Download Item"
+          : "Added New Download Item";
+        actionType = req.method === "DELETE" || lowerUrl.includes("delete") ? "delete" : lowerUrl.includes("edit") ? "update" : "create";
+        if (req.body?.title) details = `Download: ${req.body.title}`;
       } else {
         section = "Admin Operations";
         action = `Admin Action (${req.method} ${req.path})`;
