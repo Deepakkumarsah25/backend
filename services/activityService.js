@@ -72,6 +72,7 @@ export const getSectionIcon = (section = "") => {
   if (s.includes("agent")) return "fa-solid fa-user-shield";
   if (s.includes("contact")) return "fa-solid fa-address-book";
   if (s.includes("scroller")) return "fa-solid fa-scroll";
+  if (s.includes("download")) return "fa-solid fa-cloud-arrow-down";
   if (s.includes("login") || s.includes("auth")) return "fa-solid fa-right-to-bracket";
   return "fa-solid fa-pen-to-square";
 };

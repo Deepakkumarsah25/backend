@@ -384,9 +384,116 @@
         </ul>
       </li>
 
+<<<<<<< HEAD
       <!-- Category 5: SYSTEM & SECURITY -->
       <li class="sidebar-category-header">
         <span>System & Support</span>
+=======
+      <!-- =========================
+           DOWNLOAD SECTION (डाउनलोड प्रबंधन)
+      ========================== -->
+      <li class="sidebar-item has-submenu" id="sidebarDownloadMenu">
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon" style="color: #38bdf8;">
+              <i class="fa-solid fa-cloud-arrow-down"></i>
+            </span>
+
+            <span class="sidebar-text"> Download </span>
+          </span>
+
+          <span class="sidebar-badge"
+            style="background: #0284c7; color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto; margin-right: 6px;">
+            4
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/admin/downloads/leaders-photo">
+              <i class="fa-solid fa-camera-retro" style="color: #60a5fa;"></i>
+              <span>Leaders Photo</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/downloads/infographics-banner">
+              <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i>
+              <span>Infographics & Banner</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/downloads/quotes">
+              <i class="fa-solid fa-quote-left" style="color: #818cf8;"></i>
+              <span>Quotes</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/downloads/mobile-wallpaper">
+              <i class="fa-solid fa-mobile-screen" style="color: #10b981;"></i>
+              <span>Mobile Wallpaper</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- =========================
+           CONTENT MANAGEMENT
+      ========================== -->
+      <li class="sidebar-item has-submenu">
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </span>
+
+            <span class="sidebar-text"> Content Management </span>
+          </span>
+
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/news">
+              <i class="fa-solid fa-newspaper"></i>
+              <span>News Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/events">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Events Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/scroller">
+              <i class="fa-solid fa-images"></i>
+              <span>Hero Banner (Web & App)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/cms">
+              <i class="fa-solid fa-file-pen"></i>
+              <span>About VIP (CMS)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/bainar">
+              <i class="fa-solid fa-house-flag"></i>
+              <span>Live Updates Bainar</span>
+            </a>
+          </li>
+        </ul>
+>>>>>>> dace983c5a77840606a33f6805f607d6e2df4209
       </li>
 
       <!-- USER MANAGEMENT -->
@@ -602,6 +709,7 @@
       }
     });
 
+<<<<<<< HEAD
     // 4. RESTORE OPEN GROUPS FROM SESSION STORAGE
     let savedOpenGroups = [];
     try {
@@ -654,6 +762,23 @@
         e.preventDefault();
         const currentItem = btn.closest(".has-submenu");
         if (!currentItem) return;
+=======
+    if (currentPath.startsWith("/admin/downloads")) {
+      const dlItem = document.getElementById("sidebarDownloadMenu");
+      if (dlItem) {
+        dlItem.classList.add("submenu-open");
+        const btn = dlItem.querySelector(".sidebar-parent");
+        if (btn) {
+          btn.classList.add("active-parent");
+          btn.setAttribute("aria-expanded", "true");
+        }
+      }
+    }
+
+    /* ==========================================
+     ACCORDION
+  ========================================== */
+>>>>>>> dace983c5a77840606a33f6805f607d6e2df4209
 
         const isOpen = currentItem.classList.contains("submenu-open");
         currentItem.classList.toggle("submenu-open", !isOpen);

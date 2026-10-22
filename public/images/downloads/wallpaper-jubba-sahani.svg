@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <linearGradient id="wp4Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#wp4Grad)"/>
+
+  <g transform="translate(540, 260)">
+    <text x="0" y="0" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="100" font-weight="300" fill="#ffffff" text-anchor="middle">06:00</text>
+    <text x="0" y="55" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="26" font-weight="500" fill="#fde047" text-anchor="middle">अमर क्रांतिकारी स्मरण</text>
+  </g>
+
+  <!-- Central Shield -->
+  <g transform="translate(540, 880)">
+    <circle cx="0" cy="0" r="240" fill="#312e81" stroke="#f59e0b" stroke-width="5"/>
+    <circle cx="0" cy="-30" r="90" fill="#fed7aa"/>
+    <path d="M-130,180 C-130,110 -70,80 0,80 C70,80 130,110 130,180 Z" fill="#ffffff"/>
+  </g>
+
+  <g transform="translate(540, 1260)">
+    <rect x="-180" y="-24" width="360" height="48" rx="24" fill="#dc2626"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">अमर बलिदानी</text>
+  </g>
+
+  <text x="540" y="1400" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="52" font-weight="900" fill="#ffffff" text-anchor="middle">अमर शहीद जुब्बा सहनी</text>
+  <text x="540" y="1470" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="600" fill="#cbd5e1" text-anchor="middle">"देश और समाज के लिए बलिदान अमर है"</text>
+
+  <text x="540" y="1580" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="22" font-weight="800" fill="#fbbf24" text-anchor="middle">VIP PARTY HEROIC TRIBUTE WALLPAPER</text>
+
+  <rect x="440" y="1860" width="200" height="6" rx="3" fill="#ffffff" opacity="0.7"/>
+</svg>

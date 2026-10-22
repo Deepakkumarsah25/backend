@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" width="1200" height="1500">
+  <defs>
+    <linearGradient id="jubbaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="amberGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#jubbaGrad)"/>
+  <circle cx="600" cy="580" r="320" fill="#312e81" opacity="0.3"/>
+  <circle cx="600" cy="580" r="260" fill="#1e1b4b" stroke="url(#amberGold)" stroke-width="6"/>
+
+  <g transform="translate(600, 110)">
+    <rect x="-260" y="-36" width="520" height="72" rx="36" fill="#1e1b4b" stroke="url(#amberGold)" stroke-width="2"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="24" font-weight="900" fill="#fbbf24" text-anchor="middle">★ अमर शहीद कुल गौरव ★</text>
+  </g>
+
+  <!-- Stylized Martyr Silhouette -->
+  <g transform="translate(600, 580)">
+    <circle cx="0" cy="-30" r="100" fill="#fed7aa"/>
+    <path d="M-140,200 C-140,120 -80,80 0,80 C80,80 140,120 140,200 Z" fill="#ffffff"/>
+    <path d="M-100,-70 C-90,-120 0,-140 0,-140 C0,-140 90,-120 100,-70 Z" fill="#475569"/>
+  </g>
+
+  <g transform="translate(600, 880)">
+    <rect x="-200" y="-24" width="400" height="48" rx="24" fill="#dc2626"/>
+    <text x="0" y="8" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">भारतीय स्वतंत्रता सेनानी (1906 - 1944)</text>
+  </g>
+
+  <text x="600" y="1030" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="62" font-weight="900" fill="#ffffff" text-anchor="middle">अमर शहीद जुब्बा सहनी</text>
+  <text x="600" y="1090" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="32" font-weight="700" fill="#fbbf24" text-anchor="middle">AMAR SHAHEED JUBBA SAHANI</text>
+
+  <text x="600" y="1170" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="28" font-weight="600" fill="#e2e8f0" text-anchor="middle">अंग्रेजी हुकूमत के छक्के छुड़ाने वाले स्वतंत्रता संग्राम के अमर नायक</text>
+  <text x="600" y="1220" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="500" fill="#94a3b8" text-anchor="middle">11 मार्च 1944 को भागलपुर सेंट्रल जेल में हंसते-हंसते फांसी के फंदे को चूमा</text>
+
+  <rect x="0" y="1380" width="1200" height="120" fill="#020617"/>
+  <line x1="0" y1="1380" x2="1200" y2="1380" stroke="url(#amberGold)" stroke-width="4"/>
+  <text x="80" y="1450" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="22" font-weight="700" fill="#f8fafc">विकासशील इंसान पार्टी (VIP)</text>
+  <text x="1120" y="1450" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="20" font-weight="700" fill="#fbbf24" text-anchor="end">HEROIC TRIBUTE ARCHIVE</text>
+</svg>

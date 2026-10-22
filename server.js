@@ -53,6 +53,8 @@ import { activityTrackerMiddleware } from "./middlewar/activityTracker.js";
 import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 import adminFormsRoutes from "./routes/adminFormsRoutes.js";
 import websiteRoutes from "./routes/websiteRoutes.js";
+import downloadRoutes from "./routes/downloadRoutes.js";
+import { seedInitialDownloads } from "./controllers/downloadController.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -209,6 +211,8 @@ app.use("/api/users", userRoutes);
 app.use("/admin/website", websiteRoutes);
 app.use("/admin/forms", adminFormsRoutes);
 app.use("/forms", adminFormsRoutes);
+app.use("/admin/downloads", downloadRoutes);
+app.use("/admin/download", downloadRoutes);
 app.use("/", adminRoutes);
 
 /*
@@ -218,6 +222,7 @@ app.use("/api", apiRoutes);
 
 app.use("/api", searchRoutes);
 app.use("/api", mediaRoutes);
+app.use("/api/downloads", downloadRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use("/api", vipLiveRoute);
@@ -481,6 +486,7 @@ mongoose
     );
     try {
       await seedAdminsAndActivities();
+      await seedInitialDownloads();
     } catch (seedErr) {
       console.error("Seeding error:", seedErr);
     }
