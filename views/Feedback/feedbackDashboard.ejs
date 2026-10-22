@@ -688,8 +688,8 @@ button:focus-visible, input:focus-visible{
         <div class="brand">
             <div class="brand-mark"><i class="fa-solid fa-comments"></i></div>
             <div>
-                <h1>Feedback</h1>
-                <p>Manage user feedback, ratings and suggestions</p>
+                <h1>User Feedback <span style="background: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; vertical-align: middle;">VIP APP ONLY</span></h1>
+                <p>Manage VIP mobile application feedback, user star ratings and suggestions (केवल मोबाइल ऐप)</p>
             </div>
         </div>
 
@@ -976,7 +976,7 @@ function renderFeedbacks(feedbacks){
                         <div class="user-avatar" style="background:${grad}">${firstLetter}</div>
                         <div>
                             <div class="user-name">${name}</div>
-                            <div class="email">${email}</div>
+                            <div class="email">${email !== '-' ? email : (item.phone ? '+91 ' + escapeHtml(item.phone) : '-')}</div>
                         </div>
                     </div>
                 </td>

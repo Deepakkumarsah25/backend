@@ -142,6 +142,13 @@
           </li>
 
           <li>
+            <a href="/admin/website/feedback">
+              <i class="fa-solid fa-comments"></i>
+              <span>Website Feedback (वेब संदेश)</span>
+            </a>
+          </li>
+
+          <li>
             <a href="/admin/forms?type=contacts">
               <i class="fa-solid fa-envelope-open-text"></i>
               <span>Contact Inquiries (संपर्क)</span>
@@ -384,11 +391,9 @@
         </ul>
       </li>
 
-<<<<<<< HEAD
       <!-- Category 5: SYSTEM & SECURITY -->
       <li class="sidebar-category-header">
         <span>System & Support</span>
-=======
       <!-- =========================
            DOWNLOAD SECTION (डाउनलोड प्रबंधन)
       ========================== -->
@@ -493,7 +498,6 @@
             </a>
           </li>
         </ul>
->>>>>>> dace983c5a77840606a33f6805f607d6e2df4209
       </li>
 
       <!-- USER MANAGEMENT -->
@@ -519,8 +523,8 @@
 
           <li>
             <a href="/feedback-admin">
-              <i class="fa-solid fa-comments"></i>
-              <span>User Feedback</span>
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <span>User Feedback (App)</span>
             </a>
           </li>
 
@@ -709,7 +713,6 @@
       }
     });
 
-<<<<<<< HEAD
     // 4. RESTORE OPEN GROUPS FROM SESSION STORAGE
     let savedOpenGroups = [];
     try {
@@ -762,7 +765,6 @@
         e.preventDefault();
         const currentItem = btn.closest(".has-submenu");
         if (!currentItem) return;
-=======
     if (currentPath.startsWith("/admin/downloads")) {
       const dlItem = document.getElementById("sidebarDownloadMenu");
       if (dlItem) {
@@ -778,7 +780,6 @@
     /* ==========================================
      ACCORDION
   ========================================== */
->>>>>>> dace983c5a77840606a33f6805f607d6e2df4209
 
         const isOpen = currentItem.classList.contains("submenu-open");
         currentItem.classList.toggle("submenu-open", !isOpen);

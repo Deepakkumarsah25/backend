@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>वेबसाइट संदेश एवं पूछताछ (Website Feedback) - VIP Admin Panel</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Admin Core Styles -->
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+    
+    <style>
+        :root {
+            --primary: #0b4ea2;
+            --primary-dark: #073570;
+            --primary-light: #e8f1fc;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --info: #0284c7;
+            --bg-gray: #f8fafc;
+            --card-border: #e2e8f0;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Sidebar & Header Integration */
+        .main-content {
+            margin-left: var(--sidebar-width, 270px);
+            margin-top: var(--header-height, 72px);
+            padding: 28px 32px 60px;
+            min-height: calc(100vh - 72px);
+            transition: margin-left var(--sidebar-transition, 0.25s ease);
+            background-color: var(--bg-gray);
+            width: calc(100% - var(--sidebar-width, 270px));
+        }
+
+        body.sidebar-collapsed .main-content {
+            margin-left: var(--sidebar-collapsed-width, 78px);
+            width: calc(100% - var(--sidebar-collapsed-width, 78px));
+        }
+
+        @media (max-width: 992px) {
+            .main-content,
+            body.sidebar-collapsed .main-content {
+                margin-left: 0 !important;
+                margin-top: 68px;
+                padding: 16px 14px 40px;
+                width: 100% !important;
+            }
+        }
+
+        .wf-container {
+            max-width: 1550px;
+            margin: 0 auto;
+        }
+
+        /* Page Header */
+        .page-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .header-title-box h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title-box p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .site-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(11, 78, 162, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--text-dark);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.06);
+        }
+
+        .stat-card.active {
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+
+        .stat-info h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-info .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-top: 4px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat-icon.total { background: #e0f2fe; color: #0284c7; }
+        .stat-icon.new { background: #fef3c7; color: #d97706; }
+        .stat-icon.progress { background: #ede9fe; color: #7c3aed; }
+        .stat-icon.resolved { background: #dcfce7; color: #16a34a; }
+
+        /* Filter & Search Bar */
+        .filter-bar {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px 20px;
+            border: 1px solid var(--card-border);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 500px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover {
+            color: var(--text-dark);
+            background: #f1f5f9;
+        }
+
+        .filter-tab.active {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* Table Card */
+        .table-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            padding: 14px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--card-border);
+            vertical-align: middle;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* User Profile in Table */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0b4ea2, #1e40af);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .user-name {
+            font-weight: 700;
+            color: var(--text-dark);
+            font-size: 14px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Phone & WhatsApp links */
+        .phone-cell {
+            white-space: nowrap;
+        }
+
+        .phone-link {
+            font-weight: 600;
+            color: var(--text-dark);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .phone-link:hover {
+            color: var(--primary);
+        }
+
+        .wa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: #dcfce7;
+            color: #16a34a;
+            margin-left: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .wa-btn:hover {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-new { background: #fef3c7; color: #b45309; }
+        .badge-progress { background: #ede9fe; color: #6d28d9; }
+        .badge-resolved { background: #dcfce7; color: #15803d; }
+
+        .subject-pill {
+            background: #f1f5f9;
+            color: #334155;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .msg-preview {
+            max-width: 280px;
+            font-size: 13px;
+            color: #475569;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        /* Status Select in Table */
+        .status-select {
+            padding: 5px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid var(--card-border);
+            background: #fff;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Action Buttons */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--card-border);
+            background: #fff;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            color: var(--primary);
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .btn-icon.delete:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+            background: #fee2e2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-modal-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .info-field label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-field p {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            word-break: break-all;
+        }
+
+        .msg-full-box {
+            background: #f8fafc;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .msg-full-box h4 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .msg-full-box pre {
+            font-family: inherit;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-replies {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #0f172a;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Admin Header Component -->
+    <%- include('../common/header') %>
+
+    <!-- Admin Sidebar Component -->
+    <%- include('../common/sidebar') %>
+
+    <!-- Main Content Area with sidebar offset -->
+    <main class="main-content">
+        <div class="wf-container">
+        
+        <!-- Page Header -->
+        <div class="page-header-row">
+            <div class="header-title-box">
+                <h1>
+                    <i class="fa-solid fa-comments text-primary" style="color: var(--primary);"></i>
+                    वेबसाइट संदेश एवं पूछताछ (Website Feedback)
+                    <span class="site-badge">WEBSITE ONLY</span>
+                </h1>
+                <p>विकासशील इंसान पार्टी की आधिकारिक वेबसाइट (vipparty.in) के 'Contact Us' पेज से प्राप्त संदेश</p>
+            </div>
+
+            <div class="header-actions">
+                <a href="/admin/website/feedback/export" class="btn-action btn-secondary" title="CSV फ़ाइल डाउनलोड करें">
+                    <i class="fa-solid fa-file-csv text-success" style="color: #10b981;"></i>
+                    CSV Export
+                </a>
+                <a href="/admin/website/feedback" class="btn-action btn-primary" title="रिफ्रेश करें">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    रिफ्रेश
+                </a>
+            </div>
+        </div>
+
+        <!-- Live Statistics Cards -->
+        <div class="stats-grid">
+            <a href="/admin/website/feedback?status=all" class="stat-card <%= selectedStatus === 'all' ? 'active' : '' %>">
+                <div class="stat-info">
+                    <h3>कुल संदेश (Total)</h3>
+                    <div class="stat-value"><%= stats.total %></div>
+                </div>
+                <div class="stat-icon total">
+                    <i class="fa-solid fa-inbox"></i>
+                </div>
+            </a>
+
+            <a href="/admin/website/feedback?status=New" class="stat-card <%= selectedStatus.toLowerCase() === 'new' ? 'active' : '' %>">
+                <div class="stat-info">
+                    <h3>नए संदेश (New)</h3>
+                    <div class="stat-value"><%= stats.new %></div>
+                </div>
+                <div class="stat-icon new">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+            </a>
+
+            <a href="/admin/website/feedback?status=In Progress" class="stat-card <%= selectedStatus.toLowerCase() === 'in progress' ? 'active' : '' %>">
+                <div class="stat-info">
+                    <h3>प्रक्रियाधीन (In Progress)</h3>
+                    <div class="stat-value"><%= stats.inProgress %></div>
+                </div>
+                <div class="stat-icon progress">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+            </a>
+
+            <a href="/admin/website/feedback?status=Resolved" class="stat-card <%= selectedStatus.toLowerCase() === 'resolved' ? 'active' : '' %>">
+                <div class="stat-info">
+                    <h3>निस्तारित (Resolved)</h3>
+                    <div class="stat-value"><%= stats.resolved %></div>
+                </div>
+                <div class="stat-icon resolved">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+            </a>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="filter-bar">
+            <form action="/admin/website/feedback" method="GET" class="search-box">
+                <% if (selectedStatus !== 'all') { %>
+                    <input type="hidden" name="status" value="<%= selectedStatus %>">
+                <% } %>
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" name="q" value="<%= searchQuery || '' %>" placeholder="नाम, मोबाइल, ईमेल या संदेश में खोजें...">
+            </form>
+
+            <div class="filter-tabs">
+                <a href="/admin/website/feedback?status=all<%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>" 
+                   class="filter-tab <%= selectedStatus === 'all' ? 'active' : '' %>">सभी (<%= stats.total %>)</a>
+
+                <a href="/admin/website/feedback?status=New<%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>" 
+                   class="filter-tab <%= selectedStatus.toLowerCase() === 'new' ? 'active' : '' %>">नए (<%= stats.new %>)</a>
+
+                <a href="/admin/website/feedback?status=In Progress<%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>" 
+                   class="filter-tab <%= selectedStatus.toLowerCase() === 'in progress' ? 'active' : '' %>">प्रक्रियाधीन (<%= stats.inProgress %>)</a>
+
+                <a href="/admin/website/feedback?status=Resolved<%= searchQuery ? '&q=' + encodeURIComponent(searchQuery) : '' %>" 
+                   class="filter-tab <%= selectedStatus.toLowerCase() === 'resolved' ? 'active' : '' %>">निस्तारित (<%= stats.resolved %>)</a>
+            </div>
+        </div>
+
+        <!-- Messages Table Card -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>प्रेषक / नागरिक (Sender)</th>
+                            <th>मोबाइल नंबर (Phone)</th>
+                            <th>विषय / श्रेणी (Subject)</th>
+                            <th>संदेश (Message)</th>
+                            <th>स्थिति (Status)</th>
+                            <th>दिनांक (Date)</th>
+                            <th style="text-align: right;">कार्रवाई (Action)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (messages && messages.length > 0) { %>
+                            <% messages.forEach((item, idx) => { 
+                                const initial = (item.name || 'U').charAt(0).toUpperCase();
+                                const cleanPhone = (item.phone || '').replace(/\D/g, '').slice(-10);
+                                const status = item.status || 'New';
+                            %>
+                                <tr id="row-<%= item._id %>">
+                                    <td style="color: var(--text-muted); font-weight: 600;"><%= idx + 1 %></td>
+
+                                    <!-- User Name & Email -->
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar"><%= initial %></div>
+                                            <div>
+                                                <div class="user-name"><%= item.name || 'Unknown' %></div>
+                                                <div class="user-email"><%= item.email || 'ईमेल उपलब्ध नहीं' %></div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Phone Number -->
+                                    <td>
+                                        <div class="phone-cell">
+                                            <a href="tel:+91<%= cleanPhone %>" class="phone-link">
+                                                <i class="fa-solid fa-phone text-muted" style="font-size: 12px;"></i>
+                                                +91 <%= cleanPhone || item.phone %>
+                                            </a>
+                                            <% if (cleanPhone) { %>
+                                                <a href="https://wa.me/91<%= cleanPhone %>" target="_blank" class="wa-btn" title="WhatsApp पर चैट करें">
+                                                    <i class="fa-brands fa-whatsapp"></i>
+                                                </a>
+                                            <% } %>
+                                        </div>
+                                    </td>
+
+                                    <!-- Subject -->
+                                    <td>
+                                        <span class="subject-pill" title="<%= item.subject || 'सामान्य पूछताछ' %>">
+                                            <%= item.subject || 'सामान्य पूछताछ' %>
+                                        </span>
+                                    </td>
+
+                                    <!-- Message -->
+                                    <td>
+                                        <div class="msg-preview" title="<%= item.message %>">
+                                            <%= item.message %>
+                                        </div>
+                                    </td>
+
+                                    <!-- Status Dropdown -->
+                                    <td>
+                                        <select class="status-select" onchange="changeStatus('<%= item._id %>', this.value)">
+                                            <option value="New" <%= status === 'New' ? 'selected' : '' %>>🟡 New (नया)</option>
+                                            <option value="In Progress" <%= status === 'In Progress' ? 'selected' : '' %>>🟣 In Progress (प्रक्रियाधीन)</option>
+                                            <option value="Resolved" <%= status === 'Resolved' ? 'selected' : '' %>>🟢 Resolved (निस्तारित)</option>
+                                        </select>
+                                    </td>
+
+                                    <!-- Date -->
+                                    <td style="white-space: nowrap; color: var(--text-muted);">
+                                        <%= item.createdAt ? new Date(item.createdAt).toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
+                                        <br>
+                                        <small style="font-size: 11px;"><%= item.createdAt ? new Date(item.createdAt).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' }) : '' %></small>
+                                    </td>
+
+                                    <!-- Action -->
+                                    <td style="text-align: right;">
+                                        <div class="action-btns" style="justify-content: flex-end;">
+                                            <button type="button" class="btn-icon" title="विस्तार से देखें" onclick="viewMessageDetail('<%= item._id %>')">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn-icon delete" title="हटाएं" onclick="deleteMessage('<%= item._id %>')">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <i class="fa-regular fa-comment-dots"></i>
+                                        <h3>कोई संदेश नहीं मिला</h3>
+                                        <p>वेबसाइट से अभी तक कोई संदेश या पूछताछ प्राप्त नहीं हुई है।</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    </main>
+
+    <!-- Message Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>
+                    <i class="fa-solid fa-envelope-open-text text-primary" style="color: var(--primary);"></i>
+                    संदेश विवरण (Message Details)
+                </h2>
+                <button type="button" class="close-modal-btn" onclick="closeModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-info-grid">
+                    <div class="info-field">
+                        <label>पूरा नाम (Sender Name)</label>
+                        <p id="mName">-</p>
+                    </div>
+
+                    <div class="info-field">
+                        <label>मोबाइल नंबर (Phone Number)</label>
+                        <p id="mPhone">-</p>
+                    </div>
+
+                    <div class="info-field">
+                        <label>ईमेल आईडी (Email Address)</label>
+                        <p id="mEmail">-</p>
+                    </div>
+
+                    <div class="info-field">
+                        <label>विषय / श्रेणी (Subject)</label>
+                        <p id="mSubject">-</p>
+                    </div>
+
+                    <div class="info-field">
+                        <label>प्राप्ति दिनांक (Received At)</label>
+                        <p id="mDate">-</p>
+                    </div>
+
+                    <div class="info-field">
+                        <label>वर्तमान स्थिति (Current Status)</label>
+                        <p id="mStatusBadge">-</p>
+                    </div>
+                </div>
+
+                <div class="msg-full-box">
+                    <h4>संदेश (Complete Message)</h4>
+                    <pre id="mMessage">-</pre>
+                </div>
+
+                <div class="info-field">
+                    <label>एडमिन टिप्पणी (Admin Internal Notes)</label>
+                    <textarea id="mAdminNotes" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--card-border); font-size: 13px;" placeholder="यहाँ कोई आंतरिक टिप्पणी दर्ज करें..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="quick-replies">
+                    <a id="mWaLink" href="#" target="_blank" class="btn-action btn-secondary" style="color: #16a34a; border-color: #86efac;">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        WhatsApp उत्तर दें
+                    </a>
+                    <a id="mMailLink" href="#" class="btn-action btn-secondary" style="color: var(--primary); border-color: #bfdbfe;">
+                        <i class="fa-solid fa-reply"></i>
+                        ईमेल उत्तर दें
+                    </a>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn-action btn-primary" onclick="saveAdminNotes()">
+                        टिप्पणी सेव करें
+                    </button>
+                    <button type="button" class="btn-action btn-secondary" onclick="closeModal()">
+                        बंद करें
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check text-success" style="color: #4ade80;"></i>
+        <span id="toastMsg">ऑपरेशन सफल रहा!</span>
+    </div>
+
+    <!-- Client-side Scripts -->
+    <script>
+        // Store messages in memory for fast modal viewing
+        const messagesData = <%- JSON.stringify(messages || []) %>;
+        let currentModalId = null;
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            if (!toast || !toastMsg) return;
+            toastMsg.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function viewMessageDetail(id) {
+            const item = messagesData.find(m => String(m._id) === String(id));
+            if (!item) return;
+
+            currentModalId = id;
+            document.getElementById('mName').textContent = item.name || 'N/A';
+            document.getElementById('mPhone').textContent = item.phone ? `+91 ${item.phone}` : 'N/A';
+            document.getElementById('mEmail').textContent = item.email || 'N/A';
+            document.getElementById('mSubject').textContent = item.subject || 'सामान्य पूछताछ';
+            document.getElementById('mDate').textContent = item.createdAt ? new Date(item.createdAt).toLocaleString('hi-IN') : 'N/A';
+            document.getElementById('mStatusBadge').textContent = item.status || 'New';
+            document.getElementById('mMessage').textContent = item.message || '';
+            document.getElementById('mAdminNotes').value = item.adminNotes || '';
+
+            const cleanPhone = (item.phone || '').replace(/\D/g, '').slice(-10);
+            const waBtn = document.getElementById('mWaLink');
+            if (cleanPhone) {
+                waBtn.href = `https://wa.me/91${cleanPhone}?text=${encodeURIComponent('नमस्ते ' + (item.name || '') + ' जी, विकासशील इंसान पार्टी (VIP) कार्यालय से संपर्क किया जा रहा है...')}`;
+                waBtn.style.display = 'inline-flex';
+            } else {
+                waBtn.style.display = 'none';
+            }
+
+            const mailBtn = document.getElementById('mMailLink');
+            if (item.email) {
+                mailBtn.href = `mailto:${item.email}?subject=${encodeURIComponent('Re: ' + (item.subject || 'VIP Party Inquiry'))}`;
+                mailBtn.style.display = 'inline-flex';
+            } else {
+                mailBtn.style.display = 'none';
+            }
+
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            currentModalId = null;
+        }
+
+        async function changeStatus(id, newStatus) {
+            try {
+                const res = await fetch('/admin/website/feedback/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, status: newStatus })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('स्थिति सफलतापूर्वक ' + newStatus + ' कर दी गई');
+                    const item = messagesData.find(m => String(m._id) === String(id));
+                    if (item) item.status = newStatus;
+                } else {
+                    alert(data.message || 'त्रुटि हुई');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('सर्वर से कनेक्ट करने में त्रुटि हुई');
+            }
+        }
+
+        async function saveAdminNotes() {
+            if (!currentModalId) return;
+            const notes = document.getElementById('mAdminNotes').value;
+            const item = messagesData.find(m => String(m._id) === String(currentModalId));
+            const currentStatus = item ? item.status : 'New';
+
+            try {
+                const res = await fetch('/admin/website/feedback/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: currentModalId, status: currentStatus, adminNotes: notes })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('एडमिन टिप्पणी सफलतापूर्वक सहेजी गई');
+                    if (item) item.adminNotes = notes;
+                    closeModal();
+                } else {
+                    alert(data.message || 'त्रुटि हुई');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('सर्वर से कनेक्ट करने में त्रुटि हुई');
+            }
+        }
+
+        async function deleteMessage(id) {
+            if (!confirm('क्या आप वाकई इस संदेश को हमेशा के लिए हटाना चाहते हैं?')) return;
+
+            try {
+                const res = await fetch('/admin/website/feedback/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('संदेश सफलतापूर्वक हटा दिया गया');
+                    const row = document.getElementById('row-' + id);
+                    if (row) row.remove();
+                } else {
+                    alert(data.message || 'हटाने में त्रुटि हुई');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('सर्वर से कनेक्ट करने में त्रुटि हुई');
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,41 +1,43 @@
 import Feedback from "../../models/feedback/Feedback.js";
+import User from "../../models/User.js";
 import mongoose from "mongoose";
 
 /* =====================================================
-   SUBMIT FEEDBACK
+   SUBMIT FEEDBACK (APP)
 ===================================================== */
 
 export const createFeedback = async (req, res) => {
   try {
-    const { rating, message } = req.body;
-    const uid = req.user?.uid;
-    const name = req.user?.name;
-    const email = req.user?.email;
+    const { rating, message, phone } = req.body;
+    const uid = req.user?.uid || req.body?.uid;
+    let name = (req.body?.name || req.user?.name || "").trim();
+    let email = (req.body?.email || req.user?.email || "").trim().toLowerCase();
+    let userPhone = (phone || req.body?.phone || req.user?.phone || "").trim();
 
     // -----------------------------
     // VALIDATION
     // -----------------------------
 
-    if (!req.user?._id || !uid) {
+    if (!uid) {
       return res.status(400).json({
         success: false,
         message: "User UID is required.",
       });
     }
 
-    if (!name || !name.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "User name is required.",
-      });
+    // Auto-enrich name / email / phone from database if missing
+    if (!name || !email || !userPhone) {
+      try {
+        const uDoc = await User.findOne({ uid: String(uid).trim() }).lean();
+        if (uDoc) {
+          if (!name && uDoc.name) name = uDoc.name.trim();
+          if (!email && uDoc.email) email = uDoc.email.trim().toLowerCase();
+          if (!userPhone && uDoc.phone) userPhone = uDoc.phone.trim();
+        }
+      } catch (_) {}
     }
 
-    if (!email || !email.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "User email is required.",
-      });
-    }
+    if (!name) name = "VIP App User";
 
     if (rating === undefined || rating === null || rating === "") {
       return res.status(400).json({
@@ -65,19 +67,24 @@ export const createFeedback = async (req, res) => {
     }
 
     if (message.length > 1000) {
-      return res.status(400).json({ success: false, message: "Feedback message must be 1000 characters or fewer." });
+      return res.status(400).json({
+        success: false,
+        message: "Feedback message must be 1000 characters or fewer.",
+      });
     }
 
     // -----------------------------
-    // CREATE FEEDBACK
+    // CREATE APP FEEDBACK
     // -----------------------------
 
     const feedback = await Feedback.create({
-      uid,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
+      uid: String(uid).trim(),
+      name,
+      email,
+      phone: userPhone,
       rating: numericRating,
       message: message.trim(),
+      source: "app",
     });
 
     return res.status(201).json({
@@ -86,10 +93,7 @@ export const createFeedback = async (req, res) => {
       feedback,
     });
   } catch (error) {
-    console.error(
-      "CREATE FEEDBACK ERROR:",
-      error
-    );
+    console.error("CREATE FEEDBACK ERROR:", error);
 
     return res.status(500).json({
       success: false,
@@ -100,15 +104,15 @@ export const createFeedback = async (req, res) => {
 
 
 /* =====================================================
-   GET ALL FEEDBACK
+   GET ALL FEEDBACK (APP ONLY)
 ===================================================== */
 
 export const getAllFeedback = async (req, res) => {
   try {
-    const feedbacks = await Feedback.find()
-      .sort({
-        createdAt: -1,
-      })
+    const feedbacks = await Feedback.find({
+      $or: [{ source: "app" }, { source: { $exists: false } }, { source: null }],
+    })
+      .sort({ createdAt: -1 })
       .lean();
 
     return res.status(200).json({
@@ -116,10 +120,7 @@ export const getAllFeedback = async (req, res) => {
       feedbacks,
     });
   } catch (error) {
-    console.error(
-      "GET FEEDBACK ERROR:",
-      error
-    );
+    console.error("GET FEEDBACK ERROR:", error);
 
     return res.status(500).json({
       success: false,
@@ -130,58 +131,47 @@ export const getAllFeedback = async (req, res) => {
 
 
 /* =====================================================
-   GET FEEDBACK STATISTICS
+   GET FEEDBACK STATISTICS (APP ONLY)
 ===================================================== */
 
 export const getFeedbackStats = async (req, res) => {
   try {
-    const totalFeedback =
-      await Feedback.countDocuments();
+    const appFilter = {
+      $or: [{ source: "app" }, { source: { $exists: false } }, { source: null }],
+    };
 
-    const ratingStats =
-      await Feedback.aggregate([
-        {
-          $group: {
-            _id: null,
+    const totalFeedback = await Feedback.countDocuments(appFilter);
 
-            averageRating: {
-              $avg: "$rating",
-            },
-
-            totalRatings: {
-              $sum: 1,
-            },
-          },
+    const ratingStats = await Feedback.aggregate([
+      { $match: appFilter },
+      {
+        $group: {
+          _id: null,
+          averageRating: { $avg: "$rating" },
+          totalRatings: { $sum: 1 },
         },
-      ]);
+      },
+    ]);
 
-    const ratingCounts =
-      await Feedback.aggregate([
-        {
-          $group: {
-            _id: "$rating",
-
-            count: {
-              $sum: 1,
-            },
-          },
+    const ratingCounts = await Feedback.aggregate([
+      { $match: appFilter },
+      {
+        $group: {
+          _id: "$rating",
+          count: { $sum: 1 },
         },
-        {
-          $sort: {
-            _id: -1,
-          },
-        },
-      ]);
+      },
+      {
+        $sort: { _id: -1 },
+      },
+    ]);
 
     const stats = {
       totalFeedback,
       averageRating:
         ratingStats.length > 0
-          ? Number(
-              ratingStats[0].averageRating.toFixed(1)
-            )
+          ? Number(ratingStats[0].averageRating.toFixed(1))
           : 0,
-
       fiveStar: 0,
       fourStar: 0,
       threeStar: 0,
@@ -190,25 +180,11 @@ export const getFeedbackStats = async (req, res) => {
     };
 
     ratingCounts.forEach((item) => {
-      if (item._id === 5) {
-        stats.fiveStar = item.count;
-      }
-
-      if (item._id === 4) {
-        stats.fourStar = item.count;
-      }
-
-      if (item._id === 3) {
-        stats.threeStar = item.count;
-      }
-
-      if (item._id === 2) {
-        stats.twoStar = item.count;
-      }
-
-      if (item._id === 1) {
-        stats.oneStar = item.count;
-      }
+      if (item._id === 5) stats.fiveStar = item.count;
+      if (item._id === 4) stats.fourStar = item.count;
+      if (item._id === 3) stats.threeStar = item.count;
+      if (item._id === 2) stats.twoStar = item.count;
+      if (item._id === 1) stats.oneStar = item.count;
     });
 
     return res.status(200).json({
@@ -216,10 +192,7 @@ export const getFeedbackStats = async (req, res) => {
       stats,
     });
   } catch (error) {
-    console.error(
-      "FEEDBACK STATS ERROR:",
-      error
-    );
+    console.error("FEEDBACK STATS ERROR:", error);
 
     return res.status(500).json({
       success: false,
@@ -244,8 +217,7 @@ export const getFeedbackById = async (req, res) => {
       });
     }
 
-    const feedback =
-      await Feedback.findById(id).lean();
+    const feedback = await Feedback.findById(id).lean();
 
     if (!feedback) {
       return res.status(404).json({
@@ -259,10 +231,7 @@ export const getFeedbackById = async (req, res) => {
       feedback,
     });
   } catch (error) {
-    console.error(
-      "GET SINGLE FEEDBACK ERROR:",
-      error
-    );
+    console.error("GET SINGLE FEEDBACK ERROR:", error);
 
     return res.status(500).json({
       success: false,
@@ -287,8 +256,7 @@ export const deleteFeedback = async (req, res) => {
       });
     }
 
-    const deletedFeedback =
-      await Feedback.findByIdAndDelete(id);
+    const deletedFeedback = await Feedback.findByIdAndDelete(id);
 
     if (!deletedFeedback) {
       return res.status(404).json({
@@ -302,10 +270,7 @@ export const deleteFeedback = async (req, res) => {
       message: "Feedback deleted successfully.",
     });
   } catch (error) {
-    console.error(
-      "DELETE FEEDBACK ERROR:",
-      error
-    );
+    console.error("DELETE FEEDBACK ERROR:", error);
 
     return res.status(500).json({
       success: false,
