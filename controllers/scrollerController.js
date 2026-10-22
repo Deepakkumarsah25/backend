@@ -1,4 +1,3 @@
-import fs from "fs";
 import cloudinary from "../config/cloudinary.js";
 import Scroller from "../models/Scroller.js";
 
@@ -38,13 +37,20 @@ export const addScrollerMedia = async (req, res) => {
            Upload to Cloudinary
         =============================== */
 
-        const result = await cloudinary.uploader.upload(
-          file.path,
-          {
-            folder: "ScrollerMedia",
-            resource_type: isVideo ? "video" : "image",
-          }
-        );
+        const result = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            {
+              folder: "ScrollerMedia",
+              resource_type: isVideo ? "video" : "image",
+            },
+            (error, uploadedFile) => {
+              if (error) return reject(error);
+              resolve(uploadedFile);
+            }
+          );
+
+          uploadStream.end(file.buffer);
+        });
 
         console.log("Cloudinary Upload Success:");
         console.log(result.secure_url);
@@ -71,30 +77,11 @@ export const addScrollerMedia = async (req, res) => {
 
         savedMedia.push(media);
 
-        /* ===============================
-           Delete Temporary File
-        =============================== */
-
-        if (fs.existsSync(file.path)) {
-          fs.unlinkSync(file.path);
-        }
-
-        console.log(
-          "Temporary file deleted:",
-          file.path
-        );
       } catch (fileError) {
         console.log(
           "INDIVIDUAL FILE UPLOAD ERROR:",
           fileError
         );
-
-        if (
-          file.path &&
-          fs.existsSync(file.path)
-        ) {
-          fs.unlinkSync(file.path);
-        }
 
         throw fileError;
       }

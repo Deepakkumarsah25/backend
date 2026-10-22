@@ -69,22 +69,6 @@
             gap: 12px;
         }
 
-        .header-title-box h1 .hub-badge {
-            font-size: 13px;
-            background: linear-gradient(135deg, #0b4ea2, #0284c7);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .header-title-box p {
-            color: var(--text-muted);
-            font-size: 14px;
-            margin-top: 4px;
-        }
-
         .header-actions {
             display: flex;
             gap: 12px;
@@ -194,57 +178,6 @@
         .stat-con .stat-icon { background: #ede9fe; color: #6d28d9; }
         .stat-usr .stat-icon { background: #cffafe; color: #0e7490; }
 
-        /* Navigation Tabs */
-        .tabs-nav-bar {
-            background: #fff;
-            border-radius: 14px;
-            border: 1px solid var(--card-border);
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            overflow-x: auto;
-            margin-bottom: 20px;
-            scrollbar-width: thin;
-        }
-
-        .tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-decoration: none;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-        }
-
-        .tab-btn:hover {
-            color: var(--primary);
-            background: var(--primary-light);
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: #fff;
-        }
-
-        .tab-count {
-            background: rgba(0,0,0,0.08);
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .tab-btn.active .tab-count {
-            background: rgba(255,255,255,0.25);
-            color: #fff;
-        }
-
         /* Filter & Search Bar */
         .toolbar-panel {
             background: #fff;
@@ -286,6 +219,38 @@
         .search-input-group input:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.1);
+        }
+
+        .search-input-group .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 15px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.15s ease;
+        }
+
+        .search-clear-btn:hover {
+            color: var(--danger);
+            background: #fee2e2;
         }
 
         .filter-controls {
@@ -650,6 +615,75 @@
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+            padding: 24px clamp(14px, 2vw, 30px);
+            background: #f3f6fb;
+        }
+        .forms-dashboard { width: 100%; }
+        .table-card { min-width: 0; }
+        .table-responsive { scrollbar-width: thin; }
+        .forms-table { min-width: 1050px; }
+        .forms-table th, .forms-table td { padding: 13px 15px; }
+        .forms-table tbody tr:last-child td { border-bottom: 0; }
+        .id-pill { overflow-wrap: anywhere; }
+
+        @media (max-width: 992px) {
+            .main-content { margin-top: 68px; padding: 20px; }
+            .forms-dashboard { padding: 18px 0; }
+        }
+        @media (max-width: 680px) {
+            .main-content { padding: 14px !important; }
+            .forms-dashboard { padding: 14px 0; }
+            .page-header-row { align-items: flex-start; gap: 12px; }
+            .header-title-box h1 { font-size: 21px; flex-wrap: wrap; gap: 8px; }
+            .header-actions { width: 100%; }
+            .header-actions .btn-action { flex: 1; justify-content: center; }
+            .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+            .stat-card { min-width: 0; padding: 13px; border-radius: 12px; }
+            .stat-info .stat-value { font-size: 21px; }
+            .stat-icon { width: 39px; height: 39px; font-size: 16px; flex-shrink: 0; }
+            .toolbar-panel { padding: 13px; gap: 10px; }
+            .toolbar-panel form { gap: 10px !important; }
+            .search-input-group { min-width: 100%; }
+            .filter-controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+            .filter-controls .select-filter { grid-column: 1 / -1; width: 100%; }
+            .filter-controls .btn-action { justify-content: center; }
+            .table-card { overflow: visible; background: transparent; border: 0; box-shadow: none; }
+            .table-responsive { overflow: visible; }
+            .forms-table { min-width: 0; display: block; }
+            .forms-table thead { display: none; }
+            .forms-table tbody { display: grid; gap: 12px; }
+            .forms-table tbody tr:not(.empty-row) {
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 12px;
+                padding: 12px 14px; background: #fff; border: 1px solid var(--card-border);
+                border-radius: 14px; box-shadow: 0 4px 14px rgba(15, 23, 42, .04);
+            }
+            .forms-table tbody td {
+                min-width: 0; display: flex; flex-direction: column; align-items: flex-start;
+                justify-content: center; gap: 5px; padding: 10px 0;
+                border-bottom: 1px solid #eef2f7; overflow-wrap: anywhere;
+            }
+            .forms-table tbody td::before {
+                content: attr(data-label); color: var(--text-muted); font-size: 10px;
+                font-weight: 800; letter-spacing: .045em; text-transform: uppercase;
+            }
+            .forms-table tbody td:nth-child(1), .forms-table tbody td:nth-child(2) { grid-column: 1 / -1; }
+            .forms-table tbody td:nth-child(1) { order: -1; }
+            .forms-table tbody td:last-child { border-bottom: 0; }
+            .forms-table .applicant-info { max-width: 100%; }
+            .forms-table .applicant-meta .name { overflow-wrap: anywhere; }
+            .forms-table .action-btns { justify-content: flex-start !important; }
+            .forms-table .empty-state { padding: 35px 12px; }
+            .forms-table tbody tr.empty-row { display: block; background: #fff; border-radius: 14px; }
+            .modal-header, .modal-body, .modal-footer { padding: 16px; }
+        }
+        @media (max-width: 380px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .forms-table tbody tr:not(.empty-row) { grid-template-columns: 1fr; }
+            .forms-table tbody td:nth-child(1), .forms-table tbody td:nth-child(2) { grid-column: auto; }
+        }
     </style>
 </head>
 <body>
@@ -670,9 +704,7 @@
                     <h1>
                         <i class="fa-solid fa-clipboard-list" style="color: var(--primary);"></i>
                         फ़ॉर्म्स एवं आवेदन प्रबंधन
-                        <span class="hub-badge"><i class="fa-solid fa-bolt"></i> Live Submissions</span>
                     </h1>
-                    <p>वेबसाइट से भरे गए सभी फॉर्म्स (वालंटियर, छात्रवृत्ति, यूपी 2027 उम्मीदवारी, सदस्यता, संपर्क संदेश) की रियल-टाइम सूची</p>
                 </div>
 
                 <div class="header-actions">
@@ -767,53 +799,30 @@
                 </a>
             </div>
 
-            <!-- Category Sub-Tabs -->
-            <div class="tabs-nav-bar">
-                <a href="/admin/forms?type=all" class="tab-btn <%= selectedType === 'all' ? 'active' : '' %>">
-                    <i class="fa-solid fa-table-cells-large"></i>
-                    <span>सभी फ़ॉर्म (All Forms)</span>
-                    <span class="tab-count"><%= counts.total %></span>
-                </a>
-                <a href="/admin/forms?type=volunteers" class="tab-btn <%= selectedType === 'volunteers' ? 'active' : '' %>">
-                    <i class="fa-solid fa-handshake-angle"></i>
-                    <span>वालंटियर</span>
-                    <span class="tab-count"><%= counts.volunteers %></span>
-                </a>
-                <a href="/admin/forms?type=scholarships" class="tab-btn <%= selectedType === 'scholarships' ? 'active' : '' %>">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <span>छात्रवृत्ति</span>
-                    <span class="tab-count"><%= counts.scholarships %></span>
-                </a>
-                <a href="/admin/forms?type=candidatures" class="tab-btn <%= selectedType === 'candidatures' ? 'active' : '' %>">
-                    <i class="fa-solid fa-vote-yea"></i>
-                    <span>यूपी 2027 दावेदारी</span>
-                    <span class="tab-count"><%= counts.candidatures %></span>
-                </a>
-                <a href="/admin/forms?type=joins" class="tab-btn <%= selectedType === 'joins' ? 'active' : '' %>">
-                    <i class="fa-solid fa-id-card"></i>
-                    <span>सदस्यता (Join VIP)</span>
-                    <span class="tab-count"><%= counts.joins %></span>
-                </a>
-                <a href="/admin/forms?type=contacts" class="tab-btn <%= selectedType === 'contacts' ? 'active' : '' %>">
-                    <i class="fa-solid fa-envelope"></i>
-                    <span>संपर्क संदेश</span>
-                    <span class="tab-count"><%= counts.contacts %></span>
-                </a>
-                <a href="/admin/forms?type=users" class="tab-btn <%= selectedType === 'users' ? 'active' : '' %>">
-                    <i class="fa-solid fa-users"></i>
-                    <span>पंजीकृत उपयोगकर्ता</span>
-                    <span class="tab-count"><%= counts.users %></span>
-                </a>
-            </div>
-
             <!-- Toolbar: Search & Filter -->
             <div class="toolbar-panel">
                 <form method="GET" action="/admin/forms" style="display: flex; gap: 12px; width: 100%; flex-wrap: wrap;">
                     <input type="hidden" name="type" value="<%= selectedType %>">
                     
                     <div class="search-input-group">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" name="q" value="<%= searchQuery %>" placeholder="नाम, मोबाइल, जिला या ID से खोजें..." autocomplete="off">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input 
+                            type="text" 
+                            id="formsSearchInput" 
+                            name="q" 
+                            value="<%= searchQuery %>" 
+                            placeholder="नाम, मोबाइल, जिला, ID या प्रकार से खोजें..." 
+                            autocomplete="off"
+                        >
+                        <button 
+                            type="button" 
+                            id="clearSearchBtn" 
+                            class="search-clear-btn" 
+                            title="सर्च साफ़ करें"
+                            style="<%= searchQuery ? 'display: flex;' : '' %>"
+                        >
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
                     </div>
 
                     <div class="filter-controls">
@@ -847,30 +856,22 @@
                     <table class="forms-table" id="formsTable">
                         <thead>
                             <tr>
+                                <th>Applicant Name</th>
+                                <th>Phone Number / Contact</th>
+                                <th>Form Type</th>
                                 <th># ID</th>
-                                <th>आवेदक का नाम (Applicant)</th>
-                                <th>फ़ॉर्म प्रकार (Form Type)</th>
-                                <th>मोबाइल / संपर्क (Contact)</th>
-                                <th>स्थान / क्षेत्र (Location)</th>
-                                <th>आवेदन तिथि (Date)</th>
-                                <th>स्थिति (Status)</th>
-                                <th style="text-align: right;">कार्रवाई (Action)</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (items && items.length > 0) { %>
                                 <% items.forEach((item, index) => { %>
                                     <tr id="row-<%= item._formType %>-<%= item._id %>">
-                                        <!-- ID -->
-                                        <td>
-                                            <span class="id-pill" onclick="copyId('<%= item._uniqueId %>')" title="Click to copy ID">
-                                                <%= item._uniqueId %>
-                                                <i class="fa-regular fa-copy" style="font-size: 10px;"></i>
-                                            </span>
-                                        </td>
-
                                         <!-- Applicant -->
-                                        <td>
+                                        <td data-label="Applicant Name">
                                             <div class="applicant-info">
                                                 <div class="applicant-avatar">
                                                     <%= (item._applicantName || 'U').charAt(0) %>
@@ -885,16 +886,8 @@
                                             </div>
                                         </td>
 
-                                        <!-- Form Type -->
-                                        <td>
-                                            <span class="type-pill pill-<%= item._formType %>">
-                                                <i class="fa-solid <%= item._icon %>"></i>
-                                                <%= item._typeLabel %>
-                                            </span>
-                                        </td>
-
                                         <!-- Mobile / Contact -->
-                                        <td>
+                                        <td data-label="Phone Number / Contact">
                                             <div style="font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px;">
                                                 <a href="tel:<%= item._mobile %>" style="color: inherit; text-decoration: none;">
                                                     <i class="fa-solid fa-phone text-xs" style="color: var(--primary);"></i>
@@ -914,8 +907,24 @@
                                             <% } %>
                                         </td>
 
+                                        <!-- Form Type -->
+                                        <td data-label="Form Type">
+                                            <span class="type-pill pill-<%= item._formType %>">
+                                                <i class="fa-solid <%= item._icon %>"></i>
+                                                <%= item._typeLabel %>
+                                            </span>
+                                        </td>
+
+                                        <!-- ID -->
+                                        <td data-label="ID">
+                                            <span class="id-pill" onclick="copyId('<%= item._uniqueId %>')" title="Click to copy ID">
+                                                <%= item._uniqueId %>
+                                                <i class="fa-regular fa-copy" style="font-size: 10px;"></i>
+                                            </span>
+                                        </td>
+
                                         <!-- Location -->
-                                        <td>
+                                        <td data-label="Location">
                                             <div style="font-weight: 600; color: var(--text-dark);">
                                                 <i class="fa-solid fa-location-dot text-xs" style="color: #e11d48; margin-right: 4px;"></i>
                                                 <%= item._location %>
@@ -923,7 +932,7 @@
                                         </td>
 
                                         <!-- Date -->
-                                        <td>
+                                        <td data-label="Date">
                                             <div style="font-weight: 600;">
                                                 <%= item._date ? new Date(item._date).toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
                                             </div>
@@ -933,7 +942,7 @@
                                         </td>
 
                                         <!-- Status -->
-                                        <td>
+                                        <td data-label="Status">
                                             <% if (item._formType !== 'user') { %>
                                                 <select 
                                                     class="status-badge-select status-<%= (item._status || 'Pending').replace(/\s+/g, '-') %>" 
@@ -953,7 +962,7 @@
                                         </td>
 
                                         <!-- Action -->
-                                        <td style="text-align: right;">
+                                        <td data-label="Actions">
                                             <div class="action-btns" style="justify-content: flex-end;">
                                                 <button 
                                                     type="button" 
@@ -976,8 +985,7 @@
                                     </tr>
                                 <% }) %>
                             <% } else { %>
-                                <tr>
-                                    <td colspan="8">
+                                <tr class="empty-row"><td colspan="8">
                                         <div class="empty-state">
                                             <i class="fa-regular fa-folder-open"></i>
                                             <h3>कोई आवेदन नहीं मिला</h3>
@@ -1314,6 +1322,120 @@
         document.getElementById('detailModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
+
+        // ==========================================
+        // REAL-TIME INSTANT LIVE SEARCH FOR FORMS
+        // ==========================================
+        (function() {
+            const searchInput = document.getElementById('formsSearchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const table = document.getElementById('formsTable');
+            const filterForm = document.getElementById('formsFilterForm') || (searchInput ? searchInput.closest('form') : null);
+            if (!searchInput || !table) return;
+
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr:not(.empty-row)'));
+
+            function doLiveFilter(query) {
+                const q = (query || '').trim().toLowerCase();
+                const qDigits = q.replace(/\D/g, '');
+                let matches = 0;
+
+                if (clearBtn) {
+                    clearBtn.style.display = q ? 'flex' : 'none';
+                }
+
+                rows.forEach(row => {
+                    const rowText = (row.textContent || row.innerText || '').toLowerCase();
+                    const phoneEl = row.querySelector('a[href^="tel:"]');
+                    const phoneRaw = phoneEl ? phoneEl.getAttribute('href').replace(/\D/g, '') : '';
+
+                    const isTextMatch = !q || rowText.includes(q);
+                    const isPhoneMatch = Boolean(qDigits && phoneRaw && phoneRaw.includes(qDigits));
+
+                    if (isTextMatch || isPhoneMatch) {
+                        row.style.display = '';
+                        matches++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Live empty state row
+                let liveEmpty = tbody.querySelector('.live-search-empty');
+                if (matches === 0 && rows.length > 0) {
+                    if (!liveEmpty) {
+                        liveEmpty = document.createElement('tr');
+                        liveEmpty.className = 'empty-row live-search-empty';
+                        liveEmpty.innerHTML = `
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="fa-solid fa-magnifying-glass" style="font-size: 38px; color: #94a3b8; margin-bottom: 12px;"></i>
+                                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px;">कोई परिणाम नहीं मिला</h3>
+                                    <p style="font-size: 13px; color: var(--text-muted);">"${escapeHtml(q)}" से संबंधित कोई रिकॉर्ड नहीं मिला। कृपया दूसरा शब्द या ID खोजें।</p>
+                                </div>
+                            </td>
+                        `;
+                        tbody.appendChild(liveEmpty);
+                    } else {
+                        liveEmpty.style.display = '';
+                        const p = liveEmpty.querySelector('p');
+                        if (p) p.innerText = `"${q}" से संबंधित कोई रिकॉर्ड नहीं मिला। कृपया दूसरा शब्द या ID खोजें।`;
+                    }
+                } else if (liveEmpty) {
+                    liveEmpty.style.display = 'none';
+                }
+            }
+
+            function escapeHtml(str) {
+                return String(str || '').replace(/[&<>"']/g, m => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+                })[m]);
+            }
+
+            // 1. Instant response as user types
+            searchInput.addEventListener('input', function() {
+                doLiveFilter(this.value);
+            });
+
+            // 2. Clear button click
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    searchInput.value = '';
+                    doLiveFilter('');
+                    searchInput.focus();
+
+                    // If URL already has ?q=, reset to clean URL
+                    if (window.location.search.includes('q=')) {
+                        const url = new URL(window.location);
+                        url.searchParams.delete('q');
+                        window.location.href = url.pathname + url.search;
+                    }
+                });
+            }
+
+            // 3. Connect top header Global Search input if on this page
+            const headerSearch = document.getElementById('globalSearch');
+            if (headerSearch) {
+                headerSearch.addEventListener('input', function() {
+                    searchInput.value = this.value;
+                    doLiveFilter(this.value);
+                });
+                headerSearch.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchInput.value = this.value;
+                        if (filterForm) filterForm.submit();
+                    }
+                });
+            }
+
+            // Initial live filter run if searchQuery is present on page load
+            if (searchInput.value.trim()) {
+                doLiveFilter(searchInput.value);
+            }
+        })();
     </script>
 </body>
 </html>

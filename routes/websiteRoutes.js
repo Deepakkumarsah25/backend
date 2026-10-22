@@ -8,8 +8,16 @@ import {
   exportDonationsCsv,
 } from "../controllers/websiteController.js";
 import { requireAdmin } from "../middlewar/requireAdmin.js";
+import { deleteTickerAnnouncement, editTickerAnnouncement, listTickerAnnouncements, publicTickerAnnouncement, publicTickerAnnouncements, saveTickerAnnouncement } from "../controllers/tickerAnnouncementController.js";
 
 const router = express.Router();
+
+router.get("/ticker-announcements/api", publicTickerAnnouncements);
+router.get("/ticker-announcements/api/:slug", publicTickerAnnouncement);
+router.get("/ticker-announcements", requireAdmin, listTickerAnnouncements);
+router.get("/ticker-announcements/:id/edit", requireAdmin, editTickerAnnouncement);
+router.post("/ticker-announcements/:id/save", requireAdmin, saveTickerAnnouncement);
+router.post("/ticker-announcements/:id/delete", requireAdmin, deleteTickerAnnouncement);
 
 // Support / Donate Page Settings
 router.get("/support-settings", requireAdmin, renderSupportSettingsPage);

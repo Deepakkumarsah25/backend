@@ -146,12 +146,17 @@ export const quickUpdateActivity = async (req, res) => {
 
 export const addBanner = async (req, res) => {
   try {
-    console.log(req.files);
-
     const count = req.files ? req.files.length : 0;
 
+    if (count === 0) {
+      return res.status(400).send("Please select at least one banner image.");
+    }
+
     for (const file of req.files || []) {
-      const result = await cloudinary.uploader.upload(file.path);
+      const result = await cloudinary.uploader.upload(file.path || file.buffer, {
+        folder: "banners",
+        resource_type: "image",
+      });
 
       await Banner.create({
         imageUrl: result.secure_url,

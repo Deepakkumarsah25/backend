@@ -1,12 +1,12 @@
 <head>
-  <!-- Font Awesome -->
+  <!-- Font Awesome 6.5.2 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
 
-  <!-- Sidebar CSS -->
+  <!-- VIP Enterprise Admin Sidebar CSS -->
   <link rel="stylesheet" href="/css/sidebar.css" />
 </head>
 
-<!-- Mobile Sidebar Toggle -->
+<!-- Mobile Sidebar Hamburger Toggle -->
 <button class="sidebar-toggle-btn" id="sidebarToggle" aria-label="Open navigation" type="button">
   <span></span>
   <span></span>
@@ -17,21 +17,24 @@
 <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <!-- =========================
-     MAIN SIDEBAR
+     MAIN SIDEBAR (Enterprise Edition)
 ========================= -->
-<aside class="educare-fixed-sidebar" id="responsiveSidebar">
-  <!-- Brand -->
+<aside class="educare-fixed-sidebar no-transition" id="responsiveSidebar">
+  <!-- Brand Panel -->
   <div class="sidebar-brand-panel">
-    <div class="sidebar-brand">
+    <a href="/dashboard" class="sidebar-brand">
       <div class="sidebar-logo">
-        <span>V</span>
+        <span class="logo-monogram">V</span>
       </div>
 
       <div class="sidebar-brand-text">
-        <h2>VIP Admin</h2>
-        <span>Control Panel</span>
+        <h2>VIP <span>ADMIN</span></h2>
+        <div class="sidebar-status-tag">
+          <span class="status-dot"></span>
+          <span>Control Panel</span>
+        </div>
       </div>
-    </div>
+    </a>
 
     <button class="sidebar-mobile-close" id="sidebarClose" type="button" aria-label="Close navigation">
       <i class="fa-solid fa-xmark"></i>
@@ -39,52 +42,57 @@
   </div>
 
   <!-- =========================
-       SIDEBAR CONTENT
+       SCROLLABLE NAVIGATION
   ========================== -->
-  <div class="sidebar-scrollable-content">
+  <div class="sidebar-scrollable-content" id="sidebarScrollContent">
     <ul class="sidebar-menu">
-      <!-- =========================
-           DASHBOARD
-      ========================== -->
+      
+      <!-- Category 1: CORE -->
+      <li class="sidebar-category-header">
+        <span>Core</span>
+      </li>
+
+      <!-- Dashboard -->
       <li class="sidebar-item">
         <a href="/dashboard" class="sidebar-link direct-link">
-          <span class="sidebar-icon">
-            <i class="fa-solid fa-house"></i>
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-house"></i>
+            </span>
+            <span class="sidebar-text">Dashboard</span>
           </span>
-
-          <span class="sidebar-text"> Dashboard </span>
         </a>
       </li>
 
-      <!-- =========================
-           ACTIVITY LOGS (LAST 10 DAYS)
-      ========================== -->
+      <!-- 10-Day Activity Log -->
       <li class="sidebar-item">
         <a href="/activity-logs" class="sidebar-link direct-link" id="sidebarActivityLogLink">
-          <span class="sidebar-icon">
-            <i class="fa-solid fa-clock-rotate-left"></i>
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+            </span>
+            <span class="sidebar-text">10-Day Activity Log</span>
           </span>
-          <span class="sidebar-text"> 10-Day Activity Log </span>
         </a>
-
       </li>
 
+      <!-- Category 2: PORTAL & WEBSITE -->
+      <li class="sidebar-category-header">
+        <span>Portal & Website</span>
+      </li>
 
-      <!-- =========================
-           WEBSITE MANAGEMENT (वेबसाइट प्रबंधन)
-      ========================== -->
+      <!-- WEBSITE MANAGEMENT (वेबसाइट प्रबंधन) -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon" style="color: #38bdf8;">
               <i class="fa-solid fa-globe"></i>
             </span>
-
-            <span class="sidebar-text"> Website (वेबसाइट) </span>
+            <span class="sidebar-text">Website (वेबसाइट)</span>
           </span>
 
           <span class="sidebar-badge"
-            style="background: #0b4ea2; color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto; margin-right: 6px;">
+            style="background: #2563eb; color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto; margin-right: 6px; box-shadow: 0 2px 6px rgba(37,99,235,0.4);">
             Live
           </span>
 
@@ -93,9 +101,11 @@
 
         <ul class="sidebar-submenu">
           <!-- Forms Hub Section Header -->
-          <li style="padding: 8px 16px 2px 16px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
-            <span><i class="fa-solid fa-clipboard-list mr-1" style="color: #f59e0b;"></i> फ़ॉर्म्स प्रबंधन (Forms)</span>
+          <li class="sidebar-sub-header">
+            <i class="fa-solid fa-clipboard-list" style="color: #f59e0b;"></i>
+            <span>फ़ॉर्म्स प्रबंधन (Forms)</span>
           </li>
+
           <li>
             <a href="/admin/forms">
               <i class="fa-solid fa-table-cells-large"></i>
@@ -146,36 +156,98 @@
           </li>
 
           <!-- Support Us / Donate Section Header -->
-          <li style="padding: 10px 16px 2px 16px; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 6px;">
-            <span><i class="fa-solid fa-hand-holding-heart mr-1" style="color: #f43f5e;"></i> सहयोग / दान (Support Us)</span>
+          <li class="sidebar-sub-header" style="border-top: 1px solid rgba(255,255,255,0.06); margin-top: 6px; padding-top: 8px;">
+            <i class="fa-solid fa-hand-holding-heart" style="color: #f43f5e;"></i>
+            <span>सहयोग / दान (Support Us)</span>
           </li>
+
           <li>
             <a href="/admin/website/support-settings">
               <i class="fa-solid fa-building-columns"></i>
               <span>Bank & Page Settings (खाता व पेज)</span>
             </a>
           </li>
+
           <li>
             <a href="/admin/website/donations">
               <i class="fa-solid fa-receipt"></i>
               <span>Received Donations (प्राप्त दान सूची)</span>
             </a>
           </li>
+
+          <li>
+            <a href="/admin/website/ticker-announcements">
+              <i class="fa-solid fa-bullhorn"></i>
+              <span>Upcoming Events Ticker</span>
+            </a>
+          </li>
         </ul>
       </li>
 
+      <!-- CONTENT MANAGEMENT -->
+      <li class="sidebar-item has-submenu">
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </span>
+            <span class="sidebar-text">Content Management</span>
+          </span>
 
-      <!-- =========================
-           PEOPLE & ORGANISATION
-      ========================== -->
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/news">
+              <i class="fa-solid fa-newspaper"></i>
+              <span>News Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/admin/events">
+              <i class="fa-solid fa-calendar-days"></i>
+              <span>Events Management</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/scroller">
+              <i class="fa-solid fa-images"></i>
+              <span>Hero Banner (Web & App)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/cms">
+              <i class="fa-solid fa-file-pen"></i>
+              <span>About VIP (CMS)</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="/bainar">
+              <i class="fa-solid fa-house-flag"></i>
+              <span>Live Updates Bainar</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
+      <!-- Category 3: ORGANISATION & LOGISTICS -->
+      <li class="sidebar-category-header">
+        <span>Organisation & People</span>
+      </li>
+
+      <!-- PEOPLE & ORGANISATION -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-users"></i>
             </span>
-
-            <span class="sidebar-text"> People & Organisation </span>
+            <span class="sidebar-text">People & Organisation</span>
           </span>
 
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
@@ -226,17 +298,14 @@
         </ul>
       </li>
 
-      <!-- =========================
-           TRANSPORT
-      ========================== -->
+      <!-- TRANSPORT -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-car-side"></i>
             </span>
-
-            <span class="sidebar-text"> Transport </span>
+            <span class="sidebar-text">Transport</span>
           </span>
 
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
@@ -266,17 +335,19 @@
         </ul>
       </li>
 
-      <!-- =========================
-           MEDIA RESOURCES
-      ========================== -->
+      <!-- Category 4: MEDIA ASSETS -->
+      <li class="sidebar-category-header">
+        <span>Media & Broadcasting</span>
+      </li>
+
+      <!-- MEDIA RESOURCES -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-photo-film"></i>
             </span>
-
-            <span class="sidebar-text"> Media Resources </span>
+            <span class="sidebar-text">Media Resources</span>
           </span>
 
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
@@ -313,71 +384,19 @@
         </ul>
       </li>
 
-      <!-- =========================
-           CONTENT MANAGEMENT
-      ========================== -->
-      <li class="sidebar-item has-submenu">
-        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
-          <span class="sidebar-link-left">
-            <span class="sidebar-icon">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </span>
-
-            <span class="sidebar-text"> Content Management </span>
-          </span>
-
-          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
-        </button>
-
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="/news">
-              <i class="fa-solid fa-newspaper"></i>
-              <span>News Management</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/admin/events">
-              <i class="fa-solid fa-calendar-days"></i>
-              <span>Events Management</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/scroller">
-              <i class="fa-solid fa-images"></i>
-              <span>Hero Banner (Web & App)</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/cms">
-              <i class="fa-solid fa-file-pen"></i>
-              <span>About VIP (CMS)</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/bainar">
-              <i class="fa-solid fa-house-flag"></i>
-              <span>Live Updates Bainar</span>
-            </a>
-          </li>
-        </ul>
+      <!-- Category 5: SYSTEM & SECURITY -->
+      <li class="sidebar-category-header">
+        <span>System & Support</span>
       </li>
 
-      <!-- =========================
-           USER MANAGEMENT
-      ========================== -->
+      <!-- USER MANAGEMENT -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-user-gear"></i>
             </span>
-
-            <span class="sidebar-text"> User Management </span>
+            <span class="sidebar-text">User Management</span>
           </span>
 
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
@@ -407,17 +426,14 @@
         </ul>
       </li>
 
-      <!-- =========================
-           SUPPORT
-      ========================== -->
+      <!-- SUPPORT -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-headset"></i>
             </span>
-
-            <span class="sidebar-text"> Support </span>
+            <span class="sidebar-text">Support</span>
           </span>
 
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
@@ -440,17 +456,14 @@
         </ul>
       </li>
 
-      <!-- =========================
-           ADMINISTRATION
-      ========================== -->
+      <!-- ADMINISTRATION -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon">
               <i class="fa-solid fa-shield-halved"></i>
             </span>
-
-            <span class="sidebar-text"> Administration </span>
+            <span class="sidebar-text">Administration</span>
           </span>
 
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
@@ -469,234 +482,262 @@
               <span>10-Day Activity Log</span>
             </a>
           </li>
-
         </ul>
       </li>
 
-      <!-- =========================
-           LOGOUT
-      ========================== -->
+      <!-- LOGOUT -->
       <li class="sidebar-item sidebar-logout">
-
         <a href="/logout" class="sidebar-link direct-link logout-link">
-
-          <span class="sidebar-icon">
-            <i class="fa-solid fa-right-from-bracket"></i>
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </span>
+            <span class="sidebar-text">Logout</span>
           </span>
-
-          <span class="sidebar-text"> Logout </span>
         </a>
       </li>
+
     </ul>
   </div>
 
-  <!-- Desktop Collapse -->
+  <!-- Desktop Collapse Trigger Button -->
   <button type="button" class="desktop-collapse-trigger" id="desktopCollapse" aria-label="Collapse sidebar">
     <i class="fa-solid fa-chevron-left"></i>
+    <span class="collapse-label">Collapse Menu</span>
   </button>
 </aside>
 
+<!-- =========================================================
+     SIDEBAR INTERACTIVE JAVASCRIPT (ZERO COMPANE & STABLE SCROLL)
+========================================================= -->
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+  (function () {
     const sidebar = document.getElementById("responsiveSidebar");
+    const scrollContainer = document.getElementById("sidebarScrollContent");
     const toggleBtn = document.getElementById("sidebarToggle");
     const closeBtn = document.getElementById("sidebarClose");
     const backdrop = document.getElementById("sidebarBackdrop");
     const collapseBtn = document.getElementById("desktopCollapse");
 
-    const parents = document.querySelectorAll(".sidebar-parent");
-    const submenuLinks = document.querySelectorAll(".sidebar-submenu a");
-    const directLinks = document.querySelectorAll(".direct-link");
+    if (!sidebar) return;
 
+    const parents = sidebar.querySelectorAll(".sidebar-parent");
+    const submenuLinks = sidebar.querySelectorAll(".sidebar-submenu a");
+    const directLinks = sidebar.querySelectorAll(".direct-link");
     const currentPath = window.location.pathname;
 
-    /* ==========================================
-     ACTIVE LINK
-  ========================================== */
+    const storageKeyGroups = "vip_admin_open_groups";
+    const storageKeyScroll = "vip_admin_sidebar_scroll";
+    const storageKeyCollapsed = "vip_admin_sidebar_collapsed";
 
-    function isCurrentPath(href) {
-      if (!href || href === "#") {
-        return false;
+    // 1. RESTORE DESKTOP COLLAPSE STATE
+    try {
+      const isCollapsed = localStorage.getItem(storageKeyCollapsed) === "true";
+      if (isCollapsed && window.innerWidth > 992) {
+        sidebar.classList.add("collapsed");
+        document.body.classList.add("sidebar-collapsed");
       }
+    } catch (e) {}
 
-      if (href === currentPath) {
-        return true;
+    // 2. RESTORE SCROLL POSITION INSTANTLY
+    try {
+      const savedScroll = sessionStorage.getItem(storageKeyScroll);
+      if (savedScroll && scrollContainer) {
+        scrollContainer.scrollTop = parseInt(savedScroll, 10);
       }
+    } catch (e) {}
 
-      return currentPath.startsWith(href + "/");
+    // Save scroll on user scroll
+    if (scrollContainer) {
+      scrollContainer.addEventListener(
+        "scroll",
+        function () {
+          try {
+            sessionStorage.setItem(storageKeyScroll, scrollContainer.scrollTop);
+          } catch (e) {}
+        },
+        { passive: true }
+      );
     }
 
-    /* ==========================================
-     DIRECT LINKS ACTIVE
-  ========================================== */
+    // 3. DETERMINE ACTIVE LINK
+    function isCurrentPath(href) {
+      if (!href || href === "#") return false;
+      try {
+        const linkUrl = new URL(href, window.location.origin);
+        if (linkUrl.pathname === currentPath) {
+          const linkParams = linkUrl.searchParams;
+          const currentParams = new URLSearchParams(window.location.search);
 
+          if (linkParams.has("type")) {
+            return linkParams.get("type") === (currentParams.get("type") || "all");
+          }
+          if (linkUrl.pathname === "/admin/forms") {
+            return (currentParams.get("type") || "all") === "all";
+          }
+          return true;
+        }
+        return currentPath.startsWith(linkUrl.pathname + "/");
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Direct links active highlight
     directLinks.forEach(function (link) {
-      const href = link.getAttribute("href");
-
-      if (isCurrentPath(href)) {
+      if (isCurrentPath(link.getAttribute("href"))) {
         link.classList.add("active");
       }
     });
 
-    /* ==========================================
-     SUBMENU ACTIVE
-  ========================================== */
-
+    // Submenu links active highlight & find active parent
+    let activeParentGroup = null;
     submenuLinks.forEach(function (link) {
-      const href = link.getAttribute("href");
-
-      if (isCurrentPath(href)) {
+      if (isCurrentPath(link.getAttribute("href"))) {
         link.classList.add("active");
-
         const parentItem = link.closest(".has-submenu");
-
         if (parentItem) {
-          parentItem.classList.add("submenu-open");
-
-          const parentButton = parentItem.querySelector(".sidebar-parent");
-
-          if (parentButton) {
-            parentButton.classList.add("active-parent");
-            parentButton.setAttribute("aria-expanded", "true");
-          }
+          activeParentGroup = parentItem;
         }
       }
     });
 
-    /* ==========================================
-     ACCORDION
-  ========================================== */
+    // 4. RESTORE OPEN GROUPS FROM SESSION STORAGE
+    let savedOpenGroups = [];
+    try {
+      savedOpenGroups = JSON.parse(sessionStorage.getItem(storageKeyGroups) || "[]");
+      if (!Array.isArray(savedOpenGroups)) savedOpenGroups = [];
+    } catch (e) {
+      savedOpenGroups = [];
+    }
 
-    parents.forEach(function (parent) {
-      parent.addEventListener("click", function () {
-        const currentItem = parent.closest(".has-submenu");
+    // Assign keys & open initial groups INSTANTLY (without transition)
+    parents.forEach(function (btn, idx) {
+      const parentItem = btn.closest(".has-submenu");
+      if (!parentItem) return;
+      const key = "grp-" + idx;
+      parentItem.dataset.groupKey = key;
+
+      // Group should be open if active link is inside it OR user previously opened it
+      const shouldBeOpen = (activeParentGroup === parentItem) || savedOpenGroups.includes(key);
+      if (shouldBeOpen) {
+        parentItem.classList.add("submenu-open");
+        btn.classList.add("active-parent");
+        btn.setAttribute("aria-expanded", "true");
+      }
+    });
+
+    // Save open state helper
+    function persistOpenGroups() {
+      try {
+        const openKeys = [];
+        sidebar.querySelectorAll(".has-submenu.submenu-open").forEach(function (item) {
+          if (item.dataset.groupKey) openKeys.push(item.dataset.groupKey);
+        });
+        sessionStorage.setItem(storageKeyGroups, JSON.stringify(openKeys));
+      } catch (e) {}
+    }
+
+    // Persist immediately on load
+    persistOpenGroups();
+
+    // 5. ENABLE TRANSITIONS AFTER INITIAL PAINT (Zero-flash & Zero-compane)
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        sidebar.classList.remove("no-transition");
+      }, 50);
+    });
+
+    // 6. ACCORDION CLICK HANDLER (Fluid & solid, zero layout shifts)
+    parents.forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        const currentItem = btn.closest(".has-submenu");
+        if (!currentItem) return;
+
         const isOpen = currentItem.classList.contains("submenu-open");
+        currentItem.classList.toggle("submenu-open", !isOpen);
+        btn.classList.toggle("active-parent", !isOpen);
+        btn.setAttribute("aria-expanded", String(!isOpen));
 
-        /* Close all other menus */
+        persistOpenGroups();
+      });
+    });
 
-        document
-          .querySelectorAll(".has-submenu.submenu-open")
-          .forEach(function (item) {
-            if (item !== currentItem) {
-              item.classList.remove("submenu-open");
+    // 7. SAVE SCROLL BEFORE ANY NAVIGATION
+    submenuLinks.forEach(function (link) {
+      link.addEventListener("click", function () {
+        try {
+          if (scrollContainer) {
+            sessionStorage.setItem(storageKeyScroll, scrollContainer.scrollTop);
+          }
+        } catch (e) {}
 
-              const button = item.querySelector(".sidebar-parent");
-
-              if (button) {
-                button.setAttribute("aria-expanded", "false");
-              }
-            }
-          });
-
-        /* Toggle current */
-
-        if (isOpen) {
-          currentItem.classList.remove("submenu-open");
-          parent.setAttribute("aria-expanded", "false");
-        } else {
-          currentItem.classList.add("submenu-open");
-          parent.setAttribute("aria-expanded", "true");
+        if (window.innerWidth <= 992) {
+          closeSidebar();
         }
       });
     });
 
-    /* ==========================================
-     MOBILE SIDEBAR
-  ========================================== */
+    directLinks.forEach(function (link) {
+      link.addEventListener("click", function () {
+        try {
+          if (scrollContainer) {
+            sessionStorage.setItem(storageKeyScroll, scrollContainer.scrollTop);
+          }
+        } catch (e) {}
 
+        if (window.innerWidth <= 992) {
+          closeSidebar();
+        }
+      });
+    });
+
+    // 8. MOBILE DRAWER CONTROLS
     function openSidebar() {
       sidebar.classList.add("sidebar-open");
-      backdrop.classList.add("active");
-
+      if (backdrop) backdrop.classList.add("active");
       document.body.classList.add("sidebar-mobile-open");
     }
 
     function closeSidebar() {
       sidebar.classList.remove("sidebar-open");
-      backdrop.classList.remove("active");
-
+      if (backdrop) backdrop.classList.remove("active");
       document.body.classList.remove("sidebar-mobile-open");
     }
 
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", openSidebar);
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener("click", closeSidebar);
-    }
-
-    if (backdrop) {
-      backdrop.addEventListener("click", closeSidebar);
-    }
-
-    /* Close mobile sidebar after selecting page */
-
-    submenuLinks.forEach(function (link) {
-      link.addEventListener("click", function () {
-        if (window.innerWidth <= 992) {
-          closeSidebar();
-        }
-      });
-    });
-
-    directLinks.forEach(function (link) {
-      link.addEventListener("click", function () {
-        if (window.innerWidth <= 992) {
-          closeSidebar();
-        }
-      });
-    });
-
-    /* ==========================================
-     ESCAPE KEY
-  ========================================== */
+    if (toggleBtn) toggleBtn.addEventListener("click", openSidebar);
+    if (closeBtn) closeBtn.addEventListener("click", closeSidebar);
+    if (backdrop) backdrop.addEventListener("click", closeSidebar);
 
     document.addEventListener("keydown", function (event) {
-      if (
-        event.key === "Escape" &&
-        sidebar.classList.contains("sidebar-open")
-      ) {
+      if (event.key === "Escape" && sidebar.classList.contains("sidebar-open")) {
         closeSidebar();
       }
     });
 
-    /* ==========================================
-     DESKTOP COLLAPSE
-  ========================================== */
-
+    // 9. DESKTOP COLLAPSE TRIGGER
     if (collapseBtn) {
       collapseBtn.addEventListener("click", function () {
-        if (window.innerWidth <= 992) {
-          return;
-        }
+        if (window.innerWidth <= 992) return;
 
         sidebar.classList.toggle("collapsed");
+        const isCollapsed = sidebar.classList.contains("collapsed");
+        document.body.classList.toggle("sidebar-collapsed", isCollapsed);
 
-        const icon = collapseBtn.querySelector("i");
-
-        if (sidebar.classList.contains("collapsed")) {
-          icon.className = "fa-solid fa-chevron-right";
-
-          document.body.classList.add("sidebar-collapsed");
-        } else {
-          icon.className = "fa-solid fa-chevron-left";
-
-          document.body.classList.remove("sidebar-collapsed");
-        }
+        try {
+          localStorage.setItem(storageKeyCollapsed, String(isCollapsed));
+        } catch (e) {}
       });
     }
 
-    /* ==========================================
-     RESIZE SAFETY
-  ========================================== */
-
+    // 10. WINDOW RESIZE SAFETY
     window.addEventListener("resize", function () {
       if (window.innerWidth > 992) {
         sidebar.classList.remove("sidebar-open");
-        backdrop.classList.remove("active");
+        if (backdrop) backdrop.classList.remove("active");
         document.body.classList.remove("sidebar-mobile-open");
       }
     });
-  });
+  })();
 </script>

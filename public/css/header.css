@@ -840,3 +840,47 @@ body.sidebar-collapsed .global-navbar {
         display: none;
     }
 }
+/* Refined shared admin header */
+:root {
+    --header-height: 72px;
+    --primary-blue: #1558a6;
+    --primary-dark: #123e70;
+    --border-color: #e5ebf3;
+}
+
+.global-navbar {
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 4px 18px rgba(24, 43, 68, .055);
+}
+
+.logo-icon-box {
+    border-radius: 12px;
+    background: #f5f8fc;
+}
+
+.header-brand-text h2 {
+    color: #173b68;
+    letter-spacing: -.3px;
+}
+
+.global-search input {
+    border-color: #e4eaf2;
+    background: #f7f9fc;
+}
+
+.header-action-btn:focus-visible,
+.user-meta-header:focus-visible,
+.global-search input:focus-visible {
+    outline: 3px solid rgba(21, 88, 166, .22);
+    outline-offset: 2px;
+}
+
+.header-avatar,
+.dropdown-avatar {
+    background: linear-gradient(135deg, #1558a6, #2878c8);
+}
+
+.header-profile-dropdown {
+    border-radius: 14px;
+    box-shadow: 0 16px 38px rgba(22, 42, 69, .16);
+}

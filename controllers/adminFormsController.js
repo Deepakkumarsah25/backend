@@ -180,16 +180,46 @@ export const renderAdminFormsPage = async (req, res) => {
       );
     }
 
-    // Filter by search query
+    // Filter by search query (Comprehensive search across name, phone, ID, location, email, type & status)
     if (searchQuery) {
+      const qLower = searchQuery.toLowerCase();
+      const qDigits = searchQuery.replace(/\D/g, '');
+
       allItems = allItems.filter((i) => {
-        return (
-          (i._applicantName && i._applicantName.toLowerCase().includes(searchQuery)) ||
-          (i._mobile && i._mobile.toLowerCase().includes(searchQuery)) ||
-          (i._uniqueId && i._uniqueId.toLowerCase().includes(searchQuery)) ||
-          (i._location && i._location.toLowerCase().includes(searchQuery)) ||
-          (i._email && i._email.toLowerCase().includes(searchQuery))
+        const name = (i._applicantName || '').toLowerCase();
+        const father = (i.fatherName || i.fatherOrHusbandName || '').toLowerCase();
+        const phone = (i._mobile || '').toLowerCase();
+        const phoneDigits = String(i._mobile || '').replace(/\D/g, '');
+        const email = (i._email || i.email || '').toLowerCase();
+        const uid = (i._uniqueId || '').toLowerCase();
+        const mongoId = (i._id || '').toString().toLowerCase();
+        const loc = (i._location || '').toLowerCase();
+        const district = (i.district || '').toLowerCase();
+        const state = (i.state || '').toLowerCase();
+        const assembly = (i.assembly || i.assemblyConstituency || '').toLowerCase();
+        const typeLabel = (i._typeLabel || '').toLowerCase();
+        const formType = (i._formType || '').toLowerCase();
+        const status = (i._status || '').toLowerCase();
+
+        const textMatches = (
+          name.includes(qLower) ||
+          father.includes(qLower) ||
+          phone.includes(qLower) ||
+          email.includes(qLower) ||
+          uid.includes(qLower) ||
+          mongoId.includes(qLower) ||
+          loc.includes(qLower) ||
+          district.includes(qLower) ||
+          state.includes(qLower) ||
+          assembly.includes(qLower) ||
+          typeLabel.includes(qLower) ||
+          formType.includes(qLower) ||
+          status.includes(qLower)
         );
+
+        const phoneMatches = Boolean(qDigits && phoneDigits.includes(qDigits));
+
+        return textMatches || phoneMatches;
       });
     }
 
