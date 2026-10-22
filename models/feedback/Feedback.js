@@ -10,15 +10,21 @@ const feedbackSchema = new mongoose.Schema(
 
     name: {
       type: String,
-      required: true,
+      default: "VIP App User",
       trim: true,
     },
 
     email: {
       type: String,
-      required: true,
+      default: "",
       trim: true,
       lowercase: true,
+    },
+
+    phone: {
+      type: String,
+      default: "",
+      trim: true,
     },
 
     rating: {
@@ -34,13 +40,19 @@ const feedbackSchema = new mongoose.Schema(
       trim: true,
       maxlength: 1000,
     },
+
+    source: {
+      type: String,
+      default: "app",
+      enum: ["app", "website"],
+    },
   },
   {
     timestamps: true,
   }
 );
 
-const Feedback = mongoose.model(
+const Feedback = mongoose.models.Feedback || mongoose.model(
   "Feedback",
   feedbackSchema
 );
