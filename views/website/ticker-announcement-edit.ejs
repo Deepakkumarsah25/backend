@@ -1,5 +1,497 @@
-<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Announcement edit · VIP Admin</title><link rel="stylesheet" href="/css/header.css"><link rel="stylesheet" href="/css/sidebar.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"><style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#14243a;font-family:Inter,Arial,sans-serif}.wrap{margin:92px 24px 30px 300px;padding:12px;max-width:1200px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px}.top h1{font-size:26px;margin:0}.card{background:white;border:1px solid #e2eaf3;border-radius:16px;padding:23px;margin-bottom:18px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:750;margin-bottom:7px;color:#334155}.field input,.field textarea{width:100%;border:1px solid #d9e3ee;border-radius:10px;padding:12px 13px;font:inherit;background:#fff;color:#14243a}.field textarea{min-height:110px;resize:vertical;line-height:1.6}.hint{font-size:12px;color:#718096;margin-top:5px}.btn{display:inline-flex;gap:8px;align-items:center;padding:11px 15px;background:#0967b2;color:#fff;border-radius:10px;text-decoration:none;border:0;font-weight:700;cursor:pointer}.btn.light{background:#edf4fb;color:#17517d}.btn.red{background:#fff0ef;color:#ad3434}.error{background:#fff0ef;color:#a93226;padding:12px 15px;border-radius:9px;margin-bottom:15px}.section{background:#f7faff;border:1px solid #e1eaf4;padding:15px;border-radius:12px;margin:12px 0}.section-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.check{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px}.check input{width:18px;height:18px}.savebar{position:sticky;bottom:0;background:#fff;border-top:1px solid #e5ebf2;padding:14px 0;display:flex;justify-content:flex-end;gap:10px}@media(max-width:900px){.wrap{margin:82px 14px 24px;padding:4px}}@media(max-width:640px){.grid{grid-template-columns:1fr}.card{padding:17px}.top{align-items:flex-start;flex-direction:column}.top h1{font-size:22px}}
-</style></head><body><%- include('../common/header.ejs') %><%- include('../common/sidebar.ejs') %><main class="wrap"><div class="top"><div><h1><i class="fa-solid fa-bullhorn" style="color:#f59e0b"></i> <%= item._id?'Announcement edit karein':'Naya announcement' %></h1><p style="color:#718096;margin:6px 0">Ticker par dikhne wala text aur click ke baad khulne wala page yahan set karein.</p></div><a class="btn light" href="/admin/website/ticker-announcements"><i class="fa-solid fa-arrow-left"></i> Wapas</a></div><% if(error){ %><div class="error"><%= error %></div><% } %><form method="post" action="/admin/website/ticker-announcements/<%= item._id||'new' %>/save"><section class="card"><h2 style="margin-top:0">Ticker item aur page</h2><div class="field"><label>Ticker mein chalne wala text *</label><textarea name="tickerText" required maxlength="400" placeholder="Event / announcement ka scrolling text"><%= item.tickerText %></textarea><div class="hint">Emoji bhi use kar sakte hain. Ye top bar mein click-able hoga.</div></div><div class="grid"><div class="field"><label>Detail page ka title *</label><input name="title" required maxlength="160" value="<%= item.title %>"></div><div class="field"><label>Page URL slug *</label><input name="slug" required pattern="[a-zA-Z0-9-]+" value="<%= item.slug %>" placeholder="event-details"><div class="hint">Page URL: /announcements/slug</div></div><div class="field"><label>Chhota summary</label><input name="summary" maxlength="400" value="<%= item.summary %>"></div><div class="field"><label>Cover image URL (optional)</label><input name="coverImage" type="url" value="<%= item.coverImage %>" placeholder="https://..."></div><div class="field"><label>Display order</label><input name="displayOrder" type="number" value="<%= item.displayOrder||0 %>"></div></div><div class="field"><label>Page ka main content</label><textarea name="content" style="min-height:150px" placeholder="Detail page par dikhne wali jankari"><%= item.content %></textarea></div><label class="check"><input type="checkbox" name="active" <%= item.active?'checked':'' %>> Website ticker mein dikhayein</label></section><section class="card"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px"><div><h2 style="margin:0">Extra content sections</h2><p style="color:#718096;margin:6px 0">Heading, details aur image add karein.</p></div><button type="button" id="add-section" class="btn light"><i class="fa-solid fa-plus"></i> Section add</button></div><div id="sections"><% (item.sections?.length?item.sections:[{}]).forEach(section=>{ %><div class="section"><div class="section-top"><strong>Content section</strong><button type="button" class="btn red remove-section"><i class="fa-solid fa-trash"></i></button></div><div class="field"><label>Heading</label><input name="sectionHeading" value="<%= section.heading||'' %>"></div><div class="field"><label>Details</label><textarea name="sectionContent"><%= section.content||'' %></textarea></div><div class="field" style="margin-bottom:0"><label>Image URL (optional)</label><input name="sectionImage" type="url" value="<%= section.imageUrl||'' %>"></div></div><% }) %></div></section><div class="savebar"><a class="btn light" href="/admin/website/ticker-announcements">Cancel</a><button class="btn"><i class="fa-solid fa-floppy-disk"></i> Save</button></div></form></main><script>
-const list=document.getElementById('sections');document.getElementById('add-section').addEventListener('click',()=>{const box=document.createElement('div');box.className='section';box.innerHTML='<div class="section-top"><strong>Content section</strong><button type="button" class="btn red remove-section"><i class="fa-solid fa-trash"></i></button></div><div class="field"><label>Heading</label><input name="sectionHeading"></div><div class="field"><label>Details</label><textarea name="sectionContent"></textarea></div><div class="field" style="margin-bottom:0"><label>Image URL (optional)</label><input name="sectionImage" type="url"></div>';list.appendChild(box)});list.addEventListener('click',e=>{if(e.target.closest('.remove-section')){const nodes=list.querySelectorAll('.section');if(nodes.length>1)e.target.closest('.section').remove();else e.target.closest('.section').querySelectorAll('input,textarea').forEach(el=>el.value='')}});
-</script></body></html>
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= item._id ? 'अनाउंसमेंट एडिट करें' : 'नया अनाउंसमेंट' %> · VIP Admin</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
+
+    <style>
+        :root {
+            --primary: #0b4ea2;
+            --primary-dark: #073570;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --card-border: #e2e8f0;
+            --bg-gray: #f8fafc;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+            padding: 24px clamp(14px, 2vw, 30px);
+            background: #f3f6fb;
+            box-sizing: border-box;
+        }
+
+        .edit-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title-box h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title-box p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(11, 78, 162, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--text-dark);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-danger-outline {
+            background: #fff;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .btn-danger-outline:hover {
+            background: #fee2e2;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-card {
+            background: #fff;
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+        }
+
+        .form-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .form-card-header h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 11px 14px;
+            font-size: 14px;
+            color: var(--text-dark);
+            background: #fff;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Section block */
+        .content-section-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+
+        .content-section-box:hover {
+            border-color: #cbd5e1;
+            background: #fff;
+        }
+
+        .section-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .section-box-header strong {
+            font-size: 14px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #065f46;
+            cursor: pointer;
+            background: #ecfdf5;
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid #a7f3d0;
+        }
+
+        .checkbox-label input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--success);
+        }
+
+        .sticky-save-bar {
+            position: sticky;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid var(--card-border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-radius: 16px;
+            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.05);
+            margin-top: 24px;
+            z-index: 20;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                margin-top: 68px;
+                padding: 16px 14px 40px;
+            }
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <%- include('../common/header.ejs') %>
+
+    <!-- Sidebar -->
+    <%- include('../common/sidebar.ejs') %>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="edit-container">
+            
+            <div class="page-header">
+                <div class="header-title-box">
+                    <h1>
+                        <i class="fa-solid fa-bullhorn" style="color: #f59e0b;"></i>
+                        <%= item._id ? 'अनाउंसमेंट एडिट करें' : 'नया अनाउंसमेंट बनाएं' %>
+                    </h1>
+                    <p>शीर्ष टिकर पर दिखने वाला टेक्स्ट और क्लिक के बाद खुलने वाला संपूर्ण पेज यहाँ से सेट करें।</p>
+                </div>
+
+                <a class="btn-action btn-outline" href="/admin/website/ticker-announcements">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>वापस जाएं (Back)</span>
+                </a>
+            </div>
+
+            <% if (error) { %>
+                <div class="alert-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <form method="post" action="/admin/website/ticker-announcements/<%= item._id || 'new' %>/save">
+                
+                <!-- 1. Ticker & Main Page Settings -->
+                <section class="form-card">
+                    <div class="form-card-header">
+                        <h2>
+                            <i class="fa-solid fa-sliders text-primary"></i>
+                            टिकर टेक्स्ट एवं मुख्य पेज सेटिंग्स
+                        </h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label>टिकर में चलने वाला टेक्स्ट (Ticker Text) *</label>
+                        <textarea name="tickerText" required maxlength="400" rows="3" class="form-textarea" placeholder="जैसे: 🔴 लाइव: अमर शहीद जुब्बा सहनी शहादत दिवस समारोह में जुड़ें..."><%= item.tickerText %></textarea>
+                        <div class="hint">इमोजी का उपयोग कर सकते हैं। यह वेबसाइट के टॉप बार में स्क्रॉल होगा।</div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>डिटेल पेज शीर्षक (Title) *</label>
+                            <input name="title" required maxlength="160" value="<%= item.title %>" class="form-input" placeholder="अनाउंसमेंट का मुख्य शीर्षक">
+                        </div>
+
+                        <div class="form-group">
+                            <label>पेज URL Slug (अंग्रेजी अक्षरों व डैश में) *</label>
+                            <input name="slug" required pattern="[a-zA-Z0-9-]+" value="<%= item.slug %>" placeholder="event-details" class="form-input" style="font-family: monospace;">
+                            <div class="hint">URL बनेगा: /announcements/slug</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>संक्षिप्त विवरण (Short Summary)</label>
+                            <input name="summary" maxlength="400" value="<%= item.summary %>" class="form-input" placeholder="1-2 पंक्तियों का संक्षिप्त परिचय">
+                        </div>
+
+                        <div class="form-group">
+                            <label>कवर इमेज URL (Cover Image URL - Optional)</label>
+                            <input name="coverImage" type="url" value="<%= item.coverImage %>" placeholder="https://res.cloudinary.com/..." class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>प्रदर्शन क्रम (Display Order)</label>
+                            <input name="displayOrder" type="number" value="<%= item.displayOrder || 0 %>" class="form-input">
+                            <div class="hint">कम संख्या वाला अनाउंसमेंट पहले दिखाई देगा।</div>
+                        </div>
+
+                        <div class="form-group" style="display: flex; align-items: flex-end; padding-bottom: 5px;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="active" <%= item.active ? 'checked' : '' %>>
+                                <span>वेबसाइट टिकर में सक्रिय रूप से दिखाएं (Active Live)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label>पेज का मुख्य विवरण (Detailed Content)</label>
+                        <textarea name="content" rows="6" class="form-textarea" placeholder="अनाउंसमेंट के विस्तृत विवरण यहाँ दर्ज करें..."><%= item.content %></textarea>
+                    </div>
+                </section>
+
+                <!-- 2. Extra Content Sections -->
+                <section class="form-card">
+                    <div class="form-card-header">
+                        <div>
+                            <h2>
+                                <i class="fa-solid fa-layer-group text-primary"></i>
+                                अतिरिक्त विवरण सेक्शन्स (Extra Sections)
+                            </h2>
+                            <p class="hint" style="margin-top: 2px;">पेज में अतिरिक्त हेडिंग्स, विस्तृत पैराग्राफ या तस्वीरें जोड़ने के लिए।</p>
+                        </div>
+                        <button type="button" id="add-section" class="btn-action btn-outline">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>सेक्शन जोड़ें</span>
+                        </button>
+                    </div>
+
+                    <div id="sections">
+                        <% (item.sections?.length ? item.sections : [{}]).forEach(section => { %>
+                            <div class="content-section-box">
+                                <div class="section-box-header">
+                                    <strong>
+                                        <i class="fa-solid fa-align-left text-muted"></i>
+                                        कंटेंट ब्लॉक
+                                    </strong>
+                                    <button type="button" class="btn-action btn-danger-outline remove-section" style="padding: 6px 12px; font-size: 12px;">
+                                        <i class="fa-solid fa-trash"></i>
+                                        <span>हटाएं</span>
+                                    </button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>सेक्शन हेडिंग (Heading)</label>
+                                    <input name="sectionHeading" value="<%= section.heading || '' %>" class="form-input" placeholder="ब्लॉक का शीर्षक">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>विस्तृत विवरण (Details)</label>
+                                    <textarea name="sectionContent" rows="4" class="form-textarea" placeholder="इस सेक्शन का विस्तृत विवरण..."><%= section.content || '' %></textarea>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>इमेज URL (Image URL - Optional)</label>
+                                    <input name="sectionImage" type="url" value="<%= section.imageUrl || '' %>" class="form-input" placeholder="https://...">
+                                </div>
+                            </div>
+                        <% }) %>
+                    </div>
+                </section>
+
+                <!-- Sticky Save Bar -->
+                <div class="sticky-save-bar">
+                    <a class="btn-action btn-outline" href="/admin/website/ticker-announcements">रद्द करें (Cancel)</a>
+                    <button class="btn-action btn-primary" type="submit">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>सेव करें (Save Announcement)</span>
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </main>
+
+    <script>
+        const list = document.getElementById('sections');
+        document.getElementById('add-section').addEventListener('click', () => {
+            const box = document.createElement('div');
+            box.className = 'content-section-box';
+            box.innerHTML = `
+                <div class="section-box-header">
+                    <strong>
+                        <i class="fa-solid fa-align-left text-muted"></i>
+                        कंटेंट ब्लॉक
+                    </strong>
+                    <button type="button" class="btn-action btn-danger-outline remove-section" style="padding: 6px 12px; font-size: 12px;">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>हटाएं</span>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>सेक्शन हेडिंग (Heading)</label>
+                    <input name="sectionHeading" class="form-input" placeholder="ब्लॉक का शीर्षक">
+                </div>
+                <div class="form-group">
+                    <label>विस्तृत विवरण (Details)</label>
+                    <textarea name="sectionContent" rows="4" class="form-textarea" placeholder="इस सेक्शन का विस्तृत विवरण..."></textarea>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label>इमेज URL (Image URL - Optional)</label>
+                    <input name="sectionImage" type="url" class="form-input" placeholder="https://...">
+                </div>
+            `;
+            list.appendChild(box);
+        });
+
+        list.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-section')) {
+                const nodes = list.querySelectorAll('.content-section-box');
+                if (nodes.length > 1) {
+                    e.target.closest('.content-section-box').remove();
+                } else {
+                    const inputs = e.target.closest('.content-section-box').querySelectorAll('input, textarea');
+                    inputs.forEach(el => el.value = '');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
