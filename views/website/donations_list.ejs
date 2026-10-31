@@ -41,10 +41,25 @@
             min-height: 100vh;
         }
 
+        .main-content {
+            margin-top: 72px;
+            min-height: calc(100vh - 72px);
+            padding: 24px clamp(14px, 2vw, 30px);
+            background: #f3f6fb;
+            box-sizing: border-box;
+        }
+
         .donations-container {
-            padding: 24px;
+            width: 100%;
             max-width: 1500px;
             margin: 0 auto;
+        }
+
+        @media (max-width: 992px) {
+            .main-content {
+                margin-top: 68px;
+                padding: 16px 14px 40px;
+            }
         }
 
         .page-header {
@@ -211,6 +226,7 @@
         }
 
         .donations-table {
+            min-width: 1150px;
             width: 100%;
             border-collapse: collapse;
             text-align: left;
@@ -240,17 +256,19 @@
         }
 
         .receipt-pill {
-            font-family: monospace;
-            font-weight: 800;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-weight: 700;
             font-size: 12px;
             background: #f1f5f9;
             color: var(--primary);
-            padding: 4px 8px;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
+            padding: 4px 9px;
+            border-radius: 7px;
+            border: 1px solid #cbd5e1;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            white-space: nowrap !important;
+            word-break: keep-all !important;
         }
 
         .amount-badge {
@@ -465,11 +483,11 @@
                                                 <%= r.paymentMode || 'UPI' %>
                                             </span>
                                         </td>
-                                        <td>
-                                            <div style="font-weight: 600;">
-                                                <%= r.createdAt ? new Date(r.createdAt).toLocaleDateString('hi-IN') : 'N/A' %>
+                                        <td style="white-space: nowrap;">
+                                            <div style="font-weight: 600; white-space: nowrap; color: var(--text-dark);">
+                                                <%= r.createdAt ? new Date(r.createdAt).toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A' %>
                                             </div>
-                                            <div style="font-size: 11px; color: var(--text-muted);">
+                                            <div style="font-size: 11px; color: var(--text-muted); white-space: nowrap; margin-top: 2px;">
                                                 <%= r.createdAt ? new Date(r.createdAt).toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' }) : '' %>
                                             </div>
                                         </td>
