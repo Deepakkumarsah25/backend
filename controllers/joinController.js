@@ -149,7 +149,6 @@ export const applyForMembership = async (req, res) => {
       mode: "full",
       type: normalizedType,
       status: "Pending",
-      memberId: null, // ONLY created on admin approval!
       profilePhoto: photoPath,
       fullName: fullName.trim(),
       mobile: cleanMobile,
@@ -737,6 +736,27 @@ export const addMemberByAgent = async (req, res) => {
     }
 
     if (!agentUser.isAgent) {
+      const queryConditions = [{ userId: agentUser._id }];
+      if (agentUser.uid) queryConditions.push({ uid: agentUser.uid });
+      if (agentUser.phone) {
+        const cleanPhone = String(agentUser.phone).replace(/\D/g, "").slice(-10);
+        if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
+      }
+
+      const verifiedMembership = await Join.findOne({
+        $or: queryConditions,
+        status: "Approved",
+        memberId: { $ne: null },
+      }).lean();
+
+      if (!verifiedMembership) {
+        return res.status(403).json({
+          success: false,
+          code: "MEMBER_VERIFICATION_REQUIRED",
+          message: "Please get your membership card and get verified first. Once verified, you can add other members.",
+        });
+      }
+
       const addedCount = await Join.countDocuments({
         addedBy: agentUser._id,
       });
@@ -781,6 +801,29 @@ export const getMyAddedMembers = async (req, res) => {
         success: false,
         message: "Login required.",
       });
+    }
+
+    if (!req.user.isAgent) {
+      const queryConditions = [{ userId: agentId }];
+      if (req.user.uid) queryConditions.push({ uid: req.user.uid });
+      if (req.user.phone) {
+        const cleanPhone = String(req.user.phone).replace(/\D/g, "").slice(-10);
+        if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
+      }
+
+      const verifiedMembership = await Join.findOne({
+        $or: queryConditions,
+        status: "Approved",
+        memberId: { $ne: null },
+      }).lean();
+
+      if (!verifiedMembership) {
+        return res.status(403).json({
+          success: false,
+          code: "MEMBER_VERIFICATION_REQUIRED",
+          message: "Please get your membership card and get verified first. Once verified, you can add other members.",
+        });
+      }
     }
 
     let { search = "", page = 1, limit = 10 } = req.query;

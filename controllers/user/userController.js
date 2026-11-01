@@ -55,17 +55,17 @@ const getBloodGroup = (...sources) => {
 const formatCard = (user, joinApp = null) => ({
   type: joinApp?.type || "party_member",
   memberId: joinApp?.memberId || "",
-  fullName: joinApp?.fullName || user.name || "",
-  email: joinApp?.email || user.email || "",
-  mobile: joinApp?.mobile || user.phone || "",
+  fullName: user.name || joinApp?.fullName || "",
+  email: user.email || joinApp?.email || "",
+  mobile: user.phone || joinApp?.mobile || "",
   designation: user.designation || "सक्रिय सदस्य",
-  state: joinApp?.state || user.state || "",
-  district: joinApp?.district || user.district || "",
+  state: user.state || joinApp?.state || "",
+  district: user.district || joinApp?.district || "",
   address: joinApp?.address || "",
   bloodGroup: getBloodGroup(joinApp, user),
   dob: joinApp?.dob || null,
   pinCode: joinApp?.pinCode || "",
-  profilePhoto: joinApp?.profilePhoto || user.photoURL || "",
+  profilePhoto: user.photoURL || joinApp?.profilePhoto || "",
   createdAt: joinApp?.createdAt || user.createdAt,
   status: joinApp?.status || "Approved",
 });
@@ -481,75 +481,67 @@ export const getMyCard = async (req, res) => {
  *******************************************************/
 
 export const updateMyCard = async (req, res) => {
-
   try {
-
-    const { name, phone, designation, state, district } = req.body;
-
+    const { name, phone, designation, state, district } = req.body || {};
     const update = {};
 
     if (typeof name === "string" && name.trim()) update.name = name.trim();
-
-    if (typeof phone === "string" && phone.trim()) update.phone = phone.trim();
-
+    if (typeof phone === "string" && phone.trim()) {
+      const cleanPhone = phone.replace(/\D/g, "").slice(-10);
+      if (cleanPhone) update.phone = cleanPhone;
+    }
     if (typeof designation === "string" && designation.trim()) update.designation = designation.trim();
+    if (typeof state === "string" && state.trim()) update.state = state.trim();
+    if (typeof district === "string" && district.trim()) update.district = district.trim();
 
-    if (state) update.state = state;
-
-    if (district) update.district = district;
-
-    if (req.file) {
-
+    if (req.file && req.file.buffer) {
       const result = await uploadToCloudinary(req.file.buffer);
-
       update.photoURL = result.secure_url;
-
     }
 
     const user = await User.findByIdAndUpdate(
-
       req.user._id,
-
       { $set: update },
-
       { new: true }
-
     );
 
     if (!user) {
-
       return res.status(404).json({
-
         success: false,
-
         message: "User not found.",
-
       });
+    }
 
+    // Also sync updated details to any Join application for this user
+    try {
+      if (req.user._id || req.user.uid) {
+        await Join.updateMany(
+          { $or: [{ userId: req.user._id }, { uid: req.user.uid }] },
+          {
+            $set: {
+              ...(update.name && { fullName: update.name }),
+              ...(update.phone && { mobile: update.phone }),
+              ...(update.state && { state: update.state }),
+              ...(update.district && { district: update.district }),
+              ...(update.photoURL && { profilePhoto: update.photoURL }),
+            },
+          }
+        );
+      }
+    } catch (joinSyncErr) {
+      console.warn("Could not sync to Join applications:", joinSyncErr.message);
     }
 
     return res.json({
-
       success: true,
-
       message: "Card updated.",
-
       data: formatCard(user),
-
     });
-
   } catch (err) {
-
     console.error("updateMyCard error:", err);
-
     return res.status(500).json({
-
       success: false,
-
-      message: "Something went wrong.",
-
+      message: err.message || "Something went wrong.",
     });
-
   }
-
 };
