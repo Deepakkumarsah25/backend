@@ -4,7 +4,7 @@
 ========================================================= */
 
 :root {
-  --sidebar-width: 270px;
+  --sidebar-width: 285px;
   --sidebar-collapsed-width: 78px;
 
   /* Executive Dark Navy & Slate Theme */
@@ -572,18 +572,25 @@ body.sidebar-collapsed .global-navbar {
    MAIN CONTENT INTEGRATION
 ========================================================= */
 .main-content {
+  margin-top: 72px;
+  min-height: calc(100vh - 72px);
   margin-left: var(--sidebar-width);
-  transition: margin-left var(--sidebar-transition);
+  width: calc(100% - var(--sidebar-width));
+  transition: margin-left var(--sidebar-transition), width var(--sidebar-transition);
+  box-sizing: border-box;
 }
 
 body.sidebar-collapsed .main-content {
   margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
 }
 
 @media (max-width: 992px) {
   .main-content,
   body.sidebar-collapsed .main-content {
     margin-left: 0 !important;
+    width: 100% !important;
+    margin-top: 68px;
   }
 }
 
