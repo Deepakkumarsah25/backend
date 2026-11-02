@@ -48,9 +48,6 @@ const joinSchema = new mongoose.Schema(
 
     memberId: {
       type: String,
-      default: null,
-      sparse: true,
-      index: true,
     },
 
     remarks: { type: String, default: "" },
@@ -105,6 +102,17 @@ const joinSchema = new mongoose.Schema(
     declarationAccepted: { type: Boolean, required: true, default: true },
   },
   { timestamps: true }
+);
+
+// Pending applications have no member ID. Keep IDs unique once assigned,
+// while allowing any number of documents where memberId is missing or null.
+joinSchema.index(
+  { memberId: 1 },
+  {
+    name: "memberId_1",
+    unique: true,
+    partialFilterExpression: { memberId: { $type: "string" } },
+  }
 );
 
 export default mongoose.model("Join", joinSchema);

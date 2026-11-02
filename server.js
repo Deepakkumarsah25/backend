@@ -55,6 +55,7 @@ import adminFormsRoutes from "./routes/adminFormsRoutes.js";
 import websiteRoutes from "./routes/websiteRoutes.js";
 import downloadRoutes from "./routes/downloadRoutes.js";
 import { seedInitialDownloads } from "./controllers/downloadController.js";
+import { startNotificationScheduler } from "./services/notificationCampaignService.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -485,8 +486,41 @@ mongoose
       "✅ MongoDB Connected"
     );
     try {
+      // Replace the legacy unique memberId index (which also indexed null)
+      // with the schema's partial unique index. This is targeted to this one
+      // index; it does not drop other collection indexes.
+      const Join = (await import("./models/joinmodel.js")).default;
+      const joinIndexes = await Join.collection.indexes();
+      const memberIdIndex = joinIndexes.find((index) => index.name === "memberId_1");
+      const memberIdIndexIsCurrent =
+        memberIdIndex?.unique === true &&
+        memberIdIndex?.partialFilterExpression?.memberId?.$type === "string";
+
+      if (memberIdIndex && !memberIdIndexIsCurrent) {
+        await Join.collection.dropIndex("memberId_1");
+      }
+      if (!memberIdIndexIsCurrent) {
+        await Join.collection.createIndex(
+          { memberId: 1 },
+          {
+            name: "memberId_1",
+            unique: true,
+            partialFilterExpression: { memberId: { $type: "string" } },
+          }
+        );
+      }
+
+      const notificationModels = await Promise.all([
+        import("./models/notification/UserNotification.js"),
+        import("./models/notification/NotificationCampaign.js"),
+        import("./models/notification/DeviceToken.js"),
+        import("./models/notification/NotificationPreference.js"),
+      ]);
+      await Promise.all(notificationModels.map((module) => module.default.init()));
+
       await seedAdminsAndActivities();
       await seedInitialDownloads();
+      startNotificationScheduler();
     } catch (seedErr) {
       console.error("Seeding error:", seedErr);
     }

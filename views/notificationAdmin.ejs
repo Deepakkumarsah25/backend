@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= section.title %> | VIP Admin</title>
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    body { background:#f3f6fb; color:#15233b; font-family:Inter,Arial,sans-serif; }
+    .main-content { padding:32px; }
+    .notice-wrap { max-width:1100px; margin:0 auto; }
+    .notice-head h1 { margin:0 0 8px; font-size:28px; }
+    .notice-head p { margin:0 0 24px; color:#64748b; }
+    .notice-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
+    .notice-tabs a { padding:10px 14px; border-radius:10px; background:#e8edf5; color:#34445f; text-decoration:none; font-weight:700; }
+    .notice-tabs a.active { background:#0b4ea2; color:#fff; }
+    .notice-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:22px; margin-bottom:20px; box-shadow:0 8px 25px #1734570a; }
+    .notice-card h2 { margin:0 0 16px; font-size:19px; }
+    .notice-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .notice-field { display:flex; flex-direction:column; gap:7px; }
+    .notice-field.full { grid-column:1 / -1; }
+    .notice-field label { font-size:13px; font-weight:700; color:#40516b; }
+    .notice-field input,.notice-field select,.notice-field textarea { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:9px; padding:11px 12px; font:inherit; background:#fff; }
+    .notice-field textarea { min-height:130px; resize:vertical; }
+    .notice-help { color:#718096; font-size:12px; }
+    .notice-actions { display:flex; justify-content:flex-end; margin-top:16px; }
+    .notice-send { border:0; border-radius:9px; padding:12px 18px; background:#0b4ea2; color:white; font-weight:800; cursor:pointer; }
+    .notice-send:disabled { opacity:.6; cursor:wait; }
+    .notice-status { margin-top:12px; font-weight:700; }
+    .notice-status.error { color:#b91c1c; }
+    .notice-status.success { color:#15803d; }
+    .campaign-list { display:grid; gap:10px; }
+    .campaign-row { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; border:1px solid #e2e8f0; border-radius:10px; padding:13px; }
+    .campaign-row h3 { margin:0 0 5px; font-size:15px; }
+    .campaign-row p { margin:0; color:#64748b; font-size:13px; white-space:pre-wrap; }
+    .campaign-meta { color:#64748b; font-size:12px; white-space:nowrap; text-align:right; }
+    .empty-state { color:#64748b; padding:14px 0; }
+    @media(max-width:700px) { .main-content { padding:18px 12px; } .notice-grid { grid-template-columns:1fr; } .notice-field.full { grid-column:auto; } .campaign-row { flex-direction:column; } .campaign-meta { text-align:left; } }
+  </style>
+</head>
+<body>
+  <%- include('common/header.ejs') %>
+  <%- include('common/sidebar.ejs') %>
+  <main class="main-content">
+    <div class="notice-wrap">
+      <header class="notice-head">
+        <h1><%= section.title %></h1>
+        <p><%= section.description %> Messages are saved to the in-app notification inbox; push delivery depends on the user's device and notification preferences.</p>
+      </header>
+      <nav class="notice-tabs" aria-label="Notification sections">
+        <a class="<%= sectionKey === 'normal' ? 'active' : '' %>" href="/admin/notifications/normal">Normal updates</a>
+        <a class="<%= sectionKey === 'promotional' ? 'active' : '' %>" href="/admin/notifications/promotional">Promotional</a>
+        <a class="<%= sectionKey === 'wishes' ? 'active' : '' %>" href="/admin/notifications/wishes">Wishes & greetings</a>
+      </nav>
+
+      <section class="notice-card">
+        <h2>Create notification</h2>
+        <form id="notificationForm">
+          <div class="notice-grid">
+            <div class="notice-field full">
+              <label for="title">Title</label>
+              <input id="title" name="title" maxlength="160" required placeholder="e.g. Happy Diwali">
+            </div>
+            <div class="notice-field full">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" maxlength="5000" required placeholder="Write the notification message"></textarea>
+            </div>
+            <div class="notice-field">
+              <label for="audience">Send to</label>
+              <select id="audience" name="audience">
+                <option value="all">All active users</option>
+                <option value="members">Members</option>
+                <option value="agents">Agents</option>
+                <option value="users">Selected user IDs</option>
+              </select>
+            </div>
+            <div class="notice-field" id="userIdsField" hidden>
+              <label for="userIds">MongoDB user IDs (comma separated)</label>
+              <input id="userIds" name="userIds" placeholder="ObjectId, ObjectId">
+              <span class="notice-help">Only send to IDs copied from a trusted admin user record.</span>
+            </div>
+            <div class="notice-field">
+              <label for="image">Image URL (optional)</label>
+              <input id="image" name="image" type="url" maxlength="2048" placeholder="https://…">
+            </div>
+            <div class="notice-field">
+              <label for="deepLink">App deep link (optional)</label>
+              <input id="deepLink" name="deepLink" maxlength="2048" placeholder="/events or https://…">
+            </div>
+          </div>
+          <div class="notice-actions"><button class="notice-send" id="sendButton" type="submit"><i class="fa-solid fa-paper-plane"></i> Send notification</button></div>
+          <div class="notice-status" id="formStatus" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="notice-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+          <h2 style="margin:0;">Recent notifications</h2>
+          <button type="button" class="notice-send" style="padding:8px 12px;" onclick="loadCampaigns()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+        <div class="campaign-list" id="campaignList"><div class="empty-state">Loading notifications…</div></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const category = <%- JSON.stringify(section.type) %>;
+    const form = document.getElementById('notificationForm');
+    const statusBox = document.getElementById('formStatus');
+    const sendButton = document.getElementById('sendButton');
+    const audienceSelect = document.getElementById('audience');
+    const userIdsField = document.getElementById('userIdsField');
+    const campaignList = document.getElementById('campaignList');
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+    audienceSelect.addEventListener('change', () => { userIdsField.hidden = audienceSelect.value !== 'users'; });
+
+    async function requestJson(url, options) {
+      const response = await fetch(url, { credentials: 'same-origin', ...options, headers: { 'Content-Type':'application/json', ...(options?.headers || {}) } });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success === false) throw new Error(data.message || `Request failed (${response.status})`);
+      return data;
+    }
+
+    async function loadCampaigns() {
+      try {
+        const data = await requestJson('/api/admin/notifications/campaigns?limit=50');
+        const items = (data.campaigns || []).filter((item) => item.type === category);
+        campaignList.innerHTML = items.length ? items.map((item) => {
+          const stats = item.liveDeliveryStats || item.deliveryStats || {};
+          return `<article class="campaign-row"><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.message)}</p>${item.lastError ? `<p style="color:#b91c1c;margin-top:8px;"><strong>Processing error:</strong> ${escapeHtml(item.lastError)}</p>` : ''}</div><div class="campaign-meta"><strong>${escapeHtml(item.status)}</strong><br>${item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}<br>Inbox: ${Number(stats.inAppCreated || 0)} · Push sent: ${Number(stats.pushSent || 0)}${Number(stats.pushFailed || 0) ? ` · Push failed: ${Number(stats.pushFailed)}` : ''}${Number(stats.pushSkipped || 0) ? ` · No push device/preference: ${Number(stats.pushSkipped)}` : ''}${['draft','failed'].includes(item.status) ? `<br><button type="button" onclick="retryCampaign('${escapeHtml(item._id)}')">Send / retry</button>` : ''}</div></article>`;
+        }).join('') : '<div class="empty-state">No notifications in this section yet.</div>';
+      } catch (error) {
+        campaignList.innerHTML = `<div class="empty-state">${escapeHtml(error.message)} <button type="button" onclick="loadCampaigns()">Retry</button></div>`;
+      }
+    }
+
+    async function retryCampaign(id) {
+      try {
+        await requestJson(`/api/admin/notifications/campaigns/${encodeURIComponent(id)}/publish`, { method:'POST', body:'{}' });
+        await loadCampaigns();
+      } catch (error) {
+        window.alert(error.message || 'Could not send notification.');
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      statusBox.className = 'notice-status';
+      statusBox.textContent = '';
+      sendButton.disabled = true;
+      try {
+        const audienceType = audienceSelect.value;
+        const userIds = audienceType === 'users' ? document.getElementById('userIds').value.split(',').map((id) => id.trim()).filter(Boolean) : [];
+        if (audienceType === 'users' && !userIds.length) throw new Error('Enter at least one user ID.');
+        const created = await requestJson('/api/admin/notifications/campaigns', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: document.getElementById('title').value,
+            message: document.getElementById('message').value,
+            type: category,
+            image: document.getElementById('image').value,
+            deepLink: document.getElementById('deepLink').value,
+            audience: { type: audienceType, userIds },
+          }),
+        });
+        await requestJson(`/api/admin/notifications/campaigns/${encodeURIComponent(created.campaign._id)}/publish`, { method:'POST', body:'{}' });
+        statusBox.className = 'notice-status success';
+        statusBox.textContent = 'Notification queued. It will appear in eligible users’ app inboxes; push delivery status will update after fanout.';
+        form.reset();
+        userIdsField.hidden = true;
+        await loadCampaigns();
+      } catch (error) {
+        statusBox.className = 'notice-status error';
+        statusBox.textContent = `${error.message || 'Could not send notification.'} If the request may have reached the server, refresh the list before trying again.`;
+        await loadCampaigns();
+      } finally {
+        sendButton.disabled = false;
+      }
+    });
+
+    void loadCampaigns();
+    window.setInterval(() => { void loadCampaigns(); }, 8000);
+  </script>
+</body>
+</html>

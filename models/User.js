@@ -76,6 +76,7 @@ const userSchema = new mongoose.Schema(
     isAgent: {
       type: Boolean,
       default: false,
+      index: true,
     },
 
     agentRequestPending: {

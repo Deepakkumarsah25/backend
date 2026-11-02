@@ -538,7 +538,6 @@ export const getLast10DaysActivities = async (filters = {}) => {
  */
 export const seedAdminsAndActivities = async () => {
   try {
-    // 4 primary admin credentials with descriptive roles
     const seedAdmins = [
       {
         email: "admin@vipparty.com",
@@ -576,7 +575,7 @@ export const seedAdminsAndActivities = async () => {
       const existing = await Admin.findOne({ email: adm.email });
       if (!existing) {
         await Admin.create(adm);
-        console.log(`✅ Seeded Admin: ${adm.email} (${adm.role})`);
+        console.log(`Seeded Admin: ${adm.email} (${adm.role})`);
       } else {
         let updated = false;
         if (!existing.name || existing.name === "Admin") {
@@ -591,13 +590,11 @@ export const seedAdminsAndActivities = async () => {
           existing.password = adm.password;
           updated = true;
         }
-        if (updated) {
-          await existing.save();
-        }
+        if (updated) await existing.save();
       }
     }
 
-    // Ensure we have realistic activity history across the last 10 days for all 4 emails
+    // Ensure we have realistic activity history across the last 10 days.
     const activityCount = await AdminActivity.countDocuments();
     if (activityCount < 12) {
       const now = Date.now();

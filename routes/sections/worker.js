@@ -11,7 +11,7 @@ import {
 
 const router = express.Router();
 
-router.get("/member", getWorkers);
+router.get("/member", requireAdmin, getWorkers);
 
 router.get("/workerlist", requireAdmin, async (req, res) => {
   try {

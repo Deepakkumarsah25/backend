@@ -1,60 +1,49 @@
 import { adminAuth } from "../firebase/firebaseAdmin.js";
 import User from "../models/User.js";
-import { getAuth } from "firebase-admin/auth";
-import app from "../firebase/firebaseAdmin.js";
 
 const unauthorized = (res, message = "Authentication required.") =>
   res.status(401).json({ success: false, message });
 
+/** Verify a Firebase ID token. Verification errors are deliberately propagated. */
 export const verifyFirebaseToken = async (token) => {
-  try {
-    const auth = adminAuth || getAuth(app);
-    return await auth.verifyIdToken(token);
-  } catch (err) {
-    // Fallback: decode JWT payload for development/offline tokens
-    try {
-      const parts = token.split(".");
-      if (parts.length === 3) {
-        const payload = JSON.parse(
-          Buffer.from(parts[1], "base64").toString("utf8")
-        );
-        const uid = payload.user_id || payload.sub || payload.uid;
-        if (uid) {
-          return {
-            uid,
-            email: payload.email,
-            email_verified: payload.email_verified,
-            name: payload.name,
-            picture: payload.picture,
-            phone_number: payload.phone_number,
-            ...payload,
-          };
-        }
-      }
-    } catch (_) {}
-    throw err;
+  if (!adminAuth) {
+    throw new Error("Firebase Admin authentication is unavailable.");
   }
+  return adminAuth.verifyIdToken(token);
 };
 
-export const resolveFirebaseUser = async (decodedToken, extraFields = {}) => {
+/** Parse only an Authorization Bearer token; identity headers are never trusted. */
+export const getBearerToken = (req) => {
+  const header = req.get("authorization");
+  if (!header) return { error: "Authorization Bearer token is required." };
+  const match = /^Bearer\s+(\S+)$/i.exec(header);
+  if (!match) return { error: "Authorization header must use Bearer token format." };
+  return { token: match[1] };
+};
+
+/** Resolve the database profile using a UID from a successfully verified token. */
+export const resolveFirebaseUser = async (decodedToken) => {
   const uid = decodedToken?.uid;
-  if (!uid) throw new Error("Verified Firebase token has no UID.");
+  if (typeof uid !== "string" || !uid.trim()) {
+    throw new Error("Verified Firebase token has no UID.");
+  }
 
   const profile = {};
-  if (typeof decodedToken.name === "string" && decodedToken.name.trim()) profile.name = decodedToken.name.trim();
-  if (typeof decodedToken.email === "string" && decodedToken.email.trim()) profile.email = decodedToken.email.trim().toLowerCase();
-  if (typeof decodedToken.phone_number === "string" && decodedToken.phone_number.trim()) profile.phone = decodedToken.phone_number.trim();
-  if (typeof decodedToken.picture === "string" && decodedToken.picture.trim()) profile.photoURL = decodedToken.picture.trim();
-
-  if (extraFields.name && String(extraFields.name).trim()) profile.name = String(extraFields.name).trim();
-  if (extraFields.email && String(extraFields.email).trim()) profile.email = String(extraFields.email).trim().toLowerCase();
-  if (extraFields.phone && String(extraFields.phone).trim()) profile.phone = String(extraFields.phone).trim();
-  if (extraFields.photoURL && String(extraFields.photoURL).trim()) profile.photoURL = String(extraFields.photoURL).trim();
+  if (typeof decodedToken.name === "string" && decodedToken.name.trim()) {
+    profile.name = decodedToken.name.trim();
+  }
+  if (typeof decodedToken.email === "string" && decodedToken.email.trim()) {
+    profile.email = decodedToken.email.trim().toLowerCase();
+  }
+  if (typeof decodedToken.phone_number === "string" && decodedToken.phone_number.trim()) {
+    profile.phone = decodedToken.phone_number.trim();
+  }
+  if (typeof decodedToken.picture === "string" && decodedToken.picture.trim()) {
+    profile.photoURL = decodedToken.picture.trim();
+  }
 
   const update = { $setOnInsert: { uid } };
-  if (Object.keys(profile).length > 0) {
-    update.$set = profile;
-  }
+  if (Object.keys(profile).length) update.$set = profile;
 
   try {
     const user = await User.findOneAndUpdate({ uid }, update, {
@@ -73,57 +62,31 @@ export const resolveFirebaseUser = async (decodedToken, extraFields = {}) => {
   }
 };
 
-const getBearerToken = (req) => {
-  const header = req.get("authorization");
-  if (!header) return { error: "Authorization Bearer token is required." };
-  const match = /^Bearer\s+(\S+)$/i.exec(header);
-  if (!match) return { error: "Authorization header must use Bearer token format." };
-  return { token: match[1] };
-};
+export const requireAuth = async (req, res, next) => {
+  const auth = getBearerToken(req);
+  if (auth.error) return unauthorized(res, auth.error);
 
-export const protect = async (req, res, next) => {
+  let decodedToken;
   try {
-    const devUid =
-      req.headers["x-dev-uid"] ||
-      req.headers["x-user-uid"] ||
-      req.headers["uid"] ||
-      null;
+    decodedToken = await verifyFirebaseToken(auth.token);
+  } catch {
+    return unauthorized(res, "Invalid or expired authentication token.");
+  }
 
-    if (devUid) {
-      req.user = await resolveFirebaseUser(
-        { uid: String(devUid) },
-        {
-          name: req.headers["x-dev-name"] || req.headers["x-user-name"],
-          email: req.headers["x-dev-email"] || req.headers["x-user-email"],
-          phone: req.headers["x-dev-phone"] || req.headers["x-user-phone"],
-          photoURL: req.headers["x-dev-photo"] || req.headers["x-user-photo"],
-        }
-      );
-      return next();
-    }
-
-    const auth = getBearerToken(req);
-    if (auth.error) return unauthorized(res, auth.error);
-
-    let decodedToken;
-    try {
-      decodedToken = await verifyFirebaseToken(auth.token);
-    } catch {
-      return unauthorized(res, "Invalid or expired authentication token.");
-    }
-
-    req.user = await resolveFirebaseUser(decodedToken, {
-      name: req.headers["x-dev-name"] || req.headers["x-user-name"],
-      email: req.headers["x-dev-email"] || req.headers["x-user-email"],
-      phone: req.headers["x-dev-phone"] || req.headers["x-user-phone"],
-      photoURL: req.headers["x-dev-photo"] || req.headers["x-user-photo"],
-    });
-
+  try {
+    const user = await resolveFirebaseUser(decodedToken);
+    req.auth = decodedToken;
+    req.user = user;
     return next();
   } catch (error) {
-    console.error("Authenticated user resolution failed.", error?.message);
-    return res.status(500).json({ success: false, message: "Authentication could not be completed." });
+    // Do not expose token claims or database details in an authentication error.
+    console.error("Authenticated user resolution failed.");
+    return res.status(503).json({
+      success: false,
+      message: "Authentication service temporarily unavailable.",
+    });
   }
 };
 
-export { getBearerToken, unauthorized };
+// Preserve existing route imports while making the trusted behavior explicit.
+export const protect = requireAuth;

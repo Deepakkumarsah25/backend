@@ -10,7 +10,7 @@ from "../../controllers/driverController.js";
 import { requireAdmin } from "../../middlewar/requireAdmin.js";
 const router = express.Router();
 
-router.get("/driver",getDrivers);
+router.get("/driver", requireAdmin, getDrivers);
 router.get(
  "/driverlist",
  requireAdmin,

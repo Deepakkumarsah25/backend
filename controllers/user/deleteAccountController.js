@@ -1,7 +1,6 @@
 import User from "../../models/User.js";
 import { sendEmail } from "../../services/emailService.js";
 import { randomInt } from "node:crypto";
-import { getBearerToken, verifyFirebaseToken } from "../../middlewar/firebaseAuth.js";
 
 const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
 const OTP_EXPIRY = 10 * 60 * 1000;
@@ -13,12 +12,7 @@ const MAX_OTP_ATTEMPTS = 5;
 // ============================================
 export const sendDeleteOtp = async (req, res) => {
   try {
-    const uid = req.user?.uid || req.body?.uid;
-
-    console.log("================================");
-    console.log("SEND DELETE OTP");
-    console.log("UID:", uid);
-    console.log("================================");
+    const uid = req.user?.uid;
 
     if (!uid) {
       return res.status(400).json({
@@ -37,22 +31,7 @@ export const sendDeleteOtp = async (req, res) => {
       });
     }
 
-    let verifiedEmail = null;
-    const auth = getBearerToken(req);
-    if (!auth.error) {
-      try {
-        const decodedToken = await verifyFirebaseToken(auth.token);
-        if (decodedToken?.email) {
-          verifiedEmail = decodedToken.email.trim().toLowerCase();
-        }
-      } catch {
-        // Fallback to stored user email
-      }
-    }
-
-    if (!verifiedEmail) {
-      verifiedEmail = (user.email || req.user?.email || "").trim().toLowerCase();
-    }
+    const verifiedEmail = (user.email || req.user?.email || "").trim().toLowerCase();
 
     if (!verifiedEmail) {
       return res.status(400).json({
@@ -92,7 +71,6 @@ export const sendDeleteOtp = async (req, res) => {
       });
     }
 
-    console.log("Generated OTP:", otp);
 
     // ============================================
     // SEND EMAIL
@@ -171,14 +149,9 @@ export const sendDeleteOtp = async (req, res) => {
 // ============================================
 export const verifyDeleteOtp = async (req, res) => {
   try {
-    const uid = req.user?.uid || req.body?.uid;
+    const uid = req.user?.uid;
     const { otp } = req.body;
 
-    console.log("================================");
-    console.log("VERIFY DELETE OTP");
-    console.log("UID:", uid);
-    console.log("OTP:", otp);
-    console.log("================================");
 
     if (!uid) {
       return res.status(400).json({
@@ -292,12 +265,7 @@ export const verifyDeleteOtp = async (req, res) => {
 // ============================================
 export const cancelDeletion = async (req, res) => {
   try {
-    const uid = req.user?.uid || req.body?.uid;
-
-    console.log("================================");
-    console.log("CANCEL ACCOUNT DELETION");
-    console.log("UID:", uid);
-    console.log("================================");
+    const uid = req.user?.uid;
 
     if (!uid) {
       return res.status(400).json({

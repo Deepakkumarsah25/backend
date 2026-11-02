@@ -2,6 +2,11 @@ import Admin from "../models/Admin.js";
 import Banner from "../models/Banner.js";
 import cloudinary from "../config/cloudinary.js";
 import {
+  hashAdminPassword,
+  verifyAdminPassword,
+  verifyLegacyAdminPassword,
+} from "../services/adminPasswordService.js";
+import {
   logAdminActivity,
   getLastTwoEditors,
   getRecentActivities,
@@ -25,16 +30,36 @@ export const loginAdmin = async (req, res) => {
       email: cleanEmail,
     });
 
-    if (!admin || admin.password !== password.trim()) {
+    if (!admin) {
       return res.render("index", {
         error: "Invalid Email or Password",
       });
+    }
+
+    const submittedPassword = password.trim();
+    const isHashedPassword = admin.password?.startsWith("scrypt$");
+    const passwordValid = isHashedPassword
+      ? await verifyAdminPassword(submittedPassword, admin.password)
+      : verifyLegacyAdminPassword(submittedPassword, admin.password);
+
+    if (!passwordValid) {
+      return res.render("index", {
+        error: "Invalid Email or Password",
+      });
+    }
+
+    if (!isHashedPassword) {
+      admin.password = await hashAdminPassword(submittedPassword);
     }
 
     // Update lastLogin & lastActive
     admin.lastLogin = new Date();
     admin.lastActive = new Date();
     await admin.save();
+
+    await new Promise((resolve, reject) => {
+      req.session.regenerate((error) => error ? reject(error) : resolve());
+    });
 
     req.session.admin = {
       _id: admin._id,
@@ -207,27 +232,7 @@ export const deleteBanner = async (req, res) => {
 };
 
 export const createAdmin = async (req, res) => {
-  try {
-    const adminExists = await Admin.findOne({
-      email: "admin@vipparty.com",
-    });
-
-    if (adminExists) {
-      return res.send("Admin Already Exists");
-    }
-
-    await Admin.create({
-      email: "admin@vipparty.com",
-      password: "123456",
-      name: "Mukesh Sahani",
-      role: "Super Admin",
-    });
-
-    res.send("Admin Created Successfully");
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Error Creating Admin");
-  }
+  return res.sendStatus(404);
 };
 
 /**
