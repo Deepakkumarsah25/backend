@@ -7,10 +7,9 @@
 
   <title>Add News</title>
 
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-  >
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
   <style>
     * {
@@ -27,8 +26,7 @@
     .page {
       padding: 30px;
       max-width: 1000px;
-      margin: auto;
-      margin-top: 65px;
+      margin: 0 auto;
     }
 
     .header {
@@ -234,9 +232,10 @@
 
 <body>
 
-  <%- include('../common/sidebar') %>
-<%- include('../common/header') %>
+  <%- include('../common/header.ejs') %>
+<%- include('../common/sidebar.ejs') %>
 
+<main class="main-content">
 <div class="page">
 
   <div class="header">

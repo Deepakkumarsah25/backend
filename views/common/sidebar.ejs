@@ -524,6 +524,12 @@
               <span>Join Member</span>
             </a>
           </li>
+          <li>
+            <a href="/AdminAgent">
+              <i class="fa-solid fa-user-shield"></i>
+              <span>Admin Agent</span>
+            </a>
+          </li>
 
           <li>
             <a href="/feedback-admin">
@@ -578,19 +584,13 @@
             <span class="sidebar-icon">
               <i class="fa-solid fa-shield-halved"></i>
             </span>
-            <span class="sidebar-text">Administration</span>
+            <span class="sidebar-text">Activity</span>
           </span>
-
+ <!--pahale sidebar me Administration name tha but fir maine usko change karke Activity kar diy hai , so dont confuse-->
           <i class="fa-solid fa-chevron-down submenu-arrow"></i>
         </button>
 
         <ul class="sidebar-submenu">
-          <li>
-            <a href="/AdminAgent">
-              <i class="fa-solid fa-user-shield"></i>
-              <span>Admin Agent</span>
-            </a>
-          </li>
           <li>
             <a href="/activity-logs">
               <i class="fa-solid fa-clock-rotate-left"></i>
@@ -654,15 +654,7 @@
       }
     } catch (e) {}
 
-    // 2. RESTORE SCROLL POSITION INSTANTLY
-    try {
-      const savedScroll = sessionStorage.getItem(storageKeyScroll);
-      if (savedScroll && scrollContainer) {
-        scrollContainer.scrollTop = parseInt(savedScroll, 10);
-      }
-    } catch (e) {}
-
-    // Save scroll on user scroll
+    // Save scroll position whenever user deliberately scrolls
     if (scrollContainer) {
       scrollContainer.addEventListener(
         "scroll",
@@ -675,7 +667,7 @@
       );
     }
 
-    // 3. DETERMINE ACTIVE LINK
+    // 2. DETERMINE ACTIVE LINK
     function isCurrentPath(href) {
       if (!href || href === "#") return false;
       try {
@@ -717,7 +709,7 @@
       }
     });
 
-    // 4. RESTORE OPEN GROUPS FROM SESSION STORAGE
+    // 3. RESTORE OPEN GROUPS FROM SESSION STORAGE
     let savedOpenGroups = [];
     try {
       savedOpenGroups = JSON.parse(sessionStorage.getItem(storageKeyGroups) || "[]");
@@ -742,6 +734,19 @@
       }
     });
 
+    // Keep downloads menu open on downloads page
+    if (currentPath.startsWith("/admin/downloads")) {
+      const dlItem = document.getElementById("sidebarDownloadMenu");
+      if (dlItem) {
+        dlItem.classList.add("submenu-open");
+        const dlBtn = dlItem.querySelector(".sidebar-parent");
+        if (dlBtn) {
+          dlBtn.classList.add("active-parent");
+          dlBtn.setAttribute("aria-expanded", "true");
+        }
+      }
+    }
+
     // Save open state helper
     function persistOpenGroups() {
       try {
@@ -756,6 +761,14 @@
     // Persist immediately on load
     persistOpenGroups();
 
+    // 4. RESTORE SCROLL POSITION (AFTER menus are opened so height is authentic)
+    try {
+      const savedScroll = sessionStorage.getItem(storageKeyScroll);
+      if (savedScroll && scrollContainer) {
+        scrollContainer.scrollTop = parseInt(savedScroll, 10);
+      }
+    } catch (e) {}
+
     // 5. ENABLE TRANSITIONS AFTER INITIAL PAINT (Zero-flash & Zero-compane)
     requestAnimationFrame(function () {
       setTimeout(function () {
@@ -763,27 +776,17 @@
       }, 50);
     });
 
-    // 6. ACCORDION CLICK HANDLER (Fluid & solid, zero layout shifts)
+    // 6. ACCORDION CLICK HANDLER (Fluid & solid, zero unwanted scroll jumps)
     parents.forEach(function (btn) {
       btn.addEventListener("click", function (e) {
         e.preventDefault();
+        btn.blur();
+
         const currentItem = btn.closest(".has-submenu");
         if (!currentItem) return;
-    if (currentPath.startsWith("/admin/downloads")) {
-      const dlItem = document.getElementById("sidebarDownloadMenu");
-      if (dlItem) {
-        dlItem.classList.add("submenu-open");
-        const btn = dlItem.querySelector(".sidebar-parent");
-        if (btn) {
-          btn.classList.add("active-parent");
-          btn.setAttribute("aria-expanded", "true");
-        }
-      }
-    }
 
-    /* ==========================================
-     ACCORDION
-  ========================================== */
+        // Remember exact scroll position before class change
+        const currentScroll = scrollContainer ? scrollContainer.scrollTop : 0;
 
         const isOpen = currentItem.classList.contains("submenu-open");
         currentItem.classList.toggle("submenu-open", !isOpen);
@@ -791,6 +794,16 @@
         btn.setAttribute("aria-expanded", String(!isOpen));
 
         persistOpenGroups();
+
+        // Lock scroll position securely so expanding/collapsing menus never forces the sidebar to scroll down
+        if (scrollContainer) {
+          scrollContainer.scrollTop = currentScroll;
+          requestAnimationFrame(function () {
+            if (scrollContainer) {
+              scrollContainer.scrollTop = currentScroll;
+            }
+          });
+        }
       });
     });
 

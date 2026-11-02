@@ -188,6 +188,7 @@
   padding: 12px 10px 18px;
   scrollbar-gutter: stable;
   overscroll-behavior: contain;
+  overflow-anchor: none;
 }
 
 .sidebar-scrollable-content::-webkit-scrollbar {

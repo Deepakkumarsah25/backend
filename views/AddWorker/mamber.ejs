@@ -7,6 +7,8 @@
 
   <!-- Font Awesome 6 (free) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
 
   <!-- Google Font (Inter) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -32,35 +34,13 @@
       color: #0b1e33;
     }
 
-    /* ---------- header simulation (will be replaced by include) ---------- */
-    .demo-header {
-      background: #0b1e33;
-      color: white;
-      padding: 0.9rem 2.5rem;
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-      flex-shrink: 0;
-    }
-    .demo-header h2 {
-      font-weight: 500;
-      font-size: 1.2rem;
-      letter-spacing: -0.2px;
-    }
-    .demo-header i {
-      font-size: 1.5rem;
-      color: #5b9aff;
-    }
-
     /* ---------- main container ---------- */
     .worker-container {
       max-width: 1280px;
-      margin: 2.5rem auto;
-      padding: 0 1.5rem;
-      flex: 1;
+      margin: 0 auto;
+      padding: 24px 30px;
       width: 100%;
-      margin-right: 78px;
+      box-sizing: border-box;
     }
 
     /* ---------- card ---------- */
@@ -426,9 +406,10 @@
 <body>
 
   <!-- header include (replaced by server) -->
-  <%- include('../common/sidebar') %>
+  <%- include('../common/header.ejs') %>
+  <%- include('../common/sidebar.ejs') %>
 
-
+  <main class="main-content">
   <div class="worker-container">
 
     <div class="worker-card">
