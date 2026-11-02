@@ -1,6 +1,6 @@
 
 import multer from "multer";
-import { hasAllowedFileSignature } from "./fileSignatures.js";
+import { hasAllowedFileSignature, isAllowedImageDimensions } from "./fileSignatures.js";
 
 /*
   Cloudinary uploads need a Buffer (req.file.buffer), not a disk path.
@@ -8,11 +8,33 @@ import { hasAllowedFileSignature } from "./fileSignatures.js";
   the local filesystem, and uploadToCloudinary(req.file.buffer)
   works directly.
 */
-const MAX_FILE_SIZE = 100 * 1024 * 1024;
-const MAX_TOTAL_FILE_SIZE = 150 * 1024 * 1024;
+export const MEMORY_UPLOAD_POLICY = Object.freeze({
+  maxFileSize: 10 * 1024 * 1024,
+  maxTotalFileSize: 25 * 1024 * 1024,
+  maxConcurrentRequests: 2,
+  maxFiles: 22,
+});
+const { maxFileSize: MAX_FILE_SIZE, maxTotalFileSize: MAX_TOTAL_FILE_SIZE, maxConcurrentRequests: MAX_CONCURRENT_MEMORY_UPLOADS } = MEMORY_UPLOAD_POLICY;
+let activeMemoryUploads = 0;
 
 export const boundedMemoryStorage = {
   _handleFile(req, file, callback) {
+    if (!req.__memoryUploadSlot) {
+      if (activeMemoryUploads >= MAX_CONCURRENT_MEMORY_UPLOADS) {
+        return callback(new multer.MulterError("LIMIT_FILE_SIZE", file.fieldname));
+      }
+      activeMemoryUploads += 1;
+      req.__memoryUploadSlot = true;
+      let released = false;
+      const release = () => {
+        if (released) return;
+        released = true;
+        activeMemoryUploads = Math.max(0, activeMemoryUploads - 1);
+      };
+      req.once("aborted", release);
+      req.res?.once("finish", release);
+      req.res?.once("close", release);
+    }
     const chunks = [];
     let size = 0;
     let completed = false;
@@ -40,6 +62,7 @@ export const boundedMemoryStorage = {
       if (!hasAllowedFileSignature(buffer, file.mimetype)) {
         return fail(new Error("Uploaded file content does not match its declared type."));
       }
+      if (!isAllowedImageDimensions(buffer, file.mimetype)) return fail(new Error("Image dimensions exceed the allowed limits or could not be verified."));
       completed = true;
       callback(null, { buffer, size });
     });
@@ -56,9 +79,9 @@ const upload = multer({
 
   limits: {
     fileSize: MAX_FILE_SIZE,
-    files: 22,
-    fields: 80,
-    parts: 102,
+    files: MEMORY_UPLOAD_POLICY.maxFiles,
+    fields: 40,
+    parts: 62,
   },
 
   fileFilter: (req, file, cb) => {

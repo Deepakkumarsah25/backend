@@ -1,6 +1,6 @@
 import express from "express";
 
-import newsUpload from "../../middlewar/newsUpload.js";
+import { diskMediaFields } from "../../middlewar/diskMediaUpload.js";
 import { requireAdmin } from "../../middlewar/requireAdmin.js";
 
 import {
@@ -40,7 +40,7 @@ router.get(
 router.post(
   "/news/add",
   requireAdmin,
-  newsUpload.fields([
+  diskMediaFields([
     {
       name: "coverImage",
       maxCount: 1,
@@ -66,7 +66,7 @@ router.get(
 router.post(
   "/news/edit/:id",
   requireAdmin,
-  newsUpload.fields([
+  diskMediaFields([
     {
       name: "coverImage",
       maxCount: 1,

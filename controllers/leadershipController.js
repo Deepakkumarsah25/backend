@@ -1,5 +1,5 @@
 import Leadership from "../models/Leadership.js";
-import cloudinary from "../config/cloudinary.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 // ===========================
 // Show All Leadership
@@ -72,7 +72,7 @@ if (category === "founder") {
 let imageUrl = "";
 
 if (req.file) {
-  const result = await cloudinary.uploader.upload(req.file.path);
+  const result = await uploadToCloudinary(req.file.buffer, "leadership");
   imageUrl = result.secure_url;
 }
 
@@ -169,7 +169,7 @@ export const updateLeadership = async (req, res) => {
     let imageUrl = leader.imageUrl;
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
+      const result = await uploadToCloudinary(req.file.buffer, "leadership");
       imageUrl = result.secure_url;
     }
 

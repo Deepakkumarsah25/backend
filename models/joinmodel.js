@@ -51,6 +51,8 @@ const joinSchema = new mongoose.Schema(
     },
 
     remarks: { type: String, default: "" },
+    pendingIdentityChange: { type: mongoose.Schema.Types.Mixed, default: null },
+    identityChangeHistory: { type: [mongoose.Schema.Types.Mixed], default: [] },
     approvedAt: { type: Date, default: null },
     approvedBy: {
       type: mongoose.Schema.Types.ObjectId,

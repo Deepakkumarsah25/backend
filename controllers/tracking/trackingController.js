@@ -88,7 +88,6 @@ const buildWorkerEmailHtml = ({
   worker,
   route,
   numericSpeed,
-  trackUrl,
 }) => {
   const endLocation = route?.endLocation || "गंतव्य";
 
@@ -322,8 +321,6 @@ const sendMemberAppNotification = async ({
   route,
   routeId,
   speed,
-  trackUrl,
-  navigationUrl,
 }) => {
   try {
     const user = await findMemberUserForWorker(worker);
@@ -358,15 +355,14 @@ const sendMemberAppNotification = async ({
       message,
       type: "route",
       relatedId: routeId,
-      actionType: "tracking",
+      actionType: "none",
       deepLink: "",
-      actionUrl: trackUrl || "",
+      actionUrl: "",
       metadata: {
         workerName: worker?.fullName || "",
         routeName,
         speed: Number(numericSpeed || 0).toFixed(2),
         destination,
-        trackUrl: trackUrl || "",
         routeId: String(routeId),
         time: new Date().toLocaleString("hi-IN"),
       },
@@ -379,11 +375,10 @@ const sendMemberAppNotification = async ({
       body: message,
       data: {
         type: "route",
-        actionType: "tracking",
+        actionType: "none",
         routeId: String(routeId),
         notificationId: notification?._id ? String(notification._id) : "",
         screen: "/notifications",
-        actionUrl: String(trackUrl || ""),
         title,
         message,
       },
@@ -419,7 +414,6 @@ const sendMemberAppNotification = async ({
 ========================================================= */
 
 const sendNearbyWorkerEmails = async ({
-  req,
   route,
   routeId,
   nearbyWorkers,
@@ -433,8 +427,6 @@ const sendNearbyWorkerEmails = async ({
     (route.notificationSentWorkerIds || []).map((id) => String(id))
   );
 
-  const trackUrl = buildTrackUrl(req, routeId);
-
   let emailSent = 0;
   let emailFailed = 0;
   let notificationSent = 0;
@@ -446,19 +438,12 @@ const sendNearbyWorkerEmails = async ({
        1. APP NOTIFICATION FOR MEMBER (INDEPENDENT)
     ========================================= */
     if (!notifSentIds.has(workerId)) {
-      const trackUrlForMember = buildTrackUrl(req, routeId);
-      const navigationUrlForMember = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-        route?.endLocation || "Destination"
-      )}&travelmode=driving`;
-
       try {
         const memberResult = await sendMemberAppNotification({
           worker,
           route,
           routeId,
           speed,
-          trackUrl: trackUrlForMember,
-          navigationUrl: navigationUrlForMember,
         });
 
         if (memberResult.member) {
@@ -501,7 +486,6 @@ const sendNearbyWorkerEmails = async ({
           worker,
           route,
           numericSpeed: speed,
-          trackUrl,
         })
       );
 
@@ -950,8 +934,6 @@ export const startTracking = async (
 
     const emailResult =
       await sendNearbyWorkerEmails({
-        req,
-
         route,
 
         routeId,
@@ -1365,8 +1347,6 @@ export const updateTracking = async (
     ) {
       emailResult =
         await sendNearbyWorkerEmails({
-          req,
-
           route:
             currentRoute,
 

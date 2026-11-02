@@ -1,6 +1,6 @@
 import express from "express";
 
-import upload from "../middlewar/upload.js";
+import { diskMediaArray } from "../middlewar/diskMediaUpload.js";
 import { requireAdmin } from "../middlewar/requireAdmin.js";
 
 import {
@@ -31,7 +31,7 @@ router.get(
 router.post(
   "/scroller/add",
   requireAdmin,
-  upload.array("media", 20),
+  diskMediaArray("media", 20),
   addScrollerMedia
 );
 

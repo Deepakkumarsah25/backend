@@ -2,6 +2,7 @@ import Join from "../models/joinmodel.js";
 import mongoose from "mongoose";
 import User from "../models/User.js";
 import { uploadToCloudinary } from "../config/cloudinary.js";
+import { validateMembershipIdentityProposal } from "../services/membershipIdentityPolicy.js";
 import { generateMemberId } from "../services/memberId.js";
 
 /*******************************************************
@@ -523,6 +524,48 @@ export const rejectJoinApplication = async (req, res) => {
       success: false,
       message: "Failed to reject application.",
     });
+  }
+};
+
+const IDENTITY_CHANGE_FIELDS = ["fullName", "mobile", "state", "district", "profilePhoto"];
+
+export const reviewMembershipIdentityChange = async (req, res) => {
+  try {
+    const decision = req.params.decision;
+    if (!["approve", "reject"].includes(decision)) return res.status(400).json({ success: false, message: "Invalid review decision." });
+    const application = await Join.findOne({ _id: req.params.id, status: "Approved", "pendingIdentityChange.status": "Pending" }).lean();
+    if (!application) return res.status(404).json({ success: false, message: "Pending identity change not found." });
+    const pending = application.pendingIdentityChange;
+    const proposed = pending.proposed && typeof pending.proposed === "object" ? pending.proposed : {};
+    const changes = Object.fromEntries(IDENTITY_CHANGE_FIELDS.filter((field) => typeof proposed[field] === "string").map((field) => [field, proposed[field].trim()]));
+    if (!validateMembershipIdentityProposal(changes)) return res.status(400).json({ success: false, message: "The identity proposal contains invalid fields or values." });
+    const reviewedAt = new Date();
+    const actor = req.session?.admin;
+    const historyEntry = { requestedAt: pending.requestedAt || null, proposed: changes, decision, reviewedAt, reviewedBy: { id: String(actor?._id || ""), email: String(actor?.email || "") }, note: typeof req.body?.note === "string" ? req.body.note.trim().slice(0, 500) : "" };
+    const setFields = { pendingIdentityChange: null, ...(decision === "approve" ? changes : {}) };
+    const reviewed = await Join.findOneAndUpdate(
+      { _id: req.params.id, status: "Approved", "pendingIdentityChange.status": "Pending" },
+      { $set: setFields, $push: { identityChangeHistory: historyEntry } },
+      { new: true, runValidators: true },
+    );
+    if (!reviewed) return res.status(409).json({ success: false, message: "This identity change was already reviewed." });
+    if (decision === "approve" && reviewed.userId) {
+      try {
+        await User.findByIdAndUpdate(reviewed.userId, { $set: {
+          ...(changes.fullName && { name: changes.fullName }),
+          ...(changes.mobile && { phone: changes.mobile }),
+          ...(changes.state && { state: changes.state }),
+          ...(changes.district && { district: changes.district }),
+          ...(changes.profilePhoto && { photoURL: changes.profilePhoto }),
+        } });
+      } catch (syncError) {
+        console.error("Approved membership change saved; profile sync needs reconciliation.", syncError?.message || "unknown error");
+      }
+    }
+    return res.json({ success: true, message: `Identity change ${decision}d.`, data: reviewed });
+  } catch (err) {
+    console.error("reviewMembershipIdentityChange error:", err);
+    return res.status(500).json({ success: false, message: "Failed to review identity change." });
   }
 };
 

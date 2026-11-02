@@ -332,8 +332,6 @@ export const addRoute = async (req, res) => {
 
     console.log("=================================");
 
-    const baseUrl = (process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
-    const trackUrl = `${baseUrl}/track/${route._id}`;
     /* =========================================
        PUSH NOTIFICATION
     ========================================= */
@@ -348,8 +346,7 @@ export const addRoute = async (req, res) => {
         hindiMessage,
         {
           type: "route",
-          actionType: "tracking",
-          actionUrl: trackUrl,
+          actionType: "none",
           routeId: route._id.toString(),
           screen: "/notifications",
           title: hindiTitle,

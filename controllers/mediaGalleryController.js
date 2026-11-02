@@ -1,5 +1,5 @@
 import MediaGallery from "../models/MediaGallery.js";
-import cloudinary from "../config/cloudinary.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 
 /* ===========================
    Admin Page
@@ -59,9 +59,7 @@ export const addMedia = async (req, res) => {
       isPublished,
     } = req.body;
 
-    const result = await cloudinary.uploader.upload(
-      req.file.path
-    );
+    const result = await uploadToCloudinary(req.file.buffer, "media-gallery");
 
     await MediaGallery.create({
       title,
@@ -106,9 +104,7 @@ export const updateMedia = async (req, res) => {
     media.isPublished = isPublished ? true : false;
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(
-        req.file.path
-      );
+      const result = await uploadToCloudinary(req.file.buffer, "media-gallery");
 
       media.image = result.secure_url;
     }

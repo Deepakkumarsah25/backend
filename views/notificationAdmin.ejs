@@ -86,8 +86,74 @@
               <input id="image" name="image" type="url" maxlength="2048" placeholder="https://…">
             </div>
             <div class="notice-field">
-              <label for="deepLink">App deep link (optional)</label>
-              <input id="deepLink" name="deepLink" maxlength="2048" placeholder="/events or https://…">
+              <label for="deepLinkSelect"><i class="fa-solid fa-list-check" style="margin-right:4px;color:#0b4ea2;"></i> Select App Screen (Dropbox / पेज चुनें)</label>
+              <select id="deepLinkSelect">
+                <option value="">-- No Link (कोई लिंक नहीं) --</option>
+                
+                <optgroup label="🏠 Main Navigation / मुख्य पृष्ठ">
+                  <option value="/(tabs)">Home Page (मुख्य पृष्ठ)</option>
+                  <option value="/(tabs)/live">Live Stream (लाइव प्रसारण)</option>
+                  <option value="/(tabs)/notifications">Notifications Screen (सूचनाएं)</option>
+                  <option value="/(tabs)/profile">Profile Screen (प्रोफ़ाइल)</option>
+                  <option value="/(tabs)/search">Search (खोजें)</option>
+                  <option value="/(tabs)/share">Share App (ऐप शेयर)</option>
+                </optgroup>
+
+                <optgroup label="🤝 Membership & Joining / सदस्यता">
+                  <option value="/joinparty/joinpage">Join Party (पार्टी से जुड़ें)</option>
+                  <option value="/joinparty/apply">Apply for Membership (सदस्यता फॉर्म)</option>
+                  <option value="/joinparty/quickjoin">Quick Join (त्वरित सदस्यता)</option>
+                  <option value="/joinparty/AgentAdd/AddMember">Add Member - Agent (नया सदस्य जोड़ें)</option>
+                  <option value="/joinparty/AgentAdd/MyMember">My Members List (मेरे सदस्य)</option>
+                </optgroup>
+
+                <optgroup label="💰 Support & Events / सहयोग व कार्यक्रम">
+                  <option value="/donation/donation">Donation / सहयोग राशि (दान)</option>
+                  <option value="/events">Events List (कार्यक्रम सूची)</option>
+                </optgroup>
+
+                <optgroup label="📰 Media & News / मीडिया व समाचार">
+                  <option value="/Media_resources/news_detels">News Details (ताज़ा समाचार)</option>
+                  <option value="/Media_resources/videoslist">Video Gallery (वीडियो गैलरी)</option>
+                  <option value="/Media_resources/photos">Photo Gallery (फ़ोटो गैलरी)</option>
+                  <option value="/Media_resources/press_release">Press Release (प्रेस विज्ञप्ति)</option>
+                  <option value="/Media_resources/interviews">Interviews (साक्षात्कार)</option>
+                  <option value="/Media_resources/infographics">Infographics (इन्फोग्राफिक्स)</option>
+                </optgroup>
+
+                <optgroup label="🚩 VIP Party & Leadership / पार्टी व नेतृत्व">
+                  <option value="/party/about">About VIP Party (पार्टी परिचय)</option>
+                  <option value="/party/mission-vission">Mission & Vision (उद्देश्य एवं दृष्टि)</option>
+                  <option value="/party/history-vip">History of VIP (पार्टी का इतिहास)</option>
+                  <option value="/party/journyof-mukesh">Mukesh Sahani Journey (मुकेश सहनी की यात्रा)</option>
+                  <option value="/leadership">Party Leadership (पार्टी नेतृत्व)</option>
+                  <option value="/Organisation/organisation">Organisation (संगठन)</option>
+                  <option value="/morcha/morcha">Morcha List (मोर्चा सूची)</option>
+                </optgroup>
+
+                <optgroup label="👤 User Services & Cards / सेवाएं">
+                  <option value="/profile/idcard">Digital ID Card (डिजिटल पहचान पत्र)</option>
+                  <option value="/profile/certificate">Membership Certificate (प्रमाण पत्र)</option>
+                  <option value="/profile/edit">Edit Profile (प्रोफ़ाइल संपादित करें)</option>
+                  <option value="/profile/rewards">Rewards & Points (रिवार्ड्स)</option>
+                  <option value="/profile/referral">Refer & Earn (रेफरल)</option>
+                  <option value="/profile/grievance">Grievance Redressal (शिकायत दर्ज करें)</option>
+                </optgroup>
+
+                <optgroup label="📞 Contact & Support / संपर्क व सहायता">
+                  <option value="/contact_us/contact">Contact Us (संपर्क करें)</option>
+                  <option value="/settings/help-support">Help & Support (सहायता केंद्र)</option>
+                  <option value="/settings/chat-support">Chat Support (चैट सपोर्ट)</option>
+                  <option value="/settings/feedback">Feedback (सुझाव दें)</option>
+                </optgroup>
+
+                <option value="__custom__">✏️ Custom URL / बाह्य लिंक (Enter custom URL)</option>
+              </select>
+            </div>
+            <div class="notice-field full">
+              <label for="deepLink"><i class="fa-solid fa-link" style="margin-right:4px;color:#0b4ea2;"></i> Target Deep Link / URL</label>
+              <input id="deepLink" name="deepLink" maxlength="2048" placeholder="Auto-filled from dropdown above, or type custom path/URL">
+              <span class="notice-help">Selected page path will be auto-filled here. You can also customize or type any app route (e.g. /events) or web link (https://...).</span>
             </div>
           </div>
           <div class="notice-actions"><button class="notice-send" id="sendButton" type="submit"><i class="fa-solid fa-paper-plane"></i> Send notification</button></div>
@@ -112,8 +178,34 @@
     const audienceSelect = document.getElementById('audience');
     const userIdsField = document.getElementById('userIdsField');
     const campaignList = document.getElementById('campaignList');
+    const deepLinkSelect = document.getElementById('deepLinkSelect');
+    const deepLinkInput = document.getElementById('deepLink');
     const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
     audienceSelect.addEventListener('change', () => { userIdsField.hidden = audienceSelect.value !== 'users'; });
+
+    if (deepLinkSelect && deepLinkInput) {
+      deepLinkSelect.addEventListener('change', () => {
+        const val = deepLinkSelect.value;
+        if (val === '__custom__') {
+          deepLinkInput.focus();
+          if (!deepLinkInput.value) deepLinkInput.placeholder = 'https://... or /custom/path';
+        } else {
+          deepLinkInput.value = val;
+        }
+      });
+
+      deepLinkInput.addEventListener('input', () => {
+        const currentVal = deepLinkInput.value.trim();
+        const matchedOpt = Array.from(deepLinkSelect.options).find(opt => opt.value === currentVal && opt.value !== '__custom__');
+        if (matchedOpt) {
+          deepLinkSelect.value = currentVal;
+        } else if (currentVal === '') {
+          deepLinkSelect.value = '';
+        } else {
+          deepLinkSelect.value = '__custom__';
+        }
+      });
+    }
 
     async function requestJson(url, options) {
       const response = await fetch(url, { credentials: 'same-origin', ...options, headers: { 'Content-Type':'application/json', ...(options?.headers || {}) } });
@@ -169,6 +261,7 @@
         statusBox.textContent = 'Notification queued. It will appear in eligible users’ app inboxes; push delivery status will update after fanout.';
         form.reset();
         userIdsField.hidden = true;
+        if (deepLinkSelect) deepLinkSelect.value = '';
         await loadCampaigns();
       } catch (error) {
         statusBox.className = 'notice-status error';

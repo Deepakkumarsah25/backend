@@ -23,6 +23,7 @@ import {
   renderJoinAdminPage,
   approveJoinApplication,
   rejectJoinApplication,
+  reviewMembershipIdentityChange,
 } from "../controllers/joinController.js";
 
 import Video from "../models/videogallery.js";
@@ -71,7 +72,7 @@ router.post("/api/admin/notifications/campaigns/:id/cancel", requireAdmin, cance
 ========================================= */
 
 router.get("/", (req, res) => {
-  res.render("index");
+  res.render("index", { sessionExpired: req.query.session === "expired" });
 });
 
 /* =========================================
@@ -226,6 +227,12 @@ router.post(
   "/joinmember/:id/reject",
   requireAdmin,
   rejectJoinApplication
+);
+
+router.post(
+  "/joinmember/:id/identity-change/:decision",
+  requireAdmin,
+  reviewMembershipIdentityChange
 );
 
 router.delete(

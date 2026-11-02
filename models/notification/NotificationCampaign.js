@@ -30,6 +30,9 @@ const notificationCampaignSchema = new mongoose.Schema(
     scheduledAt: { type: Date, default: null },
     publishedAt: { type: Date, default: null },
     fanoutStartedAt: { type: Date, default: null },
+    fanoutLeaseOwner: { type: String, default: "", select: false },
+    fanoutLeaseGeneration: { type: Number, default: 0 },
+    fanoutLeaseExpiresAt: { type: Date, default: null, index: true },
     lastError: { type: String, default: "", maxlength: 500 },
     deliveryStats: {
       eligible: { type: Number, default: 0 },
@@ -43,5 +46,6 @@ const notificationCampaignSchema = new mongoose.Schema(
 );
 
 notificationCampaignSchema.index({ status: 1, scheduledAt: 1 });
+notificationCampaignSchema.index({ status: 1, fanoutLeaseExpiresAt: 1 });
 
 export default mongoose.model("NotificationCampaign", notificationCampaignSchema);

@@ -5,7 +5,8 @@ import mongoose from "mongoose";
 import session from "express-session";
 import cors from "cors";
 import path from "path";
-import crypto from "crypto";
+import { createHmac } from "node:crypto";
+import MongoStore, { createWebCryptoAdapter } from "connect-mongo";
 import { fileURLToPath } from "url";
 import corsOptions from "./config/corsOptions.js";
 
@@ -56,11 +57,52 @@ import websiteRoutes from "./routes/websiteRoutes.js";
 import downloadRoutes from "./routes/downloadRoutes.js";
 import { seedInitialDownloads } from "./controllers/downloadController.js";
 import { startNotificationScheduler } from "./services/notificationCampaignService.js";
+import {
+  ADMIN_SESSION_TTL_SECONDS,
+  createAdminSessionOptions,
+  createDevelopmentSessionSecret,
+  pinAdminSessionCookieExpiry,
+  validateProductionSessionConfig,
+} from "./services/adminSessionPolicy.js";
 /* =========================================================
    APP
 ========================================================= */
 
 const app = express();
+
+validateProductionSessionConfig(process.env);
+const production = process.env.NODE_ENV === "production";
+const sessionSecret = process.env.SESSION_SECRET || createDevelopmentSessionSecret();
+const mongoClientPromise = new Promise((resolve, reject) => {
+  if (mongoose.connection.readyState === 1) return resolve(mongoose.connection.getClient());
+  const onConnected = () => {
+    cleanup();
+    resolve(mongoose.connection.getClient());
+  };
+  const onError = (error) => {
+    cleanup();
+    reject(error);
+  };
+  const cleanup = () => {
+    mongoose.connection.off("connected", onConnected);
+    mongoose.connection.off("error", onError);
+  };
+  mongoose.connection.once("connected", onConnected);
+  mongoose.connection.once("error", onError);
+});
+const sessionStore = production
+  ? MongoStore.create({
+      clientPromise: mongoClientPromise,
+      collectionName: "admin_sessions",
+      ttl: ADMIN_SESSION_TTL_SECONDS,
+      autoRemove: "native",
+      cryptoAdapter: createWebCryptoAdapter({
+        secret: createHmac("sha256", sessionSecret)
+          .update("vip-party-admin-session-store-v1")
+          .digest("hex"),
+      }),
+    })
+  : undefined;
 
 const PORT = Number(process.env.PORT) || 9191;
 
@@ -124,26 +166,14 @@ app.use((req, res, next) => {
    SESSION
 ========================================================= */
 
-if (process.env.NODE_ENV === "production") {
+if (production) {
   app.set("trust proxy", 1);
 }
 
 app.use(
-  session({
-    secret:
-      process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex"),
-
-    resave: false,
-
-    saveUninitialized: false,
-
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      sameSite: "lax",
-    },
-  })
+  session(createAdminSessionOptions({ secret: sessionSecret, production, store: sessionStore }))
 );
+app.use(pinAdminSessionCookieExpiry);
 
 /* =========================================================
    STATIC FILES

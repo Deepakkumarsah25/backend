@@ -1,7 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { hasAllowedFileSignature } from "./fileSignatures.js";
+import { hasAllowedFileSignature, isAllowedImageDimensions } from "./fileSignatures.js";
 
 const uploadDir = path.join(
   process.cwd(),
@@ -63,27 +63,48 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const eventUpload = multer({
+const eventUploadParser = multer({
   storage,
   fileFilter,
 
   limits: {
     fileSize: 5 * 1024 * 1024,
     files: 10,
-    fields: 80,
-    parts: 90,
+    fields: 40,
+    parts: 52,
   },
 });
+
+let activeEventUploads = 0;
+const eventUpload = {
+  array(fieldName, maxCount) {
+    const parse = eventUploadParser.array(fieldName, maxCount);
+    return (req, res, next) => {
+      if (activeEventUploads >= 2) return res.status(429).json({ success: false, message: "Event upload capacity is busy. Please retry shortly." });
+      activeEventUploads += 1;
+      let released = false;
+      const release = () => { if (!released) { released = true; activeEventUploads = Math.max(0, activeEventUploads - 1); } };
+      req.once("aborted", release);
+      res.once("finish", release);
+      res.once("close", release);
+      parse(req, res, (error) => {
+        if (error) release();
+        next(error);
+      });
+    };
+  },
+};
 
 export const validateEventUploads = async (req, res, next) => {
   const files = req.files || (req.file ? [req.file] : []);
   try {
     for (const file of files) {
       const handle = await fs.promises.open(file.path, "r");
-      const header = Buffer.alloc(12);
+      const header = Buffer.alloc(Math.min(file.size, 1024 * 1024));
       const { bytesRead } = await handle.read(header, 0, header.length, 0);
       await handle.close();
-      if (!hasAllowedFileSignature(header.subarray(0, bytesRead), file.mimetype)) {
+      const sample = header.subarray(0, bytesRead);
+      if (!hasAllowedFileSignature(sample, file.mimetype) || !isAllowedImageDimensions(sample, file.mimetype)) {
         await Promise.all(files.map((uploaded) => fs.promises.unlink(uploaded.path).catch(() => {})));
         return res.status(400).json({ success: false, message: "Uploaded file content does not match an allowed image type." });
       }
