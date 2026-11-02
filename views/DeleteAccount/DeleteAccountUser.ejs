@@ -15,10 +15,8 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
   >
 
-  <link
-    rel="stylesheet"
-    href="/css/sidebar.css"
-  >
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
 
   <style>
     * {
@@ -32,10 +30,12 @@
       color: #1f2937;
     }
 
-    .page-wrapper {
-      margin-left: 270px;
-      padding: 30px;
-      min-height: 100vh;
+    .delete-account-container {
+      padding: 24px 30px;
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 1500px;
+      margin: 0 auto;
     }
 
     .page-header {
@@ -354,10 +354,7 @@
     }
 
     @media (max-width: 1000px) {
-      .page-wrapper {
-        margin-left: 0;
-        padding: 20px;
-      }
+      
 
       .stats-grid {
         grid-template-columns: 1fr;
@@ -370,9 +367,7 @@
     }
 
     @media (max-width: 600px) {
-      .page-wrapper {
-        padding: 14px;
-      }
+      
 
       .page-header {
         padding: 18px;
@@ -388,10 +383,11 @@
 <body>
 
   <!-- SIDEBAR -->
-  <%- include("../common/sidebar") %>
+  <%- include("../common/header.ejs") %>
+  <%- include("../common/sidebar.ejs") %>
 
-
-  <main class="page-wrapper">
+  <main class="main-content">
+    <div class="delete-account-container">
 
     <!-- HEADER -->
     <div class="page-header">

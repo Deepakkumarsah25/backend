@@ -14,7 +14,8 @@
   <!-- Sidebar -->
   <link
     rel="stylesheet"
-    href="/css/sidebar.css"
+    href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css"
   />
 
   <!-- Font Awesome -->
@@ -43,12 +44,7 @@
        MAIN
     ========================= */
 
-    .container {
-      width: calc(100% - 280px);
-      margin-left: 260px;
-      padding: 30px 25px;
-      max-width: 1700px;
-    }
+    .events-page-wrap { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1600px; margin: 0 auto; }
 
     /* =========================
        HEADER
@@ -934,13 +930,11 @@
 
 <body>
 
-  <%- include('../common/sidebar') %>
+  <%- include("../common/header.ejs") %>
+  <%- include("../common/sidebar.ejs") %>
 
-  <!-- =========================================
-       MAIN CONTAINER
-  ========================================== -->
-
-  <div class="container">
+  <main class="main-content">
+  <div class="events-page-wrap">
 
     <!-- =========================================
          HEADER

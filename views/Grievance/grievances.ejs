@@ -2,110 +2,307 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title><%= pageTitle %></title>
-  <link rel="stylesheet" href="/css/sidebar.css">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f4f7fc;
-      margin: 0;
-      padding: 24px;
-      color: #222;
-    }
-    h1 { color: #1565c0; margin-bottom: 20px; }
-    .main-content{
-    margin-left:270px;
-    padding:24px;
-}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= pageTitle %> - Vikassheel Insaan Party</title>
 
-@media(max-width:1100px){
-    .main-content{
-        margin-left:0;
-        padding:80px 15px 20px;
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- VIP Admin Styles -->
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+
+  <style>
+    :root {
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --surface: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --radius: 12px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     }
-}
-    .toolbar {
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .grievance-container {
+      padding: 24px 30px;
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    .page-header-row {
       display: flex;
-      gap: 10px;
+      justify-content: space-between;
+      align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 18px;
+      gap: 16px;
+      margin-bottom: 24px;
     }
-    .toolbar input, .toolbar select {
-      padding: 8px 10px;
-      border: 1px solid #d9e2ef;
-      border-radius: 8px;
+
+    .page-title-group h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title-group h1 i { color: #dc2626; }
+
+    .page-subtitle {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      margin-top: 4px;
+    }
+
+    .count-badge-pill {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toolbar-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .toolbar-form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .search-input-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-input-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
       font-size: 14px;
     }
-    .toolbar button {
-      padding: 8px 16px;
-      background: #1565c0;
-      color: #fff;
+
+    .search-input-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      background: #ffffff;
+    }
+
+    .search-input-box input:focus, .filter-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #ffffff;
+      outline: none;
+      min-width: 150px;
+    }
+
+    .btn-filter {
+      padding: 10px 20px;
+      background: var(--primary);
+      color: #ffffff;
       border: none;
       border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
-      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.16s ease;
     }
 
-    table {
+    .btn-filter:hover { background: var(--primary-hover); }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 28px;
+      overflow: hidden;
+    }
+
+    .section-card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .section-card-title {
+      font-size: 15.5px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .vip-data-table {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      font-size: 13.5px;
+      white-space: nowrap;
     }
-    th, td {
-      padding: 12px 14px;
+
+    .vip-data-table th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 650;
+      padding: 12px 18px;
       text-align: left;
-      border-bottom: 1px solid #eef1f6;
-      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    th {
-      background: #eef5ff;
-      color: #1565c0;
+
+    .vip-data-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    .vip-data-table tbody tr:hover { background: #f8fafc; }
+    .vip-data-table tbody tr:last-child td { border-bottom: none; }
+
+    .cell-id {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 12.5px;
+      background: #f1f5f9;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #1e293b;
     }
 
     .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       padding: 4px 10px;
       border-radius: 20px;
       font-size: 12px;
-      font-weight: 700;
-      display: inline-block;
-      white-space: nowrap;
+      font-weight: 650;
     }
-    .badge.Submitted { background: #e0f2fe; color: #075985; }
-    .badge.In-Progress { background: #fef3c7; color: #92400e; }
-    .badge.Resolved { background: #d1fae5; color: #065f46; }
+    .badge.Submitted { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .badge.In-Progress { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge.Resolved { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
 
-    .actions { white-space: nowrap; }
-    .actions button {
-      border: none;
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-act {
+      border: 1px solid transparent;
       padding: 6px 10px;
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
-      margin-right: 6px;
-      color: #fff;
-    }
-    .btn-view { background: #1565c0; }
-    .btn-share { background: #1a7f37; }
-    .btn-delete { background: #6b7280; }
-
-    .pagination {
-      margin-top: 16px;
-      display: flex;
-      gap: 8px;
+      display: inline-flex;
       align-items: center;
+      gap: 4px;
+      font-family: inherit;
+      transition: all 0.14s ease;
     }
-    .pagination button {
-      padding: 6px 12px;
-      border: 1px solid #d9e2ef;
-      background: #fff;
-      border-radius: 6px;
+
+    .btn-view { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .btn-view:hover { background: #1d4ed8; color: #ffffff; }
+
+    .btn-share { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .btn-share:hover { background: #047857; color: #ffffff; }
+
+    .btn-delete { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+    .btn-delete:hover { background: #dc2626; color: #ffffff; }
+
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin: 20px 0 32px;
+    }
+
+    .pagination-btn {
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 600;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--shadow-sm);
     }
-    .pagination button:disabled {
+
+    .pagination-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
@@ -115,128 +312,203 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.45);
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 10000;
     }
     .modal-overlay.open { display: flex; }
     .modal-box {
-      background: #fff;
-      border-radius: 14px;
-      padding: 24px;
-      width: 480px;
-      max-width: 90vw;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 28px;
+      width: 520px;
+      max-width: 92vw;
       max-height: 85vh;
       overflow-y: auto;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
     }
-    .modal-box h2 { margin-top: 0; color: #1565c0; }
-    .modal-box p { margin: 6px 0; font-size: 14px; }
+    .modal-box h2 {
+      font-size: 20px;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     .modal-box .close-btn {
-      float: right;
       cursor: pointer;
-      font-weight: 700;
-      color: #999;
+      color: var(--text-muted);
+      font-size: 20px;
+      transition: color 0.14s ease;
     }
+    .modal-box .close-btn:hover { color: #ef4444; }
+    .modal-box p { margin: 10px 0; font-size: 13.5px; line-height: 1.5; color: #334155; }
     .status-row {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #eef1f6;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
       display: flex;
       gap: 10px;
       align-items: center;
     }
     .status-row select {
-      padding: 8px 10px;
-      border: 1px solid #d9e2ef;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 13.5px;
       flex: 1;
     }
     .status-row button {
-      padding: 8px 14px;
-      background: #1565c0;
-      color: #fff;
+      padding: 10px 18px;
+      background: var(--primary);
+      color: #ffffff;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 13px;
+      font-size: 13.5px;
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-    <%- include("../common/sidebar") %>
 
-    <div class="main-content">
+  <!-- ==================== HEADER ==================== -->
+  <%- include("../common/header.ejs") %>
 
-  <h1><%= pageTitle %> (<%= total %> total)</h1>
+  <!-- ==================== SIDEBAR ==================== -->
+  <%- include("../common/sidebar.ejs") %>
 
-  <div class="toolbar">
-    <input type="text" id="searchInput" placeholder="Search title / grievance ID / name / mobile" />
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="main-content">
+    <div class="grievance-container">
 
-    <select id="categoryFilter">
-      <option value="">All Categories</option>
-      <option value="Roads">Roads</option>
-      <option value="Water">Water</option>
-      <option value="Electricity">Electricity</option>
-      <option value="Health">Health</option>
-      <option value="Education">Education</option>
-      <option value="Safety">Safety</option>
-    </select>
+      <!-- Page Header -->
+      <div class="page-header-row">
+        <div class="page-title-group">
+          <h1>
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <%= pageTitle %>
+          </h1>
+          <p class="page-subtitle">Track, update and resolve citizen grievance tickets</p>
+        </div>
 
-    <select id="statusFilter">
-      <option value="">All Statuses</option>
-      <option value="Submitted">Submitted</option>
-      <option value="In Progress">In Progress</option>
-      <option value="Resolved">Resolved</option>
-    </select>
+        <div class="count-badge-pill">
+          <span><%= total %> Total Grievances</span>
+        </div>
+      </div>
 
-    <button onclick="loadGrievances(1)">Filter</button>
-  </div>
+      <!-- Toolbar / Filters -->
+      <div class="toolbar-card">
+        <div class="toolbar-form">
+          <div class="search-input-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Search title, grievance ID, applicant name, phone..." />
+          </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Grievance ID</th>
-        <th>Title</th>
-        <th>Category</th>
-        <th>Status</th>
-        <th>Filed By</th>
-        <th>Applied On</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody">
-      <!-- Server-rendered initial rows -->
-      <% grievances.forEach(function(g) { %>
-        <tr data-id="<%= g._id %>">
-          <td><%= g.grievanceId %></td>
-          <td><%= g.title %></td>
-          <td><%= g.category %></td>
-          <td><span class="badge <%= g.status.replace(" ", "-") %>"><%= g.status %></span></td>
-          <td><%= (g.user && g.user.name) || "-" %></td>
-          <td><%= new Date(g.createdAt).toLocaleDateString("en-GB") %></td>
-          <td class="actions">
-            <button class="btn-view" onclick="viewGrievance('<%= g._id %>')">View</button>
-            <button class="btn-share" onclick="shareGrievance('<%= g._id %>')">Share</button>
-            <button class="btn-delete" onclick="deleteGrievance('<%= g._id %>')">Delete</button>
-          </td>
-        </tr>
-      <% }); %>
-    </tbody>
-  </table>
+          <select id="categoryFilter" class="filter-select">
+            <option value="">All Categories</option>
+            <option value="Roads">Roads</option>
+            <option value="Water">Water</option>
+            <option value="Electricity">Electricity</option>
+            <option value="Health">Health</option>
+            <option value="Education">Education</option>
+            <option value="Safety">Safety</option>
+          </select>
 
-  <div class="pagination">
-    <button id="prevBtn" onclick="changePage(-1)">Prev</button>
-    <span id="pageLabel">Page 1</span>
-    <button id="nextBtn" onclick="changePage(1)">Next</button>
-  </div>
+          <select id="statusFilter" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="Submitted">Submitted</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+
+          <button onclick="loadGrievances(1)" class="btn-filter">
+            <i class="fa-solid fa-filter"></i> Apply Filters
+          </button>
+        </div>
+      </div>
+
+      <!-- Grievance Table Card -->
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-card-title">
+            <i class="fa-solid fa-list-check" style="color: var(--primary);"></i>
+            Grievance Records
+          </div>
+          <span id="pageLabelHeader" style="font-size: 12.5px; color: var(--text-muted);">Page 1</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="vip-data-table">
+            <thead>
+              <tr>
+                <th>Grievance ID</th>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Filed By</th>
+                <th>Applied On</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <% grievances.forEach(function(g) { %>
+                <tr data-id="<%= g._id %>">
+                  <td><span class="cell-id"><%= g.grievanceId %></span></td>
+                  <td style="font-weight: 600;"><%= g.title %></td>
+                  <td><%= g.category %></td>
+                  <td><span class="badge <%= g.status.replace(' ', '-') %>"><%= g.status %></span></td>
+                  <td><%= (g.user && g.user.name) || "-" %></td>
+                  <td><%= new Date(g.createdAt).toLocaleDateString("en-GB") %></td>
+                  <td class="actions">
+                    <button class="btn-act btn-view" onclick="viewGrievance('<%= g._id %>')" title="View Grievance">
+                      <i class="fa-solid fa-eye"></i> View
+                    </button>
+                    <button class="btn-act btn-share" onclick="shareGrievance('<%= g._id %>')" title="Share Report">
+                      <i class="fa-solid fa-share-nodes"></i> Share
+                    </button>
+                    <button class="btn-act btn-delete" onclick="deleteGrievance('<%= g._id %>')" title="Delete Record">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-bar">
+        <div>
+          <button id="prevBtn" onclick="changePage(-1)" class="pagination-btn" disabled>
+            <i class="fa-solid fa-chevron-left"></i> Previous
+          </button>
+        </div>
+
+        <div class="pagination-info" id="pageLabel">
+          Page 1 of <%= Math.ceil(total / 20) || 1 %>
+        </div>
+
+        <div>
+          <button id="nextBtn" onclick="changePage(1)" class="pagination-btn">
+            Next <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
 
   <!-- View Modal -->
   <div class="modal-overlay" id="viewModal">
     <div class="modal-box">
-      <span class="close-btn" onclick="closeModal()">✕</span>
-      <h2>Grievance Details</h2>
+      <h2>
+        <span>Grievance Details</span>
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+      </h2>
       <div id="modalContent">Loading...</div>
 
       <div class="status-row">
@@ -252,7 +524,7 @@
 
   <script>
     let currentPage = 1;
-    let totalPages = 1;
+    let totalPages = <%= Math.ceil(total / 20) || 1 %>;
     let activeGrievanceId = null;
     let activeGrievanceData = null;
 
@@ -281,12 +553,13 @@
         }
 
         renderTable(json.data);
-        totalPages = json.pagination.totalPages;
-        document.getElementById("pageLabel").textContent =
-          `Page ${json.pagination.page} of ${json.pagination.totalPages || 1}`;
+        totalPages = json.pagination.totalPages || 1;
+        const pageText = `Page ${json.pagination.page} of ${totalPages}`;
+        document.getElementById("pageLabel").textContent = pageText;
+        const hdr = document.getElementById("pageLabelHeader");
+        if (hdr) hdr.textContent = pageText;
         document.getElementById("prevBtn").disabled = json.pagination.page <= 1;
-        document.getElementById("nextBtn").disabled =
-          json.pagination.page >= json.pagination.totalPages;
+        document.getElementById("nextBtn").disabled = json.pagination.page >= totalPages;
       } catch (err) {
         console.error(err);
         alert("Something went wrong while loading grievances.");
@@ -294,7 +567,7 @@
     }
 
     function statusBadgeClass(status) {
-      return status.replace(" ", "-");
+      return status ? status.replace(" ", "-") : "Submitted";
     }
 
     function renderTable(rows) {
@@ -302,7 +575,7 @@
       tbody.innerHTML = "";
 
       if (!rows.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No grievances found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 36px; color: #94a3b8;">No grievances found.</td></tr>`;
         return;
       }
 
@@ -310,16 +583,16 @@
         const tr = document.createElement("tr");
 
         tr.innerHTML = `
-          <td>${g.grievanceId}</td>
-          <td>${g.title}</td>
+          <td><span class="cell-id">${g.grievanceId}</span></td>
+          <td style="font-weight: 600;">${g.title}</td>
           <td>${g.category}</td>
           <td><span class="badge ${statusBadgeClass(g.status)}">${g.status}</span></td>
           <td>${(g.user && g.user.name) || "-"}</td>
           <td>${new Date(g.createdAt).toLocaleDateString("en-GB")}</td>
           <td class="actions">
-            <button class="btn-view" onclick="viewGrievance('${g._id}')">View</button>
-            <button class="btn-share" onclick="shareGrievance('${g._id}')">Share</button>
-            <button class="btn-delete" onclick="deleteGrievance('${g._id}')">Delete</button>
+            <button class="btn-act btn-view" onclick="viewGrievance('${g._id}')"><i class="fa-solid fa-eye"></i> View</button>
+            <button class="btn-act btn-share" onclick="shareGrievance('${g._id}')"><i class="fa-solid fa-share-nodes"></i> Share</button>
+            <button class="btn-act btn-delete" onclick="deleteGrievance('${g._id}')"><i class="fa-solid fa-trash"></i></button>
           </td>
         `;
 
@@ -344,7 +617,7 @@
       const modal = document.getElementById("viewModal");
       const content = document.getElementById("modalContent");
       modal.classList.add("open");
-      content.innerHTML = "Loading...";
+      content.innerHTML = "<p style='text-align:center; padding:20px; color:#64748b;'><i class='fa-solid fa-circle-notch fa-spin'></i> Loading details...</p>";
       activeGrievanceId = id;
 
       try {
@@ -352,7 +625,7 @@
         activeGrievanceData = g;
 
         content.innerHTML = `
-          <p><strong>Grievance ID:</strong> ${g.grievanceId}</p>
+          <p><strong>Grievance ID:</strong> <span class="cell-id">${g.grievanceId}</span></p>
           <p><strong>Title:</strong> ${g.title}</p>
           <p><strong>Category:</strong> ${g.category}</p>
           <p><strong>Description:</strong> ${g.description}</p>
@@ -365,7 +638,7 @@
         document.getElementById("statusSelect").value = g.status;
       } catch (err) {
         console.error(err);
-        content.innerHTML = "Something went wrong.";
+        content.innerHTML = "<p style='color:#ef4444;'>Failed to load grievance details.</p>";
       }
     }
 
@@ -386,7 +659,7 @@
           return;
         }
 
-        alert("Status updated.");
+        alert("Status updated successfully.");
         closeModal();
         loadGrievances(currentPage);
       } catch (err) {
@@ -426,22 +699,22 @@
         try {
           await navigator.share({ title: `Grievance ${g.grievanceId}`, text: reportText });
         } catch (err) {
-          // user cancelled the share sheet — nothing to do
+          // cancelled
         }
         return;
       }
 
       try {
         await navigator.clipboard.writeText(reportText);
-        alert("Report copied to clipboard — you can paste and share it now.");
+        alert("Report copied to clipboard.");
       } catch (err) {
         console.error(err);
-        alert("Could not copy report. Please try again.");
+        alert("Could not copy report.");
       }
     }
 
     async function deleteGrievance(id) {
-      if (!confirm("Delete this grievance permanently?")) return;
+      if (!confirm("Are you sure you want to permanently delete this grievance?")) return;
 
       try {
         const res = await fetch(`/grievances/${id}`, { method: "DELETE" });
@@ -459,7 +732,6 @@
       }
     }
   </script>
-  </div>
 
 </body>
 </html>

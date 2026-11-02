@@ -7,6 +7,7 @@
 
     <title>Video Gallery Management</title>
 
+    <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/sidebar.css">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -34,17 +35,7 @@
             background: #f8fafc;
         }
 
-        .main-content {
-            margin-left: 270px;
-            padding: 30px;
-        }
-
-        @media(max-width:1100px) {
-            .main-content {
-                margin-left: 0;
-                padding: 80px 15px 20px;
-            }
-        }
+        .video-page-container { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto; }
 
         /* ============ Page Title ============ */
 
@@ -397,9 +388,11 @@
 
 <body>
 
-    <%- include("common/sidebar") %>
+    <%- include("common/header.ejs") %>
+    <%- include("common/sidebar.ejs") %>
 
-        <div class="main-content">
+    <main class="main-content">
+        <div class="video-page-container">
 
             <div class="page-header-wrap">
                 <div class="page-title">

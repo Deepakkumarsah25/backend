@@ -6,6 +6,8 @@
 <title>Feedback — Dashboard</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link rel="stylesheet" href="/css/header.css">
+<link rel="stylesheet" href="/css/sidebar.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,38 +56,7 @@ body{
     overflow-x:hidden;
 }
 
-.feedback-page{
-    width: calc(100% - 270px);
-    min-height: 100vh;
-    margin-left: 270px;
-    padding: 104px 32px 32px;
-    max-width: none;
-    margin-right: 0;
-    transition: margin-left .25s ease, width .25s ease;
-}
-
-body.sidebar-collapsed .feedback-page{
-    width: calc(100% - 78px);
-    margin-left: 78px;
-}
-
-@media (max-width: 992px){
-    .feedback-page,
-    body.sidebar-collapsed .feedback-page{
-        width: 100%;
-        margin-left: 0;
-        padding: 92px 20px 28px;
-    }
-}
-
-@media (max-width: 600px){
-    .feedback-page,
-    body.sidebar-collapsed .feedback-page{
-        width: 100%;
-        margin-left: 0;
-        padding: 86px 14px 22px;
-    }
-}
+.feedback-page { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto; }
 
 /* ===================== HEADER ===================== */
 .page-header{
@@ -676,11 +647,10 @@ button:focus-visible, input:focus-visible{
 <body>
 
 <!-- Common Admin Sidebar -->
-<%- include('../common/sidebar') %>
+<%- include('../common/header.ejs') %>
+<%- include('../common/sidebar.ejs') %>
 
-<!-- Common Admin Header -->
-<%- include('../common/header') %>
-
+<main class="main-content">
 <div class="feedback-page">
 
     <!-- HEADER -->

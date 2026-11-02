@@ -12,10 +12,10 @@
 
   <title>Route Management</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -29,7 +29,7 @@
 
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      padding: 0;
       background: #f5f6f8;
       margin: 0;
     }
@@ -356,9 +356,7 @@
 
     @media (max-width: 768px) {
 
-      body {
-        padding: 12px;
-      }
+      body { padding: 0; }
 
       .route-form,
       .map-wrap {
@@ -380,6 +378,12 @@
 </head>
 
 <body>
+
+  <%- include("../common/header.ejs") %>
+  <%- include("../common/sidebar.ejs") %>
+
+  <main class="main-content">
+  <div style="padding: 24px 30px; box-sizing: border-box; width: 100%; max-width: 1600px; margin: 0 auto;">
 
   <!-- =========================================
        CREATE ROUTE

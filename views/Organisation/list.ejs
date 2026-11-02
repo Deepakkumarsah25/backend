@@ -9,14 +9,12 @@
 <title>Organisation Members</title>
 
 <link rel="stylesheet" href="/css/dashboard.css">
-<link rel="stylesheet" href="/css/sidebar.css">
+<link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
 
 <style>
 
-.content{
-    margin-left:260px;
-    padding:30px;
-}
+.content { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto; }
 
 .top-bar{
     display:flex;
@@ -98,8 +96,10 @@ img{
 
 <body>
 
-<%- include("../common/sidebar") %>
+<%- include("../common/header.ejs") %>
+<%- include("../common/sidebar.ejs") %>
 
+<main class="main-content">
 <div class="content">
 
 <div class="top-bar">
@@ -145,6 +145,7 @@ img{
 </table>
 
 </div>
+</main>
 
 <script>
 document.querySelectorAll(".delete-btn").forEach(function (btn) {

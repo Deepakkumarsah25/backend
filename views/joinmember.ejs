@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= pageTitle %></title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="/css/header.css">
   <link rel="stylesheet" href="/css/sidebar.css">
   <style>
     * { box-sizing: border-box; }
@@ -14,15 +16,12 @@
       padding: 0;
       color: #222;
     }
-    .main-content {
-      margin-left: 270px;
+    .joinmember-container {
       padding: 24px 30px;
-    }
-    @media(max-width: 1100px) {
-      .main-content {
-        margin-left: 0;
-        padding: 80px 15px 20px;
-      }
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 1500px;
+      margin: 0 auto;
     }
 
     .page-header {
@@ -342,9 +341,11 @@
   </style>
 </head>
 <body>
-  <%- include("common/sidebar") %>
+  <%- include("common/header.ejs") %>
+  <%- include("common/sidebar.ejs") %>
 
-  <div class="main-content">
+  <main class="main-content">
+    <div class="joinmember-container">
     <div class="page-header">
       <div>
         <h1><%= pageTitle %></h1>
@@ -892,5 +893,7 @@
 
     loadAgents(1);
   </script>
+    </div>
+  </main>
 </body>
 </html>
