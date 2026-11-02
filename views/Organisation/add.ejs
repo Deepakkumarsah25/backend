@@ -9,14 +9,12 @@
 <title>Add Organisation Member</title>
 
 <link rel="stylesheet" href="/css/dashboard.css">
-<link rel="stylesheet" href="/css/sidebar.css">
+<link rel="stylesheet" href="/css/header.css">
+    <link rel="stylesheet" href="/css/sidebar.css">
 
 <style>
 
-.content{
-    margin-left:260px;
-    padding:30px;
-}
+.content { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto; }
 
 .card{
     max-width:800px;
@@ -86,8 +84,10 @@ select.invalid{
 
 <body>
 
-<%- include("../common/sidebar") %>
+<%- include("../common/header.ejs") %>
+<%- include("../common/sidebar.ejs") %>
 
+<main class="main-content">
 <div class="content">
 
 <div class="card">
@@ -204,6 +204,7 @@ Save Organisation
 </div>
 
 </div>
+</main>
 
 <script>
 

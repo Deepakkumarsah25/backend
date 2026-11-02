@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CMS Management</title>
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
 
   <style>
     .cms-container{
-      margin-left:300px;
-      margin-top:90px;
-      padding:30px;
+      padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto;
     }
 
     .cms-title{
@@ -71,6 +71,7 @@
 <%- include("../common/header.ejs") %>
 <%- include("../common/sidebar.ejs") %>
 
+<main class="main-content">
 <div class="cms-container">
 
   <h1 class="cms-title">
@@ -123,6 +124,7 @@
   </div>
 
 </div>
+</main>
 
 </body>
 </html>

@@ -6,103 +6,12 @@
     <title>Leadership Management</title>
 
     <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/header.css">
     <link rel="stylesheet" href="/css/sidebar.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
     <style>
-       .content{
-    margin-left:260px;
-    padding:30px;
-    overflow-x:auto;
-}
-
-       .top-bar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:15px;
-    margin-bottom:20px;
-}
-
-        .add-btn{
-            background:#0d6efd;
-            color:#fff;
-            text-decoration:none;
-            padding:10px 18px;
-            border-radius:6px;
-        }
-
-        .add-btn:hover{
-            background:#0b5ed7;
-        }
-table{
-    width:100%;
-    min-width:700px;
-    border-collapse:collapse;
-    background:#fff;
-    box-shadow:0 0 10px rgba(0,0,0,.1);
-}
-
-        th{
-            background:#0d6efd;
-            color:#fff;
-            padding:15px;
-        }
-
-        td{
-            padding:12px;
-            text-align:center;
-            border-bottom:1px solid #ddd;
-        }
-
-        td img{
-            width:70px;
-            height:70px;
-            border-radius:50%;
-            object-fit:cover;
-        }
-
-        .edit{
-            color:green;
-            margin-right:12px;
-            font-size:18px;
-        }
-
-        .delete{
-            color:red;
-            font-size:18px;
-        }
-
-        .badge{
-            padding:5px 10px;
-            border-radius:20px;
-            color:#fff;
-            font-size:13px;
-        }
-
-        .founder{
-            background:#0d6efd;
-        }
-
-        .leader{
-            background:#198754;
-        }
-
-        .leadersscm{
-            background:#fd7e14;
-        }
-
-        .no-data{
-            padding:25px;
-            text-align:center;
-        }
-        @media (max-width:768px){
-
-    .content{
-        margin-left:0;
-        padding:15px;
-    }
+       .content { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto; }
 
     .top-bar{
         flex-direction:column;
@@ -131,8 +40,10 @@ table{
 
 <body>
 
-<%- include("../common/sidebar") %>
+<%- include("../common/header.ejs") %>
+<%- include("../common/sidebar.ejs") %>
 
+<main class="main-content">
 <div class="content">
 
 <div class="top-bar">
@@ -261,6 +172,7 @@ No Leadership Found
 </table>
 
 </div>
+</main>
 
 <script>
 
