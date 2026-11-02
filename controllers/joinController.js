@@ -105,6 +105,18 @@ export const applyForMembership = async (req, res) => {
     const existing = await Join.findOne({ $or: queryConditions });
 
     if (existing) {
+      const ownsExisting = req.joinAddedBy
+        ? String(existing.addedBy || "") === String(req.joinAddedBy)
+        : String(existing.userId || "") === String(user?._id || "") ||
+          String(existing.uid || "") === String(user?.uid || "");
+
+      if (!ownsExisting) {
+        return res.status(409).json({
+          success: false,
+          message: "An application already exists for this mobile number.",
+        });
+      }
+
       if (existing.status === "Approved") {
         return res.status(409).json({
           success: false,
@@ -240,11 +252,6 @@ export const getMyApplicationStatus = async (req, res) => {
     const queryConditions = [];
     if (user?._id) queryConditions.push({ userId: user._id });
     if (user?.uid) queryConditions.push({ uid: user.uid });
-    if (user?.phone) {
-      const cleanPhone = String(user.phone).replace(/\D/g, "").slice(-10);
-      if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
-    }
-
     if (queryConditions.length === 0) {
       return res.status(200).json({
         success: true,
@@ -311,11 +318,6 @@ export const getMyMembershipCard = async (req, res) => {
 
     const queryConditions = [{ userId: user._id }];
     if (user.uid) queryConditions.push({ uid: user.uid });
-    if (user.phone) {
-      const cleanPhone = String(user.phone).replace(/\D/g, "").slice(-10);
-      if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
-    }
-
     // Only APPROVED applications with valid memberId get a card!
     const application = await Join.findOne({
       $or: queryConditions,
@@ -738,10 +740,6 @@ export const addMemberByAgent = async (req, res) => {
     if (!agentUser.isAgent) {
       const queryConditions = [{ userId: agentUser._id }];
       if (agentUser.uid) queryConditions.push({ uid: agentUser.uid });
-      if (agentUser.phone) {
-        const cleanPhone = String(agentUser.phone).replace(/\D/g, "").slice(-10);
-        if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
-      }
 
       const verifiedMembership = await Join.findOne({
         $or: queryConditions,
@@ -806,10 +804,6 @@ export const getMyAddedMembers = async (req, res) => {
     if (!req.user.isAgent) {
       const queryConditions = [{ userId: agentId }];
       if (req.user.uid) queryConditions.push({ uid: req.user.uid });
-      if (req.user.phone) {
-        const cleanPhone = String(req.user.phone).replace(/\D/g, "").slice(-10);
-        if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
-      }
 
       const verifiedMembership = await Join.findOne({
         $or: queryConditions,

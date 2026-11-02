@@ -1,6 +1,5 @@
 import Route from "../../models/Route.js";
 import Driver from "../../models/Driver.js";
-import Notification from "../../models/Notification.js";
 import { sendPushNotification } from "../../services/pushNotificationService.js";
 import mongoose from "mongoose";
 /* =========================================================
@@ -333,42 +332,8 @@ export const addRoute = async (req, res) => {
 
     console.log("=================================");
 
-    /* =========================================
-       DATABASE NOTIFICATION
-    ========================================= */
-
-    const baseUrl = (
-      process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`
-    ).replace(/\/$/, "");
+    const baseUrl = (process.env.PUBLIC_BASE_URL || `${req.protocol}://${req.get("host")}`).replace(/\/$/, "");
     const trackUrl = `${baseUrl}/track/${route._id}`;
-
-    try {
-      const hindiTitle = "🚩 वीआईपी पार्टी वाहन सूचना";
-      const hindiMessage =
-        "वीआईपी पार्टी का वाहन आपके क्षेत्र के पास पहुँच रहा है। कृपया आवश्यक तैयारी रखें और आसपास के लोगों तक कार्यक्रम की जानकारी पहुँचाएँ।";
-
-      const createdNotification = await Notification.create({
-        title: hindiTitle,
-        message: hindiMessage,
-        type: "route",
-        relatedId: route._id,
-        targetType: "all",
-        actionType: "none",
-        deepLink: "",
-        actionUrl: "",
-        metadata: {
-          routeName: route.routeName,
-          startLocation: route.startLocation || "",
-          endLocation: route.endLocation || "",
-          distanceKm: route.distanceKm || 0,
-          durationMin: route.durationMin || 0,
-          time: new Date().toISOString(),
-        },
-      });
-    } catch (notificationError) {
-      console.error("ROUTE NOTIFICATION ERROR:", notificationError);
-    }
-
     /* =========================================
        PUSH NOTIFICATION
     ========================================= */
@@ -383,7 +348,8 @@ export const addRoute = async (req, res) => {
         hindiMessage,
         {
           type: "route",
-          actionType: "none",
+          actionType: "tracking",
+          actionUrl: trackUrl,
           routeId: route._id.toString(),
           screen: "/notifications",
           title: hindiTitle,

@@ -12,7 +12,7 @@ router.get("/bainar", requireAdmin, async (req, res) => {
   });
 });
 
-router.get("/member",(req,res)=>{
+router.get("/member", requireAdmin, (req,res)=>{
     res.render("AddWorker/mamber")
 
 })

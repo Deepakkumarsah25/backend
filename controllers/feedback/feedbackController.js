@@ -1,5 +1,4 @@
 import Feedback from "../../models/feedback/Feedback.js";
-import User from "../../models/User.js";
 import mongoose from "mongoose";
 
 /* =====================================================
@@ -9,10 +8,10 @@ import mongoose from "mongoose";
 export const createFeedback = async (req, res) => {
   try {
     const { rating, message, phone } = req.body;
-    const uid = req.user?.uid || req.body?.uid;
-    let name = (req.body?.name || req.user?.name || "").trim();
-    let email = (req.body?.email || req.user?.email || "").trim().toLowerCase();
-    let userPhone = (phone || req.body?.phone || req.user?.phone || "").trim();
+    const uid = req.user?.uid;
+    let name = (req.user?.name || "").trim();
+    let email = (req.user?.email || "").trim().toLowerCase();
+    let userPhone = (req.user?.phone || phone || req.body?.phone || "").trim();
 
     // -----------------------------
     // VALIDATION
@@ -23,18 +22,6 @@ export const createFeedback = async (req, res) => {
         success: false,
         message: "User UID is required.",
       });
-    }
-
-    // Auto-enrich name / email / phone from database if missing
-    if (!name || !email || !userPhone) {
-      try {
-        const uDoc = await User.findOne({ uid: String(uid).trim() }).lean();
-        if (uDoc) {
-          if (!name && uDoc.name) name = uDoc.name.trim();
-          if (!email && uDoc.email) email = uDoc.email.trim().toLowerCase();
-          if (!userPhone && uDoc.phone) userPhone = uDoc.phone.trim();
-        }
-      } catch (_) {}
     }
 
     if (!name) name = "VIP App User";

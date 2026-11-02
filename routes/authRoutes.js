@@ -23,11 +23,6 @@ router.get("/me", protect, async (req, res) => {
   try {
     const queryConditions = [{ userId: req.user._id }];
     if (req.user.uid) queryConditions.push({ uid: req.user.uid });
-    if (req.user.phone) {
-      const cleanPhone = String(req.user.phone).replace(/\D/g, "").slice(-10);
-      if (cleanPhone) queryConditions.push({ mobile: cleanPhone });
-    }
-
     const membership = await Join.findOne({
       $or: queryConditions,
     })

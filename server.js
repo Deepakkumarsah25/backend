@@ -55,6 +55,7 @@ import adminFormsRoutes from "./routes/adminFormsRoutes.js";
 import websiteRoutes from "./routes/websiteRoutes.js";
 import downloadRoutes from "./routes/downloadRoutes.js";
 import { seedInitialDownloads } from "./controllers/downloadController.js";
+import { startNotificationScheduler } from "./services/notificationCampaignService.js";
 /* =========================================================
    APP
 ========================================================= */
@@ -509,8 +510,17 @@ mongoose
         );
       }
 
+      const notificationModels = await Promise.all([
+        import("./models/notification/UserNotification.js"),
+        import("./models/notification/NotificationCampaign.js"),
+        import("./models/notification/DeviceToken.js"),
+        import("./models/notification/NotificationPreference.js"),
+      ]);
+      await Promise.all(notificationModels.map((module) => module.default.init()));
+
       await seedAdminsAndActivities();
       await seedInitialDownloads();
+      startNotificationScheduler();
     } catch (seedErr) {
       console.error("Seeding error:", seedErr);
     }

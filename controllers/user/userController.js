@@ -6,7 +6,6 @@ import { uploadToCloudinary } from "../../config/cloudinary.js";
 
 import { generateMemberId } from "../../services/memberId.js";
 
-import { getBearerToken, verifyFirebaseToken } from "../../middlewar/firebaseAuth.js";
 
 const PLACEHOLDER = "xxx";
 
@@ -102,29 +101,10 @@ export const saveUser = async (req, res) => {
 
     const { name, photoURL, provider, fcmToken } = req.body;
 
-    let verifiedEmail;
-
-    const bearer = getBearerToken(req);
-
-    if (!bearer.error) {
-
-      try {
-
-        const decodedToken = await verifyFirebaseToken(bearer.token);
-
-        if (decodedToken.uid === req.user.uid && decodedToken.email_verified === true && typeof decodedToken.email === "string") {
-
-          verifiedEmail = decodedToken.email.trim().toLowerCase();
-
-        }
-
-      } catch {
-
-        // protect already validated the token; keep the stored email if revalidation is unavailable.
-
-      }
-
-    }
+    const verifiedEmail =
+      req.auth?.email_verified === true && typeof req.auth.email === "string"
+        ? req.auth.email.trim().toLowerCase()
+        : undefined;
 
     // ------------------------------------------
 
@@ -280,45 +260,10 @@ export const getMyCard = async (req, res) => {
 
     if (user.uid) queryConditions.push({ uid: user.uid });
 
-    if (user.phone) {
-
-      const cleanPhone = String(user.phone).replace(/\D/g, "").slice(-10);
-
-      if (cleanPhone) {
-
-        queryConditions.push({ mobile: cleanPhone });
-
-        queryConditions.push({ mobile: new RegExp(cleanPhone + "$") });
-
-      }
-
-    }
-
-    if (user.email) {
-
-      queryConditions.push({ email: user.email.toLowerCase().trim() });
-
-    }
 
     if (user.membershipId) {
 
       queryConditions.push({ memberId: user.membershipId });
-
-    }
-
-    const { mobile } = req.query;
-
-    if (mobile) {
-
-      const cleanQMobile = String(mobile).replace(/\D/g, "").slice(-10);
-
-      if (cleanQMobile) {
-
-        queryConditions.push({ mobile: cleanQMobile });
-
-        queryConditions.push({ mobile: new RegExp(cleanQMobile + "$") });
-
-      }
 
     }
 

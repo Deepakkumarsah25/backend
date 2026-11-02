@@ -77,13 +77,9 @@ console.log("==========================================");
 
 console.log("Project ID:", projectId);
 
-console.log("Client Email:", clientEmail);
-
 console.log("Private Key Loaded:", true);
 
 console.log("Private Key Format:", true);
-
-console.log("Private Key Length:", privateKey.length);
 
 console.log("==========================================");
 

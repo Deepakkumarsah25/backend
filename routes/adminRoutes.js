@@ -1,5 +1,6 @@
 import cmsRoutes from "./cmsRoutes.js";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import upload from "../middlewar/upload.js";
 
 import {
@@ -27,6 +28,15 @@ import {
 import Video from "../models/videogallery.js";
 import Album from "../models/Album.js";
 import { requireAdmin } from "../middlewar/requireAdmin.js";
+import {
+  createCampaignDraft,
+  updateCampaignDraft,
+  publishCampaignAdmin,
+  listCampaigns,
+  getCampaignStats,
+  cancelScheduledCampaign,
+  renderNotificationAdminPage,
+} from "../controllers/notification/notificationAdminController.js";
 
 /* =========================================
    DELETE ACCOUNT CONTROLLER
@@ -39,6 +49,22 @@ import {
 } from "../controllers/admin/deleteAccountAdminController.js";
 
 const router = express.Router();
+const adminLoginLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: "Too many login attempts. Please try again later.",
+});
+
+// Notification campaign management uses the existing administrator session.
+router.get("/admin/notifications/:section", requireAdmin, renderNotificationAdminPage);
+router.get("/api/admin/notifications/campaigns", requireAdmin, listCampaigns);
+router.post("/api/admin/notifications/campaigns", requireAdmin, createCampaignDraft);
+router.patch("/api/admin/notifications/campaigns/:id", requireAdmin, updateCampaignDraft);
+router.post("/api/admin/notifications/campaigns/:id/publish", requireAdmin, publishCampaignAdmin);
+router.get("/api/admin/notifications/campaigns/:id/stats", requireAdmin, getCampaignStats);
+router.post("/api/admin/notifications/campaigns/:id/cancel", requireAdmin, cancelScheduledCampaign);
 
 /* =========================================
    HOME
@@ -55,7 +81,7 @@ router.get("/", (req, res) => {
 // Public admin creation is disabled; provisioning must be done out of band.
 router.get("/create-admin", (req, res) => res.sendStatus(404));
 
-router.post("/login", loginAdmin);
+router.post("/login", adminLoginLimit, loginAdmin);
 
 router.get("/logout", logoutAdmin);
 router.post("/logout", logoutAdmin);
@@ -77,25 +103,25 @@ router.get(
 );
 
 /* 10-Day Activity Logs Route and Aliases */
-router.get("/activity-logs", getActivityLogsPage);
-router.get("/activity-log", getActivityLogsPage);
-router.get("/activitylogs", getActivityLogsPage);
-router.get("/activitylog", getActivityLogsPage);
-router.get("/activities", getActivityLogsPage);
-router.get("/activity", getActivityLogsPage);
-router.get("/10-day-activity", getActivityLogsPage);
-router.get("/10-days-activity", getActivityLogsPage);
-router.get("/10-days-activity-log", getActivityLogsPage);
-router.get("/admin/activity-logs", getActivityLogsPage);
-router.get("/admin/activity-log", getActivityLogsPage);
-router.get("/admin/activitylogs", getActivityLogsPage);
-router.get("/admin/activitylog", getActivityLogsPage);
-router.get("/admin/activities", getActivityLogsPage);
-router.get("/admin/activity", getActivityLogsPage);
+router.get("/activity-logs", requireAdmin, getActivityLogsPage);
+router.get("/activity-log", requireAdmin, getActivityLogsPage);
+router.get("/activitylogs", requireAdmin, getActivityLogsPage);
+router.get("/activitylog", requireAdmin, getActivityLogsPage);
+router.get("/activities", requireAdmin, getActivityLogsPage);
+router.get("/activity", requireAdmin, getActivityLogsPage);
+router.get("/10-day-activity", requireAdmin, getActivityLogsPage);
+router.get("/10-days-activity", requireAdmin, getActivityLogsPage);
+router.get("/10-days-activity-log", requireAdmin, getActivityLogsPage);
+router.get("/admin/activity-logs", requireAdmin, getActivityLogsPage);
+router.get("/admin/activity-log", requireAdmin, getActivityLogsPage);
+router.get("/admin/activitylogs", requireAdmin, getActivityLogsPage);
+router.get("/admin/activitylog", requireAdmin, getActivityLogsPage);
+router.get("/admin/activities", requireAdmin, getActivityLogsPage);
+router.get("/admin/activity", requireAdmin, getActivityLogsPage);
 
-router.post("/api/admin/quick-update", quickUpdateActivity);
-router.get("/api/activity-logs", getActivityLogsApi);
-router.get("/api/admin/activity-logs", getActivityLogsApi);
+router.post("/api/admin/quick-update", requireAdmin, quickUpdateActivity);
+router.get("/api/activity-logs", requireAdmin, getActivityLogsApi);
+router.get("/api/admin/activity-logs", requireAdmin, getActivityLogsApi);
 
 
 /* =========================================

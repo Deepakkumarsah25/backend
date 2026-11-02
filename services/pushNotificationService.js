@@ -1,115 +1,82 @@
 import { messaging } from "../firebase/firebaseAdmin.js";
-import User from "../models/User.js";
+import DeviceToken from "../models/notification/DeviceToken.js";
+import NotificationPreference from "../models/notification/NotificationPreference.js";
+import UserNotification from "../models/notification/UserNotification.js";
+import { createSystemNotificationCampaign } from "./notificationCampaignService.js";
+import { repairLegacyNotificationText } from "./notificationText.js";
 
-const stringifyData = (data = {}) =>
-  Object.keys(data).reduce((obj, key) => {
-    const value = data[key];
-    if (value !== undefined && value !== null) obj[key] = String(value);
-    return obj;
-  }, {});
+const stringifyData = (data = {}) => Object.fromEntries(
+  Object.entries(data).filter(([, value]) => value !== undefined && value !== null).map(([key, value]) => [key, repairLegacyNotificationText(String(value))]),
+);
 
-const buildMessage = ({ title, body, data = {}, token, tokens }) => ({
-  ...(token ? { token } : { tokens }),
-  notification: { title, body },
-  android: {
-    priority: "high",
-    notification: {
-      channelId: "vip-party",
-      sound: "default",
-    },
-  },
-  data: stringifyData(data),
-});
-
-// Targeted push: only one logged-in user/member.
-export const sendPushNotificationToUser = async ({
-  userId,
-  title,
-  body,
-  data = {},
-}) => {
+export const sendPushNotificationToUser = async ({ userId, title, body, data = {} }) => {
   try {
-    const user = await User.findById(userId).select(
-      "fcmToken notificationEnabled"
-    );
-
-    if (!user?.notificationEnabled || !user?.fcmToken) {
-      console.log("No enabled FCM token for user.");
+    const preferences = await NotificationPreference.findOne({ userId }).lean();
+    const category = data.type === "route" || data.type === "tracking" ? "tracking" : data.type === "event" ? "events" : data.type === "membership" ? "membership" : data.type === "news" ? "announcements" : "general";
+    if (preferences?.pushEnabled === false || preferences?.[category] === false) {
+      if (data.notificationId) await UserNotification.updateOne({ _id: data.notificationId, userId }, { $set: { deliveryStatus: "skipped" } });
       return null;
     }
-
-    const response = await messaging.send(
-      buildMessage({
-        title,
-        body,
-        data,
-        token: user.fcmToken,
-      })
-    );
-
-    console.log("Targeted FCM sent.");
-    return response;
-  } catch (error) {
-    console.error("Targeted push failed:", error?.code || "unknown error");
-
-    if (
-      error?.code === "messaging/registration-token-not-registered"
-    ) {
-      await User.findByIdAndUpdate(userId, { $set: { fcmToken: "" } });
+    const devices = await DeviceToken.find({ userId, isActive: true }).select("_id fcmToken").lean();
+    if (!devices.length) {
+      if (data.notificationId) await UserNotification.updateOne({ _id: data.notificationId, userId }, { $set: { deliveryStatus: "skipped" } });
+      return null;
     }
-
+    const responses = [];
+    for (let offset = 0; offset < devices.length; offset += 500) {
+      const batch = devices.slice(offset, offset + 500);
+      const result = await messaging.sendEachForMulticast({
+        tokens: batch.map((device) => device.fcmToken),
+        notification: {
+          title: repairLegacyNotificationText(title),
+          body: repairLegacyNotificationText(body),
+        },
+        data: stringifyData(data),
+        android: { priority: "high", notification: { channelId: "vip-party", sound: "default" } },
+      });
+      result.responses.forEach((item, index) => {
+        if (!item.success && ["messaging/registration-token-not-registered", "messaging/invalid-registration-token"].includes(item.error?.code)) {
+          responses.push(DeviceToken.updateOne({ _id: batch[index]._id }, { $set: { isActive: false } }));
+        }
+      });
+    }
+    await Promise.allSettled(responses);
+    if (data.notificationId) {
+      await UserNotification.updateOne(
+        { _id: data.notificationId, userId },
+        { $set: { deliveryStatus: "sent" } },
+      );
+    }
+    return true;
+  } catch (error) {
+    if (data.notificationId) {
+      await UserNotification.updateOne(
+        { _id: data.notificationId, userId },
+        { $set: { deliveryStatus: "failed" } },
+      ).catch(() => {});
+    }
+    console.error("Targeted push failed.", error?.code || "unknown error");
     return null;
   }
 };
 
-// General push: logged-in users that have registered an FCM token.
+// Legacy broadcast callers now enter campaign fanout, which applies audience
+// eligibility and stored category preferences before creating inbox/push items.
 export const sendPushNotification = async (title, body, data = {}) => {
   try {
-    const users = await User.find({
-      notificationEnabled: true,
-      fcmToken: { $exists: true, $ne: "" },
-    }).select("fcmToken");
-
-    const tokens = users.map((user) => user.fcmToken).filter(Boolean);
-
-    if (!tokens.length) {
-      console.log("❌ No FCM Tokens Found");
-      return null;
-    }
-
-    const response = await messaging.sendEachForMulticast(
-      buildMessage({ title, body, data, tokens })
-    );
-
-    console.log("=================================");
-    console.log("FCM Response");
-    console.log("Success:", response.successCount);
-    console.log("Failure:", response.failureCount);
-
-    const invalidTokens = [];
-    response.responses.forEach((result, index) => {
-      if (!result.success) {
-        console.log(`Push delivery failed for recipient ${index + 1}:`, result.error?.code || "unknown error");
-        if (
-          result.error?.code ===
-          "messaging/registration-token-not-registered"
-        ) {
-          invalidTokens.push(tokens[index]);
-        }
-      }
+    return await createSystemNotificationCampaign({
+      title,
+      message: body,
+      type: data.type === "event" ? "events" : data.type === "route" ? "tracking" : "general",
+      deepLink: data.deepLink || data.actionUrl || "",
+      relatedId: data.routeId || null,
+      actionType: data.actionType || "none",
+      actionUrl: data.actionUrl || "",
+      metadata: data,
+      audience: { type: "all", userIds: [] },
     });
-
-    if (invalidTokens.length) {
-      await User.updateMany(
-        { fcmToken: { $in: invalidTokens } },
-        { $set: { fcmToken: "" } }
-      );
-    }
-
-    console.log("=================================");
-    return response;
   } catch (error) {
-    console.error("Push notification failed:", error?.code || "unknown error");
+    console.error("Notification campaign queue failed.", error?.message || "unknown error");
     return null;
   }
 };
