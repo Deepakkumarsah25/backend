@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { messaging } from "../firebase/firebaseAdmin.js";
 import DeviceToken from "../models/notification/DeviceToken.js";
 import NotificationCampaign from "../models/notification/NotificationCampaign.js";
@@ -5,6 +6,7 @@ import NotificationPreference from "../models/notification/NotificationPreferenc
 import User from "../models/User.js";
 import UserNotification from "../models/notification/UserNotification.js";
 import { repairLegacyNotificationText } from "./notificationText.js";
+import { shouldAttemptDevicePush } from "./notificationReliabilityPolicy.js";
 import {
   decodeNotificationCursor,
   encodeNotificationCursor,
@@ -14,16 +16,19 @@ import {
 
 const BATCH_SIZE = 300;
 const FCM_BATCH_SIZE = 500;
-const RETRYABLE_FCM_CODES = new Set([
-  "messaging/internal-error",
-  "messaging/server-unavailable",
-  "messaging/unknown-error",
-  "messaging/quota-exceeded",
-]);
+const CAMPAIGN_LEASE_MS = 5 * 60 * 1000;
 const INVALID_FCM_CODES = new Set([
   "messaging/registration-token-not-registered",
   "messaging/invalid-registration-token",
 ]);
+
+const renewCampaignLease = async (campaignId, lease) => {
+  const result = await NotificationCampaign.updateOne(
+    { _id: campaignId, status: "publishing", fanoutLeaseOwner: lease.owner, fanoutLeaseGeneration: lease.generation, fanoutLeaseExpiresAt: { $gt: new Date() } },
+    { $set: { fanoutLeaseExpiresAt: new Date(Date.now() + CAMPAIGN_LEASE_MS), fanoutStartedAt: new Date() } },
+  );
+  if (!result.modifiedCount) throw new Error("Notification campaign lease was lost.");
+};
 
 const stringifyData = (data = {}) => Object.fromEntries(
   Object.entries(data)
@@ -98,57 +103,85 @@ const sendOneBatch = async (tokens, campaign) => {
   return messaging.sendEachForMulticast(message);
 };
 
-const deliverCampaignBatch = async (campaign, notifications, deviceRows) => {
-  const notificationByUser = new Map(notifications.map((item) => [String(item.userId), item]));
+const deliverCampaignBatch = async (campaign, notifications, deviceRows, lease) => {
+  const notificationIds = notifications.map((item) => item._id);
+  await UserNotification.updateMany(
+    { _id: { $in: notificationIds }, $or: [{ pushDeliveryGeneration: { $lt: lease.generation } }, { pushDeliveryGeneration: { $exists: false } }] },
+    { $set: { pushDeliveryGeneration: lease.generation } },
+  );
+  const leasedNotifications = await UserNotification.find({ _id: { $in: notificationIds }, pushDeliveryGeneration: lease.generation }).lean();
+  const notificationByUser = new Map(leasedNotifications.map((item) => [String(item.userId), item]));
   const tokenEntries = deviceRows
     .filter((device) => notificationByUser.has(String(device.userId)))
-    .map((device) => ({ token: device.fcmToken, userId: String(device.userId) }));
+    .map((device) => ({ token: device.fcmToken, deviceId: device.deviceId, userId: String(device.userId), notificationId: notificationByUser.get(String(device.userId))._id }));
   const perUser = new Map();
   const tokenFailures = new Map();
   const invalidTokens = [];
   let successes = 0;
   let failures = 0;
-  for (let offset = 0; offset < tokenEntries.length; offset += FCM_BATCH_SIZE) {
-    let retryEntries = tokenEntries.slice(offset, offset + FCM_BATCH_SIZE);
-    for (let attempt = 0; retryEntries.length && attempt < 3; attempt += 1) {
-      const currentBatch = retryEntries;
-      const nextRetryEntries = [];
-      try {
-        const response = await sendOneBatch(currentBatch.map((entry) => entry.token), campaign);
-        response.responses.forEach((result, index) => {
-          const entry = currentBatch[index];
-          if (result.success) {
-            successes += 1;
-            perUser.set(entry.userId, (perUser.get(entry.userId) || 0) + 1);
-          } else if (INVALID_FCM_CODES.has(result.error?.code)) invalidTokens.push(entry.token);
-          else if (RETRYABLE_FCM_CODES.has(result.error?.code) && attempt < 2) nextRetryEntries.push(entry);
-          else {
-            failures += 1;
-            tokenFailures.set(entry.userId, (tokenFailures.get(entry.userId) || 0) + 1);
-          }
-        });
-      } catch (error) {
-        if (attempt < 2 && RETRYABLE_FCM_CODES.has(error?.code)) nextRetryEntries.push(...currentBatch);
-        else currentBatch.forEach((entry) => {
-          failures += 1;
-          tokenFailures.set(entry.userId, (tokenFailures.get(entry.userId) || 0) + 1);
-        });
+  const unsentEntries = [];
+  for (const entry of tokenEntries) {
+    const notification = notificationByUser.get(entry.userId);
+    const prior = (notification.pushDeliveries || []).find((item) => item.deviceId === entry.deviceId);
+    if (!shouldAttemptDevicePush(prior)) continue; // Sent, failed, or ambiguous processing attempts are never duplicated automatically.
+    const claim = await UserNotification.updateOne(
+      { _id: entry.notificationId, pushDeliveryGeneration: lease.generation, pushDeliveries: { $not: { $elemMatch: { deviceId: entry.deviceId } } } },
+      { $push: { pushDeliveries: { deviceId: entry.deviceId, status: "processing", attempts: 1, leaseGeneration: lease.generation, lastAttemptAt: new Date() } } },
+    );
+    if (claim.modifiedCount) unsentEntries.push(entry);
+  }
+  for (let offset = 0; offset < unsentEntries.length; offset += FCM_BATCH_SIZE) {
+    await renewCampaignLease(campaign._id, lease);
+    const currentBatch = unsentEntries.slice(offset, offset + FCM_BATCH_SIZE);
+    let response;
+    const heartbeat = setInterval(() => { void renewCampaignLease(campaign._id, lease).catch(() => {}); }, 60_000);
+    heartbeat.unref?.();
+    try {
+      response = await sendOneBatch(currentBatch.map((entry) => entry.token), campaign);
+    } catch (error) {
+      response = { responses: currentBatch.map(() => ({ success: false, error })) };
+    } finally {
+      clearInterval(heartbeat);
+    }
+    for (let index = 0; index < currentBatch.length; index += 1) {
+      const entry = currentBatch[index];
+      const result = response.responses[index] || { success: false, error: new Error("Missing FCM result") };
+      const delivered = Boolean(result.success);
+      const code = String(result.error?.code || "");
+      if (delivered) {
+        successes += 1;
+        perUser.set(entry.userId, (perUser.get(entry.userId) || 0) + 1);
+      } else {
+        failures += 1;
+        tokenFailures.set(entry.userId, (tokenFailures.get(entry.userId) || 0) + 1);
+        if (INVALID_FCM_CODES.has(code)) invalidTokens.push(entry.token);
       }
-      retryEntries = nextRetryEntries;
-      if (retryEntries.length) await new Promise((resolve) => setTimeout(resolve, 250 * (2 ** attempt)));
+      await UserNotification.updateOne(
+        { _id: entry.notificationId, pushDeliveryGeneration: lease.generation, pushDeliveries: { $elemMatch: { deviceId: entry.deviceId, leaseGeneration: lease.generation, status: "processing" } } },
+        { $set: {
+          "pushDeliveries.$.status": delivered ? "sent" : "failed",
+          "pushDeliveries.$.deliveredAt": delivered ? new Date() : null,
+          "pushDeliveries.$.lastError": delivered ? "" : String(result.error?.message || code || "FCM delivery failed").slice(0, 300),
+          "pushDeliveries.$.leaseGeneration": lease.generation,
+        } },
+      );
     }
   }
   if (invalidTokens.length) {
     await DeviceToken.updateMany({ fcmToken: { $in: invalidTokens } }, { $set: { isActive: false } });
   }
-  const writes = notifications.map((notification) => {
-    const userId = String(notification.userId);
-    const sent = perUser.get(userId) || 0;
-    const failed = tokenFailures.get(userId) || 0;
-    const deliveryStatus = sent && failed ? "partial" : sent ? "sent" : failed ? "failed" : "skipped";
+  await renewCampaignLease(campaign._id, lease);
+  const currentNotifications = await UserNotification.find({ _id: { $in: notificationIds }, pushDeliveryGeneration: lease.generation })
+    .select("userId pushDeliveries")
+    .lean();
+  const writes = currentNotifications.map((notification) => {
+    const sent = (notification.pushDeliveries || []).filter((item) => item.status === "sent").length;
+    const failed = (notification.pushDeliveries || []).filter((item) => item.status === "failed").length;
+    const processing = (notification.pushDeliveries || []).some((item) => item.status === "processing");
+    const deliveryStatus = processing ? "pending" : sent && failed ? "partial" : sent ? "sent" : failed ? "failed" : "skipped";
     return {
       updateOne: {
-        filter: { _id: notification._id },
+        filter: { _id: notification._id, pushDeliveryGeneration: lease.generation },
         update: { $set: { deliveryStatus, pushSuccessCount: sent, pushFailureCount: failed } },
       },
     };
@@ -157,15 +190,17 @@ const deliverCampaignBatch = async (campaign, notifications, deviceRows) => {
   return { sent: successes, failed: failures, skipped: notifications.filter((item) => !perUser.has(String(item.userId)) && !tokenFailures.has(String(item.userId))).length };
 };
 
-export const fanoutCampaign = async (campaignId) => {
+export const fanoutCampaign = async (campaignId, lease) => {
   const campaign = await NotificationCampaign.findById(campaignId);
-  if (!campaign || !["scheduled", "publishing"].includes(campaign.status)) return null;
+  if (!campaign || campaign.status !== "publishing") return null;
+  await renewCampaignLease(campaignId, lease);
 
   const stats = { eligible: 0, inAppCreated: 0, pushSent: 0, pushFailed: 0, pushSkipped: 0 };
   const userCursor = User.find(notificationAudienceFilter(campaign.audience)).select("_id").lean().cursor({ batchSize: BATCH_SIZE });
   let batch = [];
   const processBatch = async (users) => {
     if (!users.length) return;
+    await renewCampaignLease(campaign._id, lease);
     const userIds = users.map((user) => user._id);
     const existing = await UserNotification.find({ campaignId: campaign._id, userId: { $in: userIds } })
       .select("userId deliveryStatus")
@@ -202,14 +237,14 @@ export const fanoutCampaign = async (campaignId) => {
     stats.inAppCreated += eligibleUsers.filter((user) => !existingByUser.has(String(user._id))).length;
     const pendingUsers = eligibleUsers.filter((user) => {
       const existingNotification = existingByUser.get(String(user._id));
-      return !existingNotification || ["pending", "failed"].includes(existingNotification.deliveryStatus);
+      return !existingNotification || ["pending", "failed", "partial", "sent", "skipped"].includes(existingNotification.deliveryStatus);
     });
     const pendingUserIds = pendingUsers.map((user) => user._id);
     if (!pendingUserIds.length) return;
     const preferenceMap = preferencesByUser;
     const deviceRows = await DeviceToken.find({
       userId: { $in: pendingUserIds }, isActive: true,
-    }).select("userId fcmToken").lean();
+    }).select("userId deviceId fcmToken").lean();
     const tokenMap = new Map();
     for (const device of deviceRows) {
       if (preferenceMap.get(String(device.userId))?.pushEnabled === false) continue;
@@ -220,17 +255,14 @@ export const fanoutCampaign = async (campaignId) => {
     const pendingNotifications = await UserNotification.find({
       campaignId: campaign._id,
       userId: { $in: pendingUserIds },
-      deliveryStatus: { $in: ["pending", "failed"] },
+      deliveryStatus: { $in: ["pending", "failed", "partial", "sent", "skipped"] },
     }).lean();
     const pendingDevices = deviceRows.filter((device) => tokenMap.has(String(device.userId)));
-    const result = await deliverCampaignBatch(campaign, pendingNotifications, pendingDevices);
+    const result = await deliverCampaignBatch(campaign, pendingNotifications, pendingDevices, lease);
     stats.pushSent += result.sent;
     stats.pushFailed += result.failed;
     stats.pushSkipped += result.skipped;
-    await NotificationCampaign.updateOne(
-      { _id: campaign._id, status: "publishing" },
-      { $set: { fanoutStartedAt: new Date() } },
-    );
+    await renewCampaignLease(campaign._id, lease);
   };
 
   for await (const user of userCursor) {
@@ -259,29 +291,33 @@ export const fanoutCampaign = async (campaignId) => {
   stats.pushSent = totals.pushSent;
   stats.pushFailed = totals.pushFailed;
   stats.pushSkipped = totals.pushSkipped;
-  campaign.status = "published";
-  campaign.publishedAt = new Date();
-  campaign.fanoutStartedAt = null;
-  campaign.lastError = "";
-  campaign.deliveryStats = stats;
-  await campaign.save();
+  const completed = await NotificationCampaign.updateOne(
+    { _id: campaign._id, status: "publishing", fanoutLeaseOwner: lease.owner, fanoutLeaseGeneration: lease.generation },
+    { $set: { status: "published", publishedAt: new Date(), fanoutStartedAt: null, fanoutLeaseExpiresAt: null, fanoutLeaseOwner: "", lastError: "", deliveryStats: stats } },
+  );
+  if (!completed.modifiedCount) throw new Error("Notification campaign lease was lost before completion.");
   return stats;
 };
 
 export const publishCampaign = async (campaignId) => {
   const now = new Date();
+  const owner = randomUUID();
   const claim = await NotificationCampaign.findOneAndUpdate(
-    { _id: campaignId, status: { $in: ["draft", "scheduled", "failed"] } },
-    { $set: { status: "publishing", fanoutStartedAt: now, lastError: "" } },
+    { _id: campaignId, $or: [
+      { status: { $in: ["draft", "scheduled", "failed"] } },
+      { status: "publishing", fanoutLeaseExpiresAt: { $lte: now } },
+    ] },
+    { $set: { status: "publishing", fanoutStartedAt: now, fanoutLeaseOwner: owner, fanoutLeaseExpiresAt: new Date(now.getTime() + CAMPAIGN_LEASE_MS), lastError: "" }, $inc: { fanoutLeaseGeneration: 1 } },
     { new: true },
   );
   if (!claim) return null;
+  const lease = { owner, generation: claim.fanoutLeaseGeneration };
   try {
-    return await fanoutCampaign(claim._id);
+    return await fanoutCampaign(claim._id, lease);
   } catch (error) {
     await NotificationCampaign.updateOne(
-      { _id: claim._id, status: "publishing" },
-      { $set: { status: "failed", fanoutStartedAt: null, lastError: String(error?.message || error?.code || "Campaign processing failed.").slice(0, 500) } },
+      { _id: claim._id, status: "publishing", fanoutLeaseOwner: owner, fanoutLeaseGeneration: lease.generation },
+      { $set: { status: "failed", fanoutStartedAt: null, fanoutLeaseExpiresAt: null, fanoutLeaseOwner: "", lastError: String(error?.message || error?.code || "Campaign processing failed.").slice(0, 500) } },
     );
     throw error;
   }
@@ -289,11 +325,10 @@ export const publishCampaign = async (campaignId) => {
 
 export const processScheduledCampaigns = async () => {
   const now = new Date();
-  await NotificationCampaign.updateMany(
-    { status: "publishing", fanoutStartedAt: { $lt: new Date(now.getTime() - 60 * 60 * 1000) } },
-    { $set: { status: "scheduled", fanoutStartedAt: null } },
-  );
-  const dueCampaigns = await NotificationCampaign.find({ status: "scheduled", scheduledAt: { $lte: now } })
+  const dueCampaigns = await NotificationCampaign.find({ $or: [
+    { status: "scheduled", scheduledAt: { $lte: now } },
+    { status: "publishing", fanoutLeaseExpiresAt: { $lte: now } },
+  ] })
     .select("_id").limit(20).lean();
   for (const campaign of dueCampaigns) {
     try { await publishCampaign(campaign._id); }

@@ -27,6 +27,16 @@ const userNotificationSchema = new mongoose.Schema(
     },
     pushSuccessCount: { type: Number, default: 0 },
     pushFailureCount: { type: Number, default: 0 },
+    pushDeliveryGeneration: { type: Number, default: 0 },
+    pushDeliveries: [{
+      deviceId: { type: String, required: true },
+      status: { type: String, enum: ["processing", "sent", "failed"], required: true },
+      attempts: { type: Number, default: 0 },
+      leaseGeneration: { type: Number, required: true },
+      lastAttemptAt: { type: Date, default: Date.now },
+      deliveredAt: { type: Date, default: null },
+      lastError: { type: String, default: "", maxlength: 300 },
+    }],
   },
   { timestamps: true },
 );

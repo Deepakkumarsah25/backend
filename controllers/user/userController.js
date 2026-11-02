@@ -3,6 +3,10 @@ import User from "../../models/User.js";
 import Join from "../../models/joinmodel.js";
 
 import { uploadToCloudinary } from "../../config/cloudinary.js";
+import {
+  buildApprovedIdentityProposal,
+  buildDirectApprovedMembershipUpdate,
+} from "../../services/membershipIdentityPolicy.js";
 
 import { generateMemberId } from "../../services/memberId.js";
 
@@ -54,17 +58,17 @@ const getBloodGroup = (...sources) => {
 const formatCard = (user, joinApp = null) => ({
   type: joinApp?.type || "party_member",
   memberId: joinApp?.memberId || "",
-  fullName: user.name || joinApp?.fullName || "",
+  fullName: joinApp?.status === "Approved" ? joinApp.fullName || user.name || "" : user.name || joinApp?.fullName || "",
   email: user.email || joinApp?.email || "",
-  mobile: user.phone || joinApp?.mobile || "",
+  mobile: joinApp?.status === "Approved" ? joinApp.mobile || user.phone || "" : user.phone || joinApp?.mobile || "",
   designation: user.designation || "सक्रिय सदस्य",
-  state: user.state || joinApp?.state || "",
-  district: user.district || joinApp?.district || "",
+  state: joinApp?.status === "Approved" ? joinApp.state || user.state || "" : user.state || joinApp?.state || "",
+  district: joinApp?.status === "Approved" ? joinApp.district || user.district || "" : user.district || joinApp?.district || "",
   address: joinApp?.address || "",
   bloodGroup: getBloodGroup(joinApp, user),
   dob: joinApp?.dob || null,
   pinCode: joinApp?.pinCode || "",
-  profilePhoto: user.photoURL || joinApp?.profilePhoto || "",
+  profilePhoto: joinApp?.status === "Approved" ? joinApp.profilePhoto || user.photoURL || "" : user.photoURL || joinApp?.profilePhoto || "",
   createdAt: joinApp?.createdAt || user.createdAt,
   status: joinApp?.status || "Approved",
 });
@@ -427,17 +431,34 @@ export const getMyCard = async (req, res) => {
 
 export const updateMyCard = async (req, res) => {
   try {
+    let approvedMembership = null;
+    let membershipSyncFailed = false;
+    let approvedLocationUpdated = false;
+    let identityReviewPending = false;
     const { name, phone, designation, state, district } = req.body || {};
     const update = {};
 
-    if (typeof name === "string" && name.trim()) update.name = name.trim();
+    if (typeof name === "string" && name.trim()) {
+      if (name.trim().length > 100) return res.status(400).json({ success: false, message: "Name is too long." });
+      update.name = name.trim();
+    }
     if (typeof phone === "string" && phone.trim()) {
       const cleanPhone = phone.replace(/\D/g, "").slice(-10);
-      if (cleanPhone) update.phone = cleanPhone;
+      if (!/^\d{10}$/.test(cleanPhone)) return res.status(400).json({ success: false, message: "Enter a valid 10-digit phone number." });
+      update.phone = cleanPhone;
     }
-    if (typeof designation === "string" && designation.trim()) update.designation = designation.trim();
-    if (typeof state === "string" && state.trim()) update.state = state.trim();
-    if (typeof district === "string" && district.trim()) update.district = district.trim();
+    if (typeof designation === "string" && designation.trim()) {
+      if (designation.trim().length > 80) return res.status(400).json({ success: false, message: "Designation is too long." });
+      update.designation = designation.trim();
+    }
+    if (typeof state === "string" && state.trim()) {
+      if (state.trim().length > 100) return res.status(400).json({ success: false, message: "State is too long." });
+      update.state = state.trim();
+    }
+    if (typeof district === "string" && district.trim()) {
+      if (district.trim().length > 100) return res.status(400).json({ success: false, message: "District is too long." });
+      update.district = district.trim();
+    }
 
     if (req.file && req.file.buffer) {
       const result = await uploadToCloudinary(req.file.buffer);
@@ -457,30 +478,88 @@ export const updateMyCard = async (req, res) => {
       });
     }
 
-    // Also sync updated details to any Join application for this user
+    // State and district are editable profile fields and should stay in sync on the
+    // approved card. Name, phone, and photo changes still go through admin review.
     try {
-      if (req.user._id || req.user.uid) {
-        await Join.updateMany(
-          { $or: [{ userId: req.user._id }, { uid: req.user.uid }] },
-          {
-            $set: {
-              ...(update.name && { fullName: update.name }),
-              ...(update.phone && { mobile: update.phone }),
-              ...(update.state && { state: update.state }),
-              ...(update.district && { district: update.district }),
-              ...(update.photoURL && { profilePhoto: update.photoURL }),
-            },
+      const identityProposal = {
+        ...(update.name && { fullName: update.name }),
+        ...(update.phone && { mobile: update.phone }),
+        ...(update.state && { state: update.state }),
+        ...(update.district && { district: update.district }),
+        ...(update.photoURL && { profilePhoto: update.photoURL }),
+      };
+      const approvedLocationUpdate = buildDirectApprovedMembershipUpdate(update);
+      const identityFields = Object.keys(identityProposal);
+      const identityQuery = { $or: [{ userId: req.user._id }, ...(req.user.uid ? [{ uid: req.user.uid }] : [])] };
+      if (identityFields.length) {
+        const approved = await Join.findOne({ ...identityQuery, status: "Approved" }).select("_id pendingIdentityChange");
+        if (approved) {
+          approvedMembership = await Join.findById(approved._id).select("fullName mobile state district profilePhoto").lean();
+          if (Object.keys(approvedLocationUpdate).length) {
+            const locationSyncUpdate = { $set: approvedLocationUpdate };
+            if (approved.pendingIdentityChange?.status === "Pending") {
+              locationSyncUpdate.$unset = Object.fromEntries(
+                Object.keys(approvedLocationUpdate).map((field) => [`pendingIdentityChange.proposed.${field}`, ""]),
+              );
+            }
+            const locationResult = await Join.updateOne(
+              { _id: approved._id, status: "Approved" },
+              locationSyncUpdate,
+            );
+            if (!locationResult.matchedCount) throw new Error("Approved membership card could not be updated.");
+            approvedMembership = { ...approvedMembership, ...approvedLocationUpdate };
+            approvedLocationUpdated = true;
           }
+          const proposed = buildApprovedIdentityProposal(approvedMembership, update);
+          if (Object.keys(proposed).length) {
+            identityReviewPending = true;
+            const proposedFields = Object.fromEntries(Object.entries(proposed).map(([field, value]) => [`pendingIdentityChange.proposed.${field}`, value]));
+            if (approved.pendingIdentityChange?.status === "Pending") {
+              const changed = await Join.updateOne(
+                { _id: approved._id, status: "Approved", "pendingIdentityChange.status": "Pending" },
+                { $set: proposedFields },
+              );
+              if (!changed.matchedCount) throw new Error("Pending membership review changed during profile update.");
+            } else {
+              const pendingChange = { status: "Pending", requestedAt: new Date(), requestedByUid: req.user.uid || "", proposed };
+              const created = await Join.updateOne(
+                { _id: approved._id, status: "Approved", "pendingIdentityChange.status": { $ne: "Pending" } },
+                { $set: { pendingIdentityChange: pendingChange } },
+              );
+              if (!created.matchedCount) {
+                const merged = await Join.updateOne(
+                  { _id: approved._id, status: "Approved", "pendingIdentityChange.status": "Pending" },
+                  { $set: proposedFields },
+                );
+                if (!merged.matchedCount) throw new Error("Could not record membership change for review.");
+              }
+            }
+          }
+        }
+        await Join.updateMany(
+          { ...identityQuery, status: { $in: ["Pending", "Rejected"] } },
+          { $set: identityProposal },
         );
       }
     } catch (joinSyncErr) {
-      console.warn("Could not sync to Join applications:", joinSyncErr.message);
+      membershipSyncFailed = true;
+      console.warn("Could not save membership identity change:", joinSyncErr.message);
+    }
+
+    if (membershipSyncFailed) {
+      return res.status(503).json({ success: false, profileSaved: true, message: "Profile was saved, but membership change review could not be recorded. Please retry." });
     }
 
     return res.json({
       success: true,
-      message: "Card updated.",
-      data: formatCard(user),
+      message: identityReviewPending && approvedLocationUpdated
+        ? "Profile updated. State and district are updated on your membership card; other identity changes are pending admin review."
+        : identityReviewPending
+          ? "Profile updated. Identity changes are pending admin review."
+          : approvedLocationUpdated
+            ? "Profile and membership card updated."
+            : "Card updated.",
+      data: formatCard(user, approvedMembership),
     });
   } catch (err) {
     console.error("updateMyCard error:", err);

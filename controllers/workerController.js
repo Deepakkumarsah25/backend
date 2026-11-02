@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Worker from "../models/Worker.js";
-import cloudinary from "../config/cloudinary.js";
+import { uploadToCloudinary } from "../config/cloudinary.js";
 import { logAdminActivity } from "../services/activityService.js";
 
 /* =========================================================
@@ -16,9 +16,7 @@ export const addWorker = async (req, res) => {
     ========================================= */
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(
-        req.file.path
-      );
+      const result = await uploadToCloudinary(req.file.buffer, "workers");
 
       photoUrl = result.secure_url;
     }
@@ -419,10 +417,7 @@ export const updateWorker = async (
 
     if (req.file) {
 
-      const result =
-        await cloudinary.uploader.upload(
-          req.file.path
-        );
+      const result = await uploadToCloudinary(req.file.buffer, "workers");
 
       worker.photo =
         result.secure_url;

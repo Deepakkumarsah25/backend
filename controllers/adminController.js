@@ -6,6 +6,7 @@ import {
   verifyAdminPassword,
   verifyLegacyAdminPassword,
 } from "../services/adminPasswordService.js";
+import { establishAdminSession } from "../services/adminSessionPolicy.js";
 import {
   logAdminActivity,
   getLastTwoEditors,
@@ -57,16 +58,7 @@ export const loginAdmin = async (req, res) => {
     admin.lastActive = new Date();
     await admin.save();
 
-    await new Promise((resolve, reject) => {
-      req.session.regenerate((error) => error ? reject(error) : resolve());
-    });
-
-    req.session.admin = {
-      _id: admin._id,
-      email: admin.email,
-      name: admin.name || "VIP Admin",
-      role: admin.role || "Administrator",
-    };
+    await establishAdminSession(req, admin);
 
     // Log admin login activity
     await logAdminActivity(req, {
@@ -89,23 +81,37 @@ export const loginAdmin = async (req, res) => {
 export const logoutAdmin = async (req, res) => {
   try {
     if (req.session && req.session.admin) {
-      const email = req.session.admin.email;
-      await logAdminActivity(req, {
-        section: "Admin Authentication",
-        action: "Admin Logged Out",
-        details: `${email} logged out`,
-        actionType: "login",
-        sectionIcon: "fa-solid fa-right-from-bracket",
-      });
-      req.session.destroy(() => {
-        res.redirect("/");
-      });
-    } else {
-      res.redirect("/");
+      const actor = { ...req.session.admin };
+      void logAdminActivity(actor, {
+          section: "Admin Authentication",
+          action: "Admin Logged Out",
+          details: `${actor.email || "Admin"} logged out`,
+          actionType: "login",
+          sectionIcon: "fa-solid fa-right-from-bracket",
+        }).catch(() => console.warn("Admin logout audit event could not be recorded."));
     }
+
+    if (req.session) {
+      await new Promise((resolve, reject) => {
+        req.session.destroy((error) => error ? reject(error) : resolve());
+      });
+    }
+    res.clearCookie("connect.sid", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+    return res.redirect("/");
   } catch (err) {
-    console.error("Logout error:", err);
-    res.redirect("/");
+    res.clearCookie("connect.sid", {
+      path: "/",
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+    console.error("Logout session cleanup failed.");
+    return res.status(503).send("Could not safely end the administrator session. Please retry.");
   }
 };
 

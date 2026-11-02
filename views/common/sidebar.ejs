@@ -884,3 +884,8 @@
     });
   })();
 </script>
+
+<script>
+  window.VIP_ADMIN_SESSION_REMAINING_MS = <%= Number(locals.adminSessionRemainingMs || 0) %>;
+</script>
+<script src="/js/admin-session.js" defer></script>

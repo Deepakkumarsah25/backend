@@ -728,6 +728,8 @@
         const a = json.data;
         const status = a.status || "Pending";
         const statusClass = status.toLowerCase();
+        const pendingChange = a.pendingIdentityChange?.status === "Pending" ? a.pendingIdentityChange : null;
+        const proposedRows = pendingChange ? Object.entries(pendingChange.proposed || {}).map(([key, value]) => `<div class="detail-item"><div class="detail-label">${escapeHtml(key)}</div><div class="detail-val">${escapeHtml(value)}</div></div>`).join("") : "";
 
         content.innerHTML = `
           <div class="modal-photo-row">
@@ -742,6 +744,17 @@
               ${a.memberId ? `<div style="margin-top: 8px; font-size: 14px;"><strong>Member ID:</strong> <code style="color: #1e3a8a; font-weight: bold;">${a.memberId}</code></div>` : ""}
             </div>
           </div>
+
+          ${pendingChange ? `
+            <section style="margin-top:18px;padding:14px;border:1px solid #f59e0b;border-radius:10px;background:#fffbeb;">
+              <h4 style="margin:0 0 10px;color:#92400e;">Identity change awaiting review</h4>
+              <div class="detail-grid">${proposedRows}</div>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button style="background:#059669;color:white;" onclick="reviewIdentityChange('${a._id}','approve')">Approve change</button>
+                <button style="background:#dc2626;color:white;" onclick="reviewIdentityChange('${a._id}','reject')">Reject change</button>
+              </div>
+            </section>
+          ` : ""}
 
           <h4 style="margin: 16px 0 10px; color: #0d47a1; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px;">Personal Information</h4>
           <div class="detail-grid">
@@ -813,6 +826,25 @@
       } catch (err) {
         console.error(err);
         content.innerHTML = '<p style="color:red;">Error loading details.</p>';
+      }
+    }
+
+    async function reviewIdentityChange(id, decision) {
+      const label = decision === "approve" ? "approve this identity change" : "reject this identity change";
+      if (!confirm(`Are you sure you want to ${label}?`)) return;
+      try {
+        const res = await fetch(`/joinmember/${id}/identity-change/${decision}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || "Review failed.");
+        alert(json.message);
+        await viewApplication(id);
+        await loadApplications(currentPage);
+      } catch (error) {
+        alert(error.message || "Could not review this change.");
       }
     }
 

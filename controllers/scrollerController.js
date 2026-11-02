@@ -1,5 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import Scroller from "../models/Scroller.js";
+import { createReadStream } from "node:fs";
 
 /* =========================================
    Upload Images / Videos
@@ -7,14 +8,7 @@ import Scroller from "../models/Scroller.js";
 
 export const addScrollerMedia = async (req, res) => {
   try {
-    console.log("=================================");
-    console.log("SCROLLER UPLOAD STARTED");
-    console.log("Files:", req.files);
-    console.log("=================================");
-
     if (!req.files || req.files.length === 0) {
-      console.log("NO FILE RECEIVED");
-
       return res.status(400).send(`
         <script>
           alert("No file uploaded");
@@ -27,10 +21,6 @@ export const addScrollerMedia = async (req, res) => {
 
     for (const file of req.files) {
       try {
-        console.log("Uploading file:", file.originalname);
-        console.log("File path:", file.path);
-        console.log("Mimetype:", file.mimetype);
-
         const isVideo = file.mimetype.startsWith("video");
 
         /* ===============================
@@ -49,11 +39,9 @@ export const addScrollerMedia = async (req, res) => {
             }
           );
 
-          uploadStream.end(file.buffer);
+          createReadStream(file.path).pipe(uploadStream);
         });
 
-        console.log("Cloudinary Upload Success:");
-        console.log(result.secure_url);
 
         /* ===============================
            Save MongoDB
@@ -78,30 +66,15 @@ export const addScrollerMedia = async (req, res) => {
         savedMedia.push(media);
 
       } catch (fileError) {
-        console.log(
-          "INDIVIDUAL FILE UPLOAD ERROR:",
-          fileError
-        );
+        console.error("Scroller media upload failed.", fileError?.message || "unknown error");
 
         throw fileError;
       }
     }
 
-    console.log(
-      "TOTAL MEDIA SAVED:",
-      savedMedia.length
-    );
-
     return res.redirect("/scroller");
   } catch (error) {
-    console.log(
-      "================================="
-    );
-    console.log("SCROLLER UPLOAD ERROR:");
-    console.log(error);
-    console.log(
-      "================================="
-    );
+    console.error("Scroller upload failed.", error?.message || "unknown error");
 
     return res.status(500).send(`
       <script>

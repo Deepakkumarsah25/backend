@@ -1,5 +1,6 @@
 import News from "../../models/news/News.js";
 import cloudinary from "../../config/cloudinary.js";
+import { createReadStream } from "node:fs";
 
 import {
   getMediaVersion,
@@ -10,7 +11,7 @@ import {
    CLOUDINARY BUFFER UPLOAD
 ===================================================== */
 
-const uploadBuffer = (buffer, options = {}) => {
+const uploadMediaFile = (file, options = {}) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       options,
@@ -23,7 +24,8 @@ const uploadBuffer = (buffer, options = {}) => {
       }
     );
 
-    stream.end(buffer);
+    if (file?.path) createReadStream(file.path).pipe(stream);
+    else stream.end(file?.buffer || file);
   });
 };
 
@@ -184,10 +186,6 @@ export const addNews = async (req, res) => {
       req.body
     );
 
-    console.log(
-      "FILES:",
-      req.files
-    );
 
     const {
       title,
@@ -225,8 +223,8 @@ export const addNews = async (req, res) => {
 
     if (coverFile) {
       const result =
-        await uploadBuffer(
-          coverFile.buffer,
+        await uploadMediaFile(
+          coverFile,
           {
             folder:
               "VIPParty/News/Covers",
@@ -250,8 +248,8 @@ export const addNews = async (req, res) => {
 
     for (const file of imageFiles) {
       const result =
-        await uploadBuffer(
-          file.buffer,
+        await uploadMediaFile(
+          file,
           {
             folder:
               "VIPParty/News/Images",
@@ -277,8 +275,8 @@ export const addNews = async (req, res) => {
 
     if (videoFile) {
       const result =
-        await uploadBuffer(
-          videoFile.buffer,
+        await uploadMediaFile(
+          videoFile,
           {
             folder:
               "VIPParty/News/Videos",
@@ -542,8 +540,8 @@ export const editNews = async (
       }
 
       const result =
-        await uploadBuffer(
-          coverFile.buffer,
+        await uploadMediaFile(
+          coverFile,
           {
             folder:
               "VIPParty/News/Covers",
@@ -570,8 +568,8 @@ export const editNews = async (
       const file of imageFiles
     ) {
       const result =
-        await uploadBuffer(
-          file.buffer,
+        await uploadMediaFile(
+          file,
           {
             folder:
               "VIPParty/News/Images",
@@ -617,8 +615,8 @@ export const editNews = async (
       }
 
       const result =
-        await uploadBuffer(
-          videoFile.buffer,
+        await uploadMediaFile(
+          videoFile,
           {
             folder:
               "VIPParty/News/Videos",

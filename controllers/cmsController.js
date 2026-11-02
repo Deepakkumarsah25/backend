@@ -328,10 +328,6 @@ export const addSection = async (req, res) => {
       req.body
     );
 
-    console.log(
-      "FILE:",
-      req.file
-    );
 
     let page =
       await CmsPage.findOne({
@@ -474,10 +470,6 @@ export const editSection = async (
       req.body
     );
 
-    console.log(
-      "FILE:",
-      req.file
-    );
 
 
     // ------------------------------------------
@@ -737,10 +729,6 @@ export const uploadBanner = async (
       pageKey
     );
 
-    console.log(
-      "FILE:",
-      req.file
-    );
 
 
     if (
