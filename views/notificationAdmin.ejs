@@ -8,36 +8,132 @@
   <link rel="stylesheet" href="/css/sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
-    body { background:#f3f6fb; color:#15233b; font-family:Inter,Arial,sans-serif; }
-    .main-content { padding:32px; }
-    .notice-wrap { max-width:1100px; margin:0 auto; }
-    .notice-head h1 { margin:0 0 8px; font-size:28px; }
-    .notice-head p { margin:0 0 24px; color:#64748b; }
-    .notice-tabs { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px; }
-    .notice-tabs a { padding:10px 14px; border-radius:10px; background:#e8edf5; color:#34445f; text-decoration:none; font-weight:700; }
-    .notice-tabs a.active { background:#0b4ea2; color:#fff; }
-    .notice-card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; padding:22px; margin-bottom:20px; box-shadow:0 8px 25px #1734570a; }
-    .notice-card h2 { margin:0 0 16px; font-size:19px; }
-    .notice-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    .notice-field { display:flex; flex-direction:column; gap:7px; }
-    .notice-field.full { grid-column:1 / -1; }
-    .notice-field label { font-size:13px; font-weight:700; color:#40516b; }
-    .notice-field input,.notice-field select,.notice-field textarea { width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:9px; padding:11px 12px; font:inherit; background:#fff; }
-    .notice-field textarea { min-height:130px; resize:vertical; }
-    .notice-help { color:#718096; font-size:12px; }
-    .notice-actions { display:flex; justify-content:flex-end; margin-top:16px; }
-    .notice-send { border:0; border-radius:9px; padding:12px 18px; background:#0b4ea2; color:white; font-weight:800; cursor:pointer; }
-    .notice-send:disabled { opacity:.6; cursor:wait; }
-    .notice-status { margin-top:12px; font-weight:700; }
-    .notice-status.error { color:#b91c1c; }
-    .notice-status.success { color:#15803d; }
-    .campaign-list { display:grid; gap:10px; }
-    .campaign-row { display:flex; justify-content:space-between; gap:14px; align-items:flex-start; border:1px solid #e2e8f0; border-radius:10px; padding:13px; }
-    .campaign-row h3 { margin:0 0 5px; font-size:15px; }
-    .campaign-row p { margin:0; color:#64748b; font-size:13px; white-space:pre-wrap; }
-    .campaign-meta { color:#64748b; font-size:12px; white-space:nowrap; text-align:right; }
-    .empty-state { color:#64748b; padding:14px 0; }
-    @media(max-width:700px) { .main-content { padding:18px 12px; } .notice-grid { grid-template-columns:1fr; } .notice-field.full { grid-column:auto; } .campaign-row { flex-direction:column; } .campaign-meta { text-align:left; } }
+    :root {
+      --primary: #0b4ea2;
+      --primary-hover: #083c7d;
+      --primary-light: #e0edff;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    body { background: #f1f5f9; color: var(--text-main); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; }
+    .main-content { padding: 24px 30px; min-height: 100vh; }
+    .notice-wrap { max-width: 1160px; margin: 0 auto; }
+    
+    /* Cards */
+    .notice-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px 22px; margin-bottom: 20px; box-shadow: 0 3px 12px rgba(15, 23, 42, 0.035); }
+    .card-header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+    .card-header-row h2 { margin: 0; font-size: 17px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+    
+    /* Notification Type Pills */
+    .type-pill-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .type-pill-label { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 18px; border: 1.5px solid #cbd5e1; background: #f8fafc; color: #475569; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all 0.15s ease; user-select: none; }
+    .type-pill-selector input[type="radio"] { display: none; }
+    .type-pill-selector input[type="radio"]:checked + .type-pill-label { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+    
+    /* Form Grid */
+    .notice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .notice-field { display: flex; flex-direction: column; gap: 5px; }
+    .notice-field.full { grid-column: 1 / -1; }
+    .notice-field label { font-size: 12.5px; font-weight: 700; color: #334155; display: flex; align-items: center; gap: 5px; }
+    .notice-field input, .notice-field select, .notice-field textarea { width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e1; border-radius: 9px; padding: 9px 12px; font: inherit; font-size: 13.5px; background: #ffffff; color: #0f172a; transition: border-color 0.15s; }
+    .notice-field input:focus, .notice-field select:focus, .notice-field textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(11, 78, 162, 0.12); }
+    .notice-field textarea { min-height: 95px; resize: vertical; line-height: 1.45; }
+    .notice-help { color: var(--text-muted); font-size: 11.5px; margin-top: 2px; }
+    
+    .notice-actions { display: flex; justify-content: flex-end; margin-top: 14px; gap: 10px; }
+    .btn-send { border: 0; border-radius: 9px; padding: 10px 20px; background: var(--primary); color: white; font-weight: 700; font-size: 13.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: background 0.15s ease; }
+    .btn-send:hover { background: var(--primary-hover); }
+    .btn-send:disabled { opacity: 0.6; cursor: wait; }
+    
+    .notice-status { margin-top: 12px; font-weight: 700; font-size: 13px; border-radius: 8px; padding: 9px 12px; display: none; }
+    .notice-status.show { display: block; }
+    .notice-status.error { background: var(--danger-light); color: var(--danger); }
+    .notice-status.success { background: var(--success-light); color: var(--success); }
+
+    /* Filter & Selection Toolbar */
+    .history-toolbar-wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+    .toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    
+    .list-filter-select { padding: 6px 10px; border-radius: 7px; border: 1px solid #cbd5e1; font-size: 12.5px; font-weight: 600; background: #fff; color: #334155; }
+    .btn-toolbar { border: 1px solid #cbd5e1; border-radius: 7px; padding: 6px 11px; background: #fff; color: #334155; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s ease; }
+    .btn-toolbar:hover { background: #f1f5f9; }
+    .btn-toolbar.active-mode { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+    /* Bulk Actions Bar (Hidden by default) */
+    .bulk-action-bar { display: none; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 9px 14px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 9px; margin-bottom: 12px; }
+    .bulk-action-bar.show { display: flex; }
+    .bulk-left { display: flex; align-items: center; gap: 10px; }
+    .bulk-select-all { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: #334155; cursor: pointer; user-select: none; }
+    .bulk-select-all input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+    .selected-badge { font-size: 12px; font-weight: 700; color: var(--primary); background: var(--primary-light); padding: 2px 8px; border-radius: 10px; }
+    
+    .btn-bulk-delete { border: 0; border-radius: 7px; padding: 6px 13px; background: var(--danger); color: white; font-size: 12.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: background 0.15s ease; }
+    .btn-bulk-delete:hover:not(:disabled) { background: var(--danger-hover); }
+    .btn-bulk-delete:disabled { opacity: 0.45; cursor: not-allowed; background: #94a3b8; }
+
+    /* Compact Campaign Item Cards */
+    .campaign-list { display: grid; gap: 8px; }
+    .campaign-item { display: flex; gap: 11px; align-items: flex-start; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; background: #ffffff; transition: border-color 0.15s, box-shadow 0.15s; }
+    .campaign-item:hover { border-color: #cbd5e1; box-shadow: 0 2px 7px rgba(0,0,0,0.03); }
+    .campaign-item.selected { border-color: var(--primary); background: #f8fafc; }
+    
+    .item-checkbox { display: none; padding-top: 3px; }
+    .item-checkbox.show { display: block; }
+    .item-checkbox input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--primary); }
+    
+    .item-body { flex: 1; min-width: 0; }
+    .item-header-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-bottom: 4px; }
+    
+    .type-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 5px; letter-spacing: 0.3px; }
+    .type-announcements { background: #dbeafe; color: #1e40af; }
+    .type-events { background: #fef3c7; color: #92400e; }
+    .type-news { background: #e0e7ff; color: #3730a3; }
+    .type-updates { background: #f1f5f9; color: #334155; }
+    .type-wishes, .type-birthday { background: #fce7f3; color: #9d174d; }
+    .type-general { background: #f3e8ff; color: #6b21a8; }
+    
+    .audience-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 5px; background: #f1f5f9; color: #475569; display: inline-flex; align-items: center; gap: 4px; }
+    
+    .campaign-item h3 { margin: 0 0 3px; font-size: 14px; font-weight: 700; color: #0f172a; word-break: break-word; }
+    .campaign-item p { margin: 0; color: #475569; font-size: 12.5px; line-height: 1.45; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    
+    .campaign-footer-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 11.5px; color: var(--text-muted); }
+    .stats-chip { font-weight: 600; background: #f8fafc; padding: 1px 6px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 11px; }
+    
+    .item-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 90px; }
+    .status-badge { font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 10px; text-transform: capitalize; }
+    .status-published { background: var(--success-light); color: var(--success); }
+    .status-scheduled { background: var(--warning-light); color: var(--warning); }
+    .status-draft { background: #e2e8f0; color: #475569; }
+    .status-failed { background: var(--danger-light); color: var(--danger); }
+    .status-publishing { background: var(--primary-light); color: var(--primary); }
+    
+    .btn-row-delete { border: 1px solid #fecaca; background: #fff5f5; color: var(--danger); border-radius: 6px; padding: 3px 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s ease; }
+    .btn-row-delete:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+    
+    .btn-retry { border: 1px solid #cbd5e1; background: #fff; color: var(--primary); border-radius: 6px; padding: 3px 8px; font-size: 11.5px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-retry:hover { background: var(--primary-light); }
+
+    .empty-state { text-align: center; color: var(--text-muted); padding: 32px 16px; font-size: 13.5px; }
+    .empty-state i { font-size: 32px; color: #cbd5e1; margin-bottom: 8px; display: block; }
+    
+    @media(max-width: 768px) {
+      .main-content { padding: 16px 12px; }
+      .notice-grid { grid-template-columns: 1fr; }
+      .notice-field.full { grid-column: auto; }
+      .campaign-item { flex-direction: column; gap: 8px; }
+      .item-actions { flex-direction: row; justify-content: space-between; width: 100%; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 6px; }
+    }
   </style>
 </head>
 <body>
@@ -45,144 +141,361 @@
   <%- include('common/sidebar.ejs') %>
   <main class="main-content">
     <div class="notice-wrap">
-      <header class="notice-head">
-        <h1><%= section.title %></h1>
-        <p><%= section.description %> Messages are saved to the in-app notification inbox; push delivery depends on the user's device and notification preferences.</p>
-      </header>
-      <nav class="notice-tabs" aria-label="Notification sections">
-        <a class="<%= sectionKey === 'normal' ? 'active' : '' %>" href="/admin/notifications/normal">Normal updates</a>
-        <a class="<%= sectionKey === 'promotional' ? 'active' : '' %>" href="/admin/notifications/promotional">Promotional</a>
-        <a class="<%= sectionKey === 'wishes' ? 'active' : '' %>" href="/admin/notifications/wishes">Wishes & greetings</a>
-      </nav>
 
-      <section class="notice-card">
-        <h2>Create notification</h2>
+      <!-- Create Notification Form -->
+      <section class="notice-card" id="composeCard">
+        <div class="card-header-row">
+          <h2><i class="fa-solid fa-paper-plane" style="color: #0b4ea2;"></i> Send Notification</h2>
+          <span style="font-size: 12px; color: #64748b;"><i class="fa-solid fa-circle-check" style="color:#16a34a;"></i> Instant Push Notification</span>
+        </div>
+        
         <form id="notificationForm">
-          <div class="notice-grid">
-            <div class="notice-field full">
-              <label for="title">Title</label>
-              <input id="title" name="title" maxlength="160" required placeholder="e.g. Happy Diwali">
-            </div>
-            <div class="notice-field full">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" maxlength="5000" required placeholder="Write the notification message"></textarea>
-            </div>
-            <div class="notice-field">
-              <label for="audience">Send to</label>
-              <select id="audience" name="audience">
-                <option value="all">All active users</option>
-                <option value="members">Members</option>
-                <option value="agents">Agents</option>
-                <option value="users">Selected user IDs</option>
-              </select>
-            </div>
-            <div class="notice-field" id="userIdsField" hidden>
-              <label for="userIds">MongoDB user IDs (comma separated)</label>
-              <input id="userIds" name="userIds" placeholder="ObjectId, ObjectId">
-              <span class="notice-help">Only send to IDs copied from a trusted admin user record.</span>
-            </div>
-            <div class="notice-field">
-              <label for="image">Image URL (optional)</label>
-              <input id="image" name="image" type="url" maxlength="2048" placeholder="https://…">
-            </div>
-            <div class="notice-field">
-              <label for="deepLinkSelect"><i class="fa-solid fa-list-check" style="margin-right:4px;color:#0b4ea2;"></i> Select App Screen (Dropbox / पेज चुनें)</label>
-              <select id="deepLinkSelect">
-                <option value="">-- No Link (कोई लिंक नहीं) --</option>
-                
-                <optgroup label="🏠 Main Navigation / मुख्य पृष्ठ">
-                  <option value="/(tabs)">Home Page (मुख्य पृष्ठ)</option>
-                  <option value="/(tabs)/live">Live Stream (लाइव प्रसारण)</option>
-                  <option value="/(tabs)/notifications">Notifications Screen (सूचनाएं)</option>
-                  <option value="/(tabs)/profile">Profile Screen (प्रोफ़ाइल)</option>
-                  <option value="/(tabs)/search">Search (खोजें)</option>
-                  <option value="/(tabs)/share">Share App (ऐप शेयर)</option>
-                </optgroup>
-
-                <optgroup label="🤝 Membership & Joining / सदस्यता">
-                  <option value="/joinparty/joinpage">Join Party (पार्टी से जुड़ें)</option>
-                  <option value="/joinparty/apply">Apply for Membership (सदस्यता फॉर्म)</option>
-                  <option value="/joinparty/quickjoin">Quick Join (त्वरित सदस्यता)</option>
-                  <option value="/joinparty/AgentAdd/AddMember">Add Member - Agent (नया सदस्य जोड़ें)</option>
-                  <option value="/joinparty/AgentAdd/MyMember">My Members List (मेरे सदस्य)</option>
-                </optgroup>
-
-                <optgroup label="💰 Support & Events / सहयोग व कार्यक्रम">
-                  <option value="/donation/donation">Donation / सहयोग राशि (दान)</option>
-                  <option value="/events">Events List (कार्यक्रम सूची)</option>
-                </optgroup>
-
-                <optgroup label="📰 Media & News / मीडिया व समाचार">
-                  <option value="/Media_resources/news_detels">News Details (ताज़ा समाचार)</option>
-                  <option value="/Media_resources/videoslist">Video Gallery (वीडियो गैलरी)</option>
-                  <option value="/Media_resources/photos">Photo Gallery (फ़ोटो गैलरी)</option>
-                  <option value="/Media_resources/press_release">Press Release (प्रेस विज्ञप्ति)</option>
-                  <option value="/Media_resources/interviews">Interviews (साक्षात्कार)</option>
-                  <option value="/Media_resources/infographics">Infographics (इन्फोग्राफिक्स)</option>
-                </optgroup>
-
-                <optgroup label="🚩 VIP Party & Leadership / पार्टी व नेतृत्व">
-                  <option value="/party/about">About VIP Party (पार्टी परिचय)</option>
-                  <option value="/party/mission-vission">Mission & Vision (उद्देश्य एवं दृष्टि)</option>
-                  <option value="/party/history-vip">History of VIP (पार्टी का इतिहास)</option>
-                  <option value="/party/journyof-mukesh">Mukesh Sahani Journey (मुकेश सहनी की यात्रा)</option>
-                  <option value="/leadership">Party Leadership (पार्टी नेतृत्व)</option>
-                  <option value="/Organisation/organisation">Organisation (संगठन)</option>
-                  <option value="/morcha/morcha">Morcha List (मोर्चा सूची)</option>
-                </optgroup>
-
-                <optgroup label="👤 User Services & Cards / सेवाएं">
-                  <option value="/profile/idcard">Digital ID Card (डिजिटल पहचान पत्र)</option>
-                  <option value="/profile/certificate">Membership Certificate (प्रमाण पत्र)</option>
-                  <option value="/profile/edit">Edit Profile (प्रोफ़ाइल संपादित करें)</option>
-                  <option value="/profile/rewards">Rewards & Points (रिवार्ड्स)</option>
-                  <option value="/profile/referral">Refer & Earn (रेफरल)</option>
-                  <option value="/profile/grievance">Grievance Redressal (शिकायत दर्ज करें)</option>
-                </optgroup>
-
-                <optgroup label="📞 Contact & Support / संपर्क व सहायता">
-                  <option value="/contact_us/contact">Contact Us (संपर्क करें)</option>
-                  <option value="/settings/help-support">Help & Support (सहायता केंद्र)</option>
-                  <option value="/settings/chat-support">Chat Support (चैट सपोर्ट)</option>
-                  <option value="/settings/feedback">Feedback (सुझाव दें)</option>
-                </optgroup>
-
-                <option value="__custom__">✏️ Custom URL / बाह्य लिंक (Enter custom URL)</option>
-              </select>
-            </div>
-            <div class="notice-field full">
-              <label for="deepLink"><i class="fa-solid fa-link" style="margin-right:4px;color:#0b4ea2;"></i> Target Deep Link / URL</label>
-              <input id="deepLink" name="deepLink" maxlength="2048" placeholder="Auto-filled from dropdown above, or type custom path/URL">
-              <span class="notice-help">Selected page path will be auto-filled here. You can also customize or type any app route (e.g. /events) or web link (https://...).</span>
+          <!-- Notification Category Pills -->
+          <div style="margin-bottom: 14px;">
+            <label style="font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 6px; display: block;">
+              Select Category:
+            </label>
+            <div class="type-pill-selector">
+              <label>
+                <input type="radio" name="notifType" value="announcements" <%= ['wishes', 'personalized'].includes(sectionKey) ? '' : 'checked' %>>
+                <span class="type-pill-label"><i class="fa-solid fa-bullhorn"></i> General Announcement</span>
+              </label>
+              <label>
+                <input type="radio" name="notifType" value="events">
+                <span class="type-pill-label"><i class="fa-solid fa-calendar-check"></i> Event / Meeting</span>
+              </label>
+              <label>
+                <input type="radio" name="notifType" value="news">
+                <span class="type-pill-label"><i class="fa-solid fa-newspaper"></i> News / Updates</span>
+              </label>
+              <label>
+                <input type="radio" name="notifType" value="updates">
+                <span class="type-pill-label"><i class="fa-solid fa-bolt"></i> General Update</span>
+              </label>
+              <label>
+                <input type="radio" name="notifType" value="wishes" <%= ['wishes', 'personalized'].includes(sectionKey) ? 'checked' : '' %>>
+                <span class="type-pill-label"><i class="fa-solid fa-gift"></i> Wishes & Greetings</span>
+              </label>
             </div>
           </div>
-          <div class="notice-actions"><button class="notice-send" id="sendButton" type="submit"><i class="fa-solid fa-paper-plane"></i> Send notification</button></div>
+
+          <div class="notice-grid">
+            <div class="notice-field full">
+              <label for="title"><i class="fa-solid fa-heading" style="color:#0b4ea2;"></i> Title *</label>
+              <input id="title" name="title" maxlength="160" required placeholder="e.g. Grand Party Rally Announcement">
+            </div>
+
+            <div class="notice-field full">
+              <label for="message"><i class="fa-solid fa-message" style="color:#0b4ea2;"></i> Message *</label>
+              <textarea id="message" name="message" maxlength="5000" required placeholder="Write the notification message details here..."></textarea>
+            </div>
+
+            <!-- Target Audience Selector -->
+            <div class="notice-field">
+              <label for="audience"><i class="fa-solid fa-users" style="color:#0b4ea2;"></i> Target Audience *</label>
+              <select id="audience" name="audience">
+                <option value="all_installed" <%= ['wishes', 'personalized'].includes(sectionKey) ? '' : 'selected' %>>
+                  📱 All App Users (All installed devices including non-logged-in guests)
+                </option>
+                <option value="state_wise">
+                  🗺️ State-wise (Target by State)
+                </option>
+                <option value="district_wise">
+                  📍 District-wise (Target by District)
+                </option>
+                <option value="members" <%= ['wishes', 'personalized'].includes(sectionKey) ? 'selected' : '' %>>
+                  🎖️ Registered Members (Active members only)
+                </option>
+                <option value="users">
+                  👤 Selected User IDs (Specific User ObjectIds)
+                </option>
+              </select>
+            </div>
+
+            <!-- State Selector (Appears for state_wise and district_wise) -->
+            <div class="notice-field" id="stateField" style="display: none;">
+              <label for="stateInput"><i class="fa-solid fa-map-location-dot" style="color:#0b4ea2;"></i> State Name *</label>
+              <input id="stateInput" name="state" list="statesList" placeholder="e.g. Bihar, Uttar Pradesh, Jharkhand">
+              <datalist id="statesList">
+                <option value="Bihar">
+                <option value="Uttar Pradesh">
+                <option value="Jharkhand">
+                <option value="Delhi">
+                <option value="Maharashtra">
+                <option value="Madhya Pradesh">
+                <option value="Rajasthan">
+                <option value="West Bengal">
+                <option value="Gujarat">
+                <option value="Haryana">
+                <option value="Punjab">
+              </datalist>
+            </div>
+
+            <!-- District Selector (Appears for district_wise) -->
+            <div class="notice-field" id="districtField" style="display: none;">
+              <label for="districtInput"><i class="fa-solid fa-location-dot" style="color:#0b4ea2;"></i> District Name *</label>
+              <input id="districtInput" name="district" list="districtsList" placeholder="e.g. Patna, Darbhanga, Muzaffarpur, Lucknow">
+              <datalist id="districtsList">
+                <!-- Bihar Districts -->
+                <option value="Patna">
+                <option value="Darbhanga">
+                <option value="Muzaffarpur">
+                <option value="Madhubani">
+                <option value="Gaya">
+                <option value="Bhagalpur">
+                <option value="Samastipur">
+                <option value="Purnia">
+                <option value="Begusarai">
+                <option value="Saharsa">
+                <option value="Vaishali">
+                <option value="Saran">
+                <option value="Siwan">
+                <option value="Gopalganj">
+                <option value="Nalanda">
+                <option value="Bhojpur">
+                <option value="Buxar">
+                <option value="Rohtas">
+                <option value="Kaimur">
+                <option value="Aurangabad">
+                <option value="Jehanabad">
+                <option value="Arwal">
+                <option value="Nawada">
+                <option value="Jamui">
+                <option value="Lakhisarai">
+                <option value="Sheikhpura">
+                <option value="Munger">
+                <option value="Khagaria">
+                <option value="Banka">
+                <option value="Katihar">
+                <option value="Araria">
+                <option value="Kishanganj">
+                <option value="Supaul">
+                <option value="Madhepura">
+                <option value="East Champaran">
+                <option value="West Champaran">
+                <option value="Sitamarhi">
+                <option value="Sheohar">
+                <!-- UP Districts -->
+                <option value="Varanasi">
+                <option value="Gorakhpur">
+                <option value="Prayagraj">
+                <option value="Lucknow">
+                <option value="Ayodhya">
+                <option value="Kanpur">
+                <option value="Mirzapur">
+                <option value="Ghazipur">
+                <option value="Ballia">
+                <option value="Deoria">
+                <option value="Azamgarh">
+                <option value="Jaunpur">
+              </datalist>
+            </div>
+
+            <!-- Selected User IDs (Appears for users) -->
+            <div class="notice-field full" id="userIdsField" style="display: none;">
+              <label for="userIds"><i class="fa-solid fa-id-badge" style="color:#0b4ea2;"></i> User IDs (comma separated)</label>
+              <input id="userIds" name="userIds" placeholder="64fa..., 64fb... (MongoDB User ObjectIds)">
+              <span class="notice-help">Enter valid MongoDB User ObjectIds separated by comma.</span>
+            </div>
+
+            <div class="notice-field">
+              <label for="image"><i class="fa-solid fa-image" style="color:#0b4ea2;"></i> Banner Image URL (optional)</label>
+              <input id="image" name="image" type="url" maxlength="2048" placeholder="https://… (Optional banner image)">
+            </div>
+
+            <!-- Deep Link Screen Picker -->
+            <div class="notice-field">
+              <label for="deepLinkSelect"><i class="fa-solid fa-list-check" style="color:#0b4ea2;"></i> App Screen Link</label>
+              <select id="deepLinkSelect">
+                <option value="">-- No Link --</option>
+                
+                <optgroup label="Main Navigation">
+                  <option value="/(tabs)">Home Page</option>
+                  <option value="/(tabs)/live">Live Stream</option>
+                  <option value="/(tabs)/notifications">Notifications Screen</option>
+                  <option value="/(tabs)/profile">Profile Screen</option>
+                  <option value="/(tabs)/search">Search</option>
+                  <option value="/(tabs)/share">Share App</option>
+                </optgroup>
+
+                <optgroup label="Membership & Joining">
+                  <option value="/joinparty/joinpage">Join Party</option>
+                  <option value="/joinparty/apply">Apply for Membership</option>
+                  <option value="/joinparty/quickjoin">Quick Join</option>
+                  <option value="/joinparty/AgentAdd/AddMember">Add Member (Agent)</option>
+                  <option value="/joinparty/AgentAdd/MyMember">My Members List</option>
+                </optgroup>
+
+                <optgroup label="Donations & Events">
+                  <option value="/donation/donation">Donation / Support</option>
+                  <option value="/events">Events List</option>
+                </optgroup>
+
+                <optgroup label="Media & News">
+                  <option value="/Media_resources/news_detels">News Details</option>
+                  <option value="/Media_resources/videoslist">Video Gallery</option>
+                  <option value="/Media_resources/photos">Photo Gallery</option>
+                  <option value="/Media_resources/press_release">Press Release</option>
+                  <option value="/Media_resources/interviews">Interviews</option>
+                  <option value="/Media_resources/infographics">Infographics</option>
+                </optgroup>
+
+                <optgroup label="Party Information">
+                  <option value="/party/about">About VIP Party</option>
+                  <option value="/party/mission-vission">Mission & Vision</option>
+                  <option value="/party/history-vip">History of VIP</option>
+                  <option value="/party/journyof-mukesh">Mukesh Sahani Journey</option>
+                  <option value="/leadership">Party Leadership</option>
+                  <option value="/Organisation/organisation">Organisation</option>
+                  <option value="/morcha/morcha">Morcha List</option>
+                </optgroup>
+
+                <optgroup label="User Services & Cards">
+                  <option value="/profile/idcard">Digital ID Card</option>
+                  <option value="/profile/certificate">Membership Certificate</option>
+                  <option value="/profile/edit">Edit Profile</option>
+                  <option value="/profile/rewards">Rewards & Points</option>
+                  <option value="/profile/referral">Refer & Earn</option>
+                  <option value="/profile/grievance">Grievance Redressal</option>
+                </optgroup>
+
+                <optgroup label="Contact & Support">
+                  <option value="/contact_us/contact">Contact Us</option>
+                  <option value="/settings/help-support">Help & Support</option>
+                  <option value="/settings/chat-support">Chat Support</option>
+                  <option value="/settings/feedback">Feedback</option>
+                </optgroup>
+
+                <option value="__custom__">Custom URL / External Link</option>
+              </select>
+            </div>
+
+            <div class="notice-field full">
+              <label for="deepLink"><i class="fa-solid fa-link" style="color:#0b4ea2;"></i> Target Deep Link / URL</label>
+              <input id="deepLink" name="deepLink" maxlength="2048" placeholder="Auto-filled from dropdown above, or enter custom URL">
+              <span class="notice-help">Auto-filled from screen dropdown above, or enter an app path (e.g. /events) or web URL (https://...).</span>
+            </div>
+          </div>
+
+          <div class="notice-actions">
+            <button class="btn-send" id="sendButton" type="submit">
+              <i class="fa-solid fa-paper-plane"></i> Send Notification
+            </button>
+          </div>
           <div class="notice-status" id="formStatus" role="status" aria-live="polite"></div>
         </form>
       </section>
 
+      <!-- Notification History Section on Same Page -->
       <section class="notice-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-          <h2 style="margin:0;">Recent notifications</h2>
-          <button type="button" class="notice-send" style="padding:8px 12px;" onclick="loadCampaigns()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        <div class="card-header-row">
+          <h2><i class="fa-solid fa-clock-rotate-left" style="color: #0b4ea2;"></i> Notification History & Management</h2>
         </div>
-        <div class="campaign-list" id="campaignList"><div class="empty-state">Loading notifications…</div></div>
+
+        <!-- Filter & Toolbar: Type filter, Refresh, and Select Multiple Button -->
+        <div class="history-toolbar-wrap">
+          <div class="toolbar-left">
+            <select id="filterCategory" class="list-filter-select" onchange="loadCampaigns()">
+              <option value="all">All Categories</option>
+              <option value="announcements">Announcements</option>
+              <option value="events">Event / Meeting</option>
+              <option value="news">News / Updates</option>
+              <option value="updates">General Updates</option>
+              <option value="wishes">Wishes & Greetings</option>
+            </select>
+            
+            <button type="button" class="btn-toolbar" onclick="loadCampaigns()">
+              <i class="fa-solid fa-rotate"></i> Refresh
+            </button>
+          </div>
+
+          <div class="toolbar-right">
+            <!-- Select Multiple toggle button -->
+            <button type="button" id="btnToggleSelect" class="btn-toolbar" onclick="toggleSelectMode()">
+              <i class="fa-solid fa-square-check"></i> Select Multiple
+            </button>
+          </div>
+        </div>
+
+        <!-- Bulk Action Bar (Hidden by default, shown when Select Multiple is toggled) -->
+        <div class="bulk-action-bar" id="bulkActionBar">
+          <div class="bulk-left">
+            <label class="bulk-select-all">
+              <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)">
+              <span>Select All</span>
+            </label>
+            <span class="selected-badge" id="selectedBadge" style="display: none;">0 Selected</span>
+          </div>
+          <div>
+            <button type="button" id="btnBulkDelete" class="btn-bulk-delete" disabled onclick="deleteSelectedCampaigns()">
+              <i class="fa-solid fa-trash"></i> Delete Selected (<span id="deleteCountText">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Compact Campaign Items List -->
+        <div class="campaign-list" id="campaignList">
+          <div class="empty-state">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <div>Loading notifications...</div>
+          </div>
+        </div>
       </section>
+
     </div>
   </main>
+
   <script>
-    const category = <%- JSON.stringify(section.type) %>;
+    const sectionKey = <%- JSON.stringify(sectionKey) %>;
     const form = document.getElementById('notificationForm');
     const statusBox = document.getElementById('formStatus');
     const sendButton = document.getElementById('sendButton');
     const audienceSelect = document.getElementById('audience');
+    const stateField = document.getElementById('stateField');
+    const stateInput = document.getElementById('stateInput');
+    const districtField = document.getElementById('districtField');
+    const districtInput = document.getElementById('districtInput');
     const userIdsField = document.getElementById('userIdsField');
     const campaignList = document.getElementById('campaignList');
     const deepLinkSelect = document.getElementById('deepLinkSelect');
     const deepLinkInput = document.getElementById('deepLink');
-    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
-    audienceSelect.addEventListener('change', () => { userIdsField.hidden = audienceSelect.value !== 'users'; });
+    const filterCategory = document.getElementById('filterCategory');
+    const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+    const btnBulkDelete = document.getElementById('btnBulkDelete');
+    const selectedBadge = document.getElementById('selectedBadge');
+    const deleteCountText = document.getElementById('deleteCountText');
+    const bulkActionBar = document.getElementById('bulkActionBar');
+    const btnToggleSelect = document.getElementById('btnToggleSelect');
 
+    let allLoadedCampaigns = [];
+    const selectedCampaignIds = new Set();
+    let isSelectMode = false;
+
+    const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+
+    // Handle Audience dropdown changes
+    audienceSelect.addEventListener('change', () => {
+      const val = audienceSelect.value;
+      if (val === 'state_wise') {
+        stateField.style.display = 'flex';
+        districtField.style.display = 'none';
+        userIdsField.style.display = 'none';
+      } else if (val === 'district_wise') {
+        stateField.style.display = 'flex';
+        districtField.style.display = 'flex';
+        userIdsField.style.display = 'none';
+      } else if (val === 'users') {
+        stateField.style.display = 'none';
+        districtField.style.display = 'none';
+        userIdsField.style.display = 'flex';
+      } else {
+        stateField.style.display = 'none';
+        districtField.style.display = 'none';
+        userIdsField.style.display = 'none';
+      }
+    });
+
+    // Deep link helper
     if (deepLinkSelect && deepLinkInput) {
       deepLinkSelect.addEventListener('change', () => {
         const val = deepLinkSelect.value;
@@ -207,6 +520,23 @@
       });
     }
 
+    // Toggle Select Multiple mode
+    function toggleSelectMode() {
+      isSelectMode = !isSelectMode;
+      if (isSelectMode) {
+        bulkActionBar.classList.add('show');
+        btnToggleSelect.classList.add('active-mode');
+        btnToggleSelect.innerHTML = '<i class="fa-solid fa-xmark"></i> Cancel Selection';
+      } else {
+        bulkActionBar.classList.remove('show');
+        btnToggleSelect.classList.remove('active-mode');
+        btnToggleSelect.innerHTML = '<i class="fa-solid fa-square-check"></i> Select Multiple';
+        selectedCampaignIds.clear();
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+      }
+      renderCampaigns();
+    }
+
     async function requestJson(url, options) {
       const response = await fetch(url, { credentials: 'same-origin', ...options, headers: { 'Content-Type':'application/json', ...(options?.headers || {}) } });
       const data = await response.json().catch(() => ({}));
@@ -214,19 +544,196 @@
       return data;
     }
 
-    async function loadCampaigns() {
-      try {
-        const data = await requestJson('/api/admin/notifications/campaigns?limit=50');
-        const items = (data.campaigns || []).filter((item) => item.type === category);
-        campaignList.innerHTML = items.length ? items.map((item) => {
-          const stats = item.liveDeliveryStats || item.deliveryStats || {};
-          return `<article class="campaign-row"><div><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.message)}</p>${item.lastError ? `<p style="color:#b91c1c;margin-top:8px;"><strong>Processing error:</strong> ${escapeHtml(item.lastError)}</p>` : ''}</div><div class="campaign-meta"><strong>${escapeHtml(item.status)}</strong><br>${item.createdAt ? new Date(item.createdAt).toLocaleString() : ''}<br>Inbox: ${Number(stats.inAppCreated || 0)} · Push sent: ${Number(stats.pushSent || 0)}${Number(stats.pushFailed || 0) ? ` · Push failed: ${Number(stats.pushFailed)}` : ''}${Number(stats.pushSkipped || 0) ? ` · No push device/preference: ${Number(stats.pushSkipped)}` : ''}${['draft','failed'].includes(item.status) ? `<br><button type="button" onclick="retryCampaign('${escapeHtml(item._id)}')">Send / retry</button>` : ''}</div></article>`;
-        }).join('') : '<div class="empty-state">No notifications in this section yet.</div>';
-      } catch (error) {
-        campaignList.innerHTML = `<div class="empty-state">${escapeHtml(error.message)} <button type="button" onclick="loadCampaigns()">Retry</button></div>`;
+    function formatAudience(aud) {
+      if (!aud || !aud.type) return 'All App Users';
+      switch (aud.type) {
+        case 'all_installed':
+        case 'all':
+          return '<i class="fa-solid fa-mobile-screen"></i> All App Users';
+        case 'state_wise':
+          return `<i class="fa-solid fa-map"></i> State: ${escapeHtml(aud.state || 'Any')}`;
+        case 'district_wise':
+          return `<i class="fa-solid fa-location-dot"></i> District: ${escapeHtml(aud.district || 'Any')}${aud.state ? ' (' + escapeHtml(aud.state) + ')' : ''}`;
+        case 'members':
+          return '<i class="fa-solid fa-id-card"></i> Members Only';
+        case 'users':
+          return `<i class="fa-solid fa-user"></i> ${aud.userIds?.length || 0} User(s)`;
+        default:
+          return escapeHtml(aud.type);
       }
     }
 
+    function renderCampaigns() {
+      const selectedFilter = filterCategory.value;
+      let items = allLoadedCampaigns;
+      
+      if (selectedFilter !== 'all') {
+        items = items.filter(item => {
+          if (selectedFilter === 'wishes') {
+            return item.type === 'wishes' || item.type === 'birthday';
+          }
+          return item.type === selectedFilter;
+        });
+      }
+
+      if (!items.length) {
+        campaignList.innerHTML = `
+          <div class="empty-state">
+            <i class="fa-regular fa-bell-slash"></i>
+            <div>No notifications found.</div>
+          </div>`;
+        updateBulkUI();
+        return;
+      }
+
+      campaignList.innerHTML = items.map((item) => {
+        const stats = item.liveDeliveryStats || item.deliveryStats || {};
+        const isSelected = selectedCampaignIds.has(item._id);
+        const typeClass = `type-${item.type || 'general'}`;
+        const statusClass = `status-${item.status || 'draft'}`;
+        const displayType = (item.type === 'wishes' || item.type === 'birthday') ? 'Wishes' : (item.type || 'General');
+        
+        return `
+          <article class="campaign-item ${isSelected ? 'selected' : ''}" id="campaign-${escapeHtml(item._id)}">
+            <div class="item-checkbox ${isSelectMode ? 'show' : ''}">
+              <input type="checkbox" class="row-checkbox" value="${escapeHtml(item._id)}" ${isSelected ? 'checked' : ''} onchange="toggleRowSelect('${escapeHtml(item._id)}', this)">
+            </div>
+            
+            <div class="item-body">
+              <div class="item-header-meta">
+                <span class="type-badge ${typeClass}">${escapeHtml(displayType)}</span>
+                <span class="audience-badge">${formatAudience(item.audience)}</span>
+                <span style="font-size: 11.5px; color: #94a3b8;">${item.createdAt ? new Date(item.createdAt).toLocaleString('en-IN') : ''}</span>
+              </div>
+              
+              <h3>${escapeHtml(item.title)}</h3>
+              <p>${escapeHtml(item.message)}</p>
+              
+              <div class="campaign-footer-meta">
+                <span class="stats-chip"><i class="fa-solid fa-inbox"></i> Inbox: <strong>${Number(stats.inAppCreated || 0)}</strong></span>
+                <span class="stats-chip" style="color:#16a34a;"><i class="fa-solid fa-paper-plane"></i> Push Sent: <strong>${Number(stats.pushSent || 0)}</strong></span>
+                ${Number(stats.pushFailed || 0) ? `<span class="stats-chip" style="color:#dc2626;"><i class="fa-solid fa-triangle-exclamation"></i> Failed: <strong>${Number(stats.pushFailed)}</strong></span>` : ''}
+                ${Number(stats.pushSkipped || 0) ? `<span class="stats-chip" style="color:#64748b;">Skipped: <strong>${Number(stats.pushSkipped)}</strong></span>` : ''}
+                ${item.deepLink ? `<span style="color:#0b4ea2;font-size:11px;"><i class="fa-solid fa-link"></i> ${escapeHtml(item.deepLink)}</span>` : ''}
+              </div>
+            </div>
+
+            <div class="item-actions">
+              <span class="status-badge ${statusClass}">${escapeHtml(item.status || 'draft')}</span>
+              
+              <button type="button" class="btn-row-delete" onclick="deleteSingleCampaign('${escapeHtml(item._id)}')">
+                <i class="fa-solid fa-trash"></i> Delete
+              </button>
+
+              ${['draft', 'failed'].includes(item.status) ? `
+                <button type="button" class="btn-retry" onclick="retryCampaign('${escapeHtml(item._id)}')">
+                  <i class="fa-solid fa-rotate-right"></i> Send
+                </button>
+              ` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      updateBulkUI();
+    }
+
+    async function loadCampaigns() {
+      try {
+        const data = await requestJson('/api/admin/notifications/campaigns?limit=100');
+        allLoadedCampaigns = data.campaigns || [];
+        renderCampaigns();
+      } catch (error) {
+        campaignList.innerHTML = `<div class="empty-state">${escapeHtml(error.message)} <button type="button" class="btn-toolbar" style="margin-top:8px;" onclick="loadCampaigns()">Retry</button></div>`;
+      }
+    }
+
+    // Toggle single row selection
+    function toggleRowSelect(id, checkbox) {
+      if (checkbox.checked) {
+        selectedCampaignIds.add(id);
+      } else {
+        selectedCampaignIds.delete(id);
+      }
+      const el = document.getElementById(`campaign-${id}`);
+      if (el) el.classList.toggle('selected', checkbox.checked);
+      updateBulkUI();
+    }
+
+    // Toggle Select All
+    function toggleSelectAll(masterCheckbox) {
+      const isChecked = masterCheckbox.checked;
+      const visibleCheckboxes = document.querySelectorAll('.row-checkbox');
+      visibleCheckboxes.forEach(cb => {
+        cb.checked = isChecked;
+        if (isChecked) {
+          selectedCampaignIds.add(cb.value);
+        } else {
+          selectedCampaignIds.delete(cb.value);
+        }
+        const el = document.getElementById(`campaign-${cb.value}`);
+        if (el) el.classList.toggle('selected', isChecked);
+      });
+      updateBulkUI();
+    }
+
+    function updateBulkUI() {
+      const count = selectedCampaignIds.size;
+      deleteCountText.textContent = count;
+      btnBulkDelete.disabled = count === 0;
+      
+      if (count > 0) {
+        selectedBadge.style.display = 'inline-block';
+        selectedBadge.textContent = `${count} Selected`;
+      } else {
+        selectedBadge.style.display = 'none';
+      }
+
+      const visibleCheckboxes = document.querySelectorAll('.row-checkbox');
+      if (visibleCheckboxes.length > 0 && Array.from(visibleCheckboxes).every(cb => cb.checked)) {
+        selectAllCheckbox.checked = true;
+      } else {
+        selectAllCheckbox.checked = false;
+      }
+    }
+
+    // Single Campaign Delete
+    async function deleteSingleCampaign(id) {
+      if (!window.confirm('Are you sure you want to delete this notification?')) return;
+      try {
+        await requestJson(`/api/admin/notifications/campaigns/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        selectedCampaignIds.delete(id);
+        allLoadedCampaigns = allLoadedCampaigns.filter(c => c._id !== id);
+        renderCampaigns();
+      } catch (error) {
+        window.alert(error.message || 'Could not delete notification.');
+      }
+    }
+
+    // Multiple / Bulk Campaign Delete
+    async function deleteSelectedCampaigns() {
+      const ids = Array.from(selectedCampaignIds);
+      if (!ids.length) return;
+      if (!window.confirm(`Are you sure you want to delete ${ids.length} selected notifications?`)) return;
+      
+      btnBulkDelete.disabled = true;
+      try {
+        const result = await requestJson('/api/admin/notifications/campaigns/delete-multiple', {
+          method: 'POST',
+          body: JSON.stringify({ ids }),
+        });
+        selectedCampaignIds.clear();
+        allLoadedCampaigns = allLoadedCampaigns.filter(c => !ids.includes(c._id));
+        renderCampaigns();
+        window.alert(result.message || `${ids.length} notifications deleted successfully.`);
+      } catch (error) {
+        window.alert(error.message || 'Could not delete selected notifications.');
+      } finally {
+        btnBulkDelete.disabled = false;
+      }
+    }
+
+    // Retry sending
     async function retryCampaign(id) {
       try {
         await requestJson(`/api/admin/notifications/campaigns/${encodeURIComponent(id)}/publish`, { method:'POST', body:'{}' });
@@ -236,44 +743,74 @@
       }
     }
 
+    // Form submit
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       statusBox.className = 'notice-status';
       statusBox.textContent = '';
       sendButton.disabled = true;
+
       try {
+        const notifType = document.querySelector('input[name="notifType"]:checked')?.value || 'announcements';
         const audienceType = audienceSelect.value;
-        const userIds = audienceType === 'users' ? document.getElementById('userIds').value.split(',').map((id) => id.trim()).filter(Boolean) : [];
-        if (audienceType === 'users' && !userIds.length) throw new Error('Enter at least one user ID.');
+        const stateVal = stateInput.value.trim();
+        const districtVal = districtInput.value.trim();
+
+        if (audienceType === 'state_wise' && !stateVal) {
+          throw new Error('Please enter state name.');
+        }
+        if (audienceType === 'district_wise' && !districtVal) {
+          throw new Error('Please enter district name.');
+        }
+
+        const userIds = audienceType === 'users' 
+          ? document.getElementById('userIds').value.split(',').map(id => id.trim()).filter(Boolean) 
+          : [];
+        if (audienceType === 'users' && !userIds.length) {
+          throw new Error('Please enter at least one User ID.');
+        }
+
+        const audiencePayload = {
+          type: audienceType,
+          state: stateVal,
+          district: districtVal,
+          userIds,
+        };
+
         const created = await requestJson('/api/admin/notifications/campaigns', {
           method: 'POST',
           body: JSON.stringify({
             title: document.getElementById('title').value,
             message: document.getElementById('message').value,
-            type: category,
+            type: notifType,
             image: document.getElementById('image').value,
             deepLink: document.getElementById('deepLink').value,
-            audience: { type: audienceType, userIds },
+            audience: audiencePayload,
           }),
         });
+
+        // Trigger publishing immediately
         await requestJson(`/api/admin/notifications/campaigns/${encodeURIComponent(created.campaign._id)}/publish`, { method:'POST', body:'{}' });
-        statusBox.className = 'notice-status success';
-        statusBox.textContent = 'Notification queued. It will appear in eligible users’ app inboxes; push delivery status will update after fanout.';
+
+        statusBox.className = 'notice-status success show';
+        statusBox.textContent = '✅ Notification sent successfully! Delivery to target audience is in progress.';
+        
         form.reset();
-        userIdsField.hidden = true;
+        audienceSelect.value = ['wishes', 'personalized'].includes(sectionKey) ? 'members' : 'all_installed';
+        audienceSelect.dispatchEvent(new Event('change'));
         if (deepLinkSelect) deepLinkSelect.value = '';
+
         await loadCampaigns();
       } catch (error) {
-        statusBox.className = 'notice-status error';
-        statusBox.textContent = `${error.message || 'Could not send notification.'} If the request may have reached the server, refresh the list before trying again.`;
-        await loadCampaigns();
+        statusBox.className = 'notice-status error show';
+        statusBox.textContent = `❌ ${error.message || 'Failed to send notification.'}`;
       } finally {
         sendButton.disabled = false;
       }
     });
 
     void loadCampaigns();
-    window.setInterval(() => { void loadCampaigns(); }, 8000);
+    window.setInterval(() => { void loadCampaigns(); }, 12000);
   </script>
 </body>
 </html>

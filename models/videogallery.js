@@ -48,6 +48,17 @@ const videoSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    isHighlighted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    highlightedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

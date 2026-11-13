@@ -70,8 +70,35 @@
         <span>Portal & Website</span>
       </li>
 
+      <!-- HOME PAGE MANAGEMENT -->
+      <li class="sidebar-item has-submenu" id="sidebarHomepageMenu">
+        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
+          <span class="sidebar-link-left">
+            <span class="sidebar-icon" style="color: #f59e0b;">
+              <i class="fa-solid fa-house-laptop"></i>
+            </span>
+            <span class="sidebar-text">Home Page Management</span>
+          </span>
+          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
+        </button>
+        <ul class="sidebar-submenu">
+          <li>
+            <a href="/admin/homepage/latest-updates">
+              <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i>
+              <span>Latest Updates (App Section)</span>
+            </a>
+          </li>
+          <li>
+            <a href="/scroller">
+              <i class="fa-solid fa-images" style="color: #38bdf8;"></i>
+              <span>Top Hero Scroller (Web & App)</span>
+            </a>
+          </li>
+        </ul>
+      </li>
+
       <!-- WEBSITE MANAGEMENT (वेबसाइट प्रबंधन) -->
-      <li class="sidebar-item has-submenu">
+      <li class="sidebar-item has-submenu" id="sidebarWebsiteMenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
           <span class="sidebar-link-left">
             <span class="sidebar-icon" style="color: #38bdf8;">
@@ -177,57 +204,16 @@
               <span>Upcoming Events Ticker</span>
             </a>
           </li>
-        </ul>
-      </li>
 
-      <!-- CONTENT MANAGEMENT -->
-      <li class="sidebar-item has-submenu">
-        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
-          <span class="sidebar-link-left">
-            <span class="sidebar-icon">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </span>
-            <span class="sidebar-text">Content Management</span>
-          </span>
-
-          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
-        </button>
-
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="/news">
-              <i class="fa-solid fa-newspaper"></i>
-              <span>News Management</span>
-            </a>
+          <li class="sidebar-sub-header" style="border-top:1px solid rgba(255,255,255,.06);margin-top:6px;padding-top:8px">
+            <i class="fa-solid fa-pen-to-square" style="color:#60a5fa"></i>
+            <span>Website Content</span>
           </li>
-
-          <li>
-            <a href="/admin/events">
-              <i class="fa-solid fa-calendar-days"></i>
-              <span>Events Management</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/scroller">
-              <i class="fa-solid fa-images"></i>
-              <span>Hero Banner (Web & App)</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/cms">
-              <i class="fa-solid fa-file-pen"></i>
-              <span>About VIP (CMS)</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/bainar">
-              <i class="fa-solid fa-house-flag"></i>
-              <span>Live Updates Bainar</span>
-            </a>
-          </li>
+          <li><a href="/admin/downloads/leaders-photo"><i class="fa-solid fa-cloud-arrow-down" style="color:#38bdf8"></i><span>Website Downloads</span></a></li>
+          <li><a href="/admin/website/inspiration"><i class="fa-solid fa-lightbulb" style="color:#fbbf24"></i><span>Our Inspiration</span></a></li>
+          <li><a href="/news"><i class="fa-solid fa-newspaper"></i><span>News Management</span></a></li>
+          <li><a href="/scroller"><i class="fa-solid fa-images"></i><span>Hero Banner (Web & App)</span></a></li>
+          <li><a href="/cms"><i class="fa-solid fa-file-pen"></i><span>About VIP (CMS)</span></a></li>
         </ul>
       </li>
 
@@ -350,6 +336,7 @@
         </button>
 
         <ul class="sidebar-submenu">
+          <li><a href="/admin/events"><i class="fa-solid fa-calendar-days"></i><span>Events Management</span></a></li>
           <li>
             <a href="/mediagallery">
               <i class="fa-solid fa-photo-film"></i>
@@ -384,126 +371,14 @@
       <li class="sidebar-category-header">
         <span>System & Support</span>
       </li>
-      <li class="sidebar-item has-submenu">
-        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
+      <li class="sidebar-item">
+        <a href="/admin/notifications/general" class="sidebar-link direct-link">
           <span class="sidebar-link-left">
             <span class="sidebar-icon" style="color: #fbbf24;"><i class="fa-solid fa-bell"></i></span>
             <span class="sidebar-text">Notifications</span>
           </span>
-          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
-        </button>
-        <ul class="sidebar-submenu">
-          <li><a href="/admin/notifications/normal"><i class="fa-solid fa-circle-info"></i><span>Normal Updates</span></a></li>
-          <li><a href="/admin/notifications/promotional"><i class="fa-solid fa-bullhorn"></i><span>Promotional</span></a></li>
-          <li><a href="/admin/notifications/wishes"><i class="fa-solid fa-gift"></i><span>Wishes & Greetings</span></a></li>
-        </ul>
+        </a>
       </li>
-      <!-- =========================
-           DOWNLOAD SECTION (डाउनलोड प्रबंधन)
-      ========================== -->
-      <li class="sidebar-item has-submenu" id="sidebarDownloadMenu">
-        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
-          <span class="sidebar-link-left">
-            <span class="sidebar-icon" style="color: #38bdf8;">
-              <i class="fa-solid fa-cloud-arrow-down"></i>
-            </span>
-
-            <span class="sidebar-text"> Download </span>
-          </span>
-
-          <span class="sidebar-badge"
-            style="background: #0284c7; color: #ffffff; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 700; margin-left: auto; margin-right: 6px;">
-            4
-          </span>
-
-          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
-        </button>
-
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="/admin/downloads/leaders-photo">
-              <i class="fa-solid fa-camera-retro" style="color: #60a5fa;"></i>
-              <span>Leaders Photo</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/admin/downloads/infographics-banner">
-              <i class="fa-solid fa-chart-pie" style="color: #f59e0b;"></i>
-              <span>Infographics & Banner</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/admin/downloads/quotes">
-              <i class="fa-solid fa-quote-left" style="color: #818cf8;"></i>
-              <span>Quotes</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/admin/downloads/mobile-wallpaper">
-              <i class="fa-solid fa-mobile-screen" style="color: #10b981;"></i>
-              <span>Mobile Wallpaper</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-
-      <!-- =========================
-           CONTENT MANAGEMENT
-      ========================== -->
-      <li class="sidebar-item has-submenu">
-        <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
-          <span class="sidebar-link-left">
-            <span class="sidebar-icon">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </span>
-
-            <span class="sidebar-text"> Content Management </span>
-          </span>
-
-          <i class="fa-solid fa-chevron-down submenu-arrow"></i>
-        </button>
-
-        <ul class="sidebar-submenu">
-          <li>
-            <a href="/news">
-              <i class="fa-solid fa-newspaper"></i>
-              <span>News Management</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/admin/events">
-              <i class="fa-solid fa-calendar-days"></i>
-              <span>Events Management</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/scroller">
-              <i class="fa-solid fa-images"></i>
-              <span>Hero Banner (Web & App)</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/cms">
-              <i class="fa-solid fa-file-pen"></i>
-              <span>About VIP (CMS)</span>
-            </a>
-          </li>
-
-          <li>
-            <a href="/bainar">
-              <i class="fa-solid fa-house-flag"></i>
-              <span>Live Updates Bainar</span>
-            </a>
-          </li>
-        </ul>
-      </li>
-
       <!-- USER MANAGEMENT -->
       <li class="sidebar-item has-submenu">
         <button type="button" class="sidebar-link sidebar-parent" aria-expanded="false">
@@ -736,7 +611,7 @@
 
     // Keep downloads menu open on downloads page
     if (currentPath.startsWith("/admin/downloads")) {
-      const dlItem = document.getElementById("sidebarDownloadMenu");
+      const dlItem = document.getElementById("sidebarWebsiteMenu");
       if (dlItem) {
         dlItem.classList.add("submenu-open");
         const dlBtn = dlItem.querySelector(".sidebar-parent");
@@ -744,6 +619,14 @@
           dlBtn.classList.add("active-parent");
           dlBtn.setAttribute("aria-expanded", "true");
         }
+      }
+    }
+    if (currentPath.startsWith("/admin/website/inspiration")) {
+      const websiteContent = document.getElementById("sidebarWebsiteMenu");
+      if (websiteContent) {
+        websiteContent.classList.add("submenu-open");
+        const btn = websiteContent.querySelector(".sidebar-parent");
+        if (btn) btn.setAttribute("aria-expanded", "true");
       }
     }
 

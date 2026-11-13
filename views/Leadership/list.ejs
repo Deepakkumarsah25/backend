@@ -1,221 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <title>Leadership Management</title>
-
-    <link rel="stylesheet" href="/css/dashboard.css">
-    <link rel="stylesheet" href="/css/header.css">
-    <link rel="stylesheet" href="/css/sidebar.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-    <style>
-       .content { padding: 24px 30px; width: 100%; box-sizing: border-box; max-width: 1500px; margin: 0 auto; }
-
-    .top-bar{
-        flex-direction:column;
-        align-items:flex-start;
-    }
-
-    .top-bar h2{
-        font-size:24px;
-        margin:0;
-    }
-
-    .add-btn{
-        width:100%;
-        text-align:center;
-        box-sizing:border-box;
-    }
-
-    table{
-        min-width:650px;
-    }
-
-}
-    </style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leadership Management</title>
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    .leadership-page{max-width:1500px;margin:0 auto;padding:12px 0 36px}.leadership-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}.leadership-heading h1{font-size:28px;line-height:1.2;color:#17243a;margin:0;font-weight:800}.leadership-heading p{margin:6px 0 0;color:#718096;font-size:14px}.leadership-add{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:11px 16px;background:#1d4ed8;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;box-shadow:0 5px 14px #1d4ed82b;white-space:nowrap}.leadership-add:hover{background:#1e40af;color:#fff}.leadership-panel{background:#fff;border:1px solid #e5eaf1;border-radius:16px;box-shadow:0 5px 22px #1a304e0b;overflow:hidden}.leadership-panel-head{padding:18px 22px;border-bottom:1px solid #edf0f5;display:flex;align-items:center;justify-content:space-between}.leadership-panel-head h2{font-size:16px;color:#243247;margin:0}.leadership-count{font-size:12px;color:#64748b;background:#f1f5f9;border-radius:20px;padding:5px 10px}.leadership-table-wrap{overflow-x:auto}.leadership-table{width:100%;min-width:700px;border-collapse:collapse;text-align:left}.leadership-table th{background:#f8fafc;color:#64748b;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:13px 18px;white-space:nowrap}.leadership-table td{padding:14px 18px;border-top:1px solid #edf0f5;color:#334155;font-size:14px;vertical-align:middle}.leadership-photo{width:52px;height:52px;border-radius:12px;object-fit:cover;background:#f1f5f9;display:block}.leadership-name{font-weight:700;color:#1e293b}.leadership-designation{color:#64748b}.leadership-badge{display:inline-flex;padding:5px 10px;border-radius:30px;background:#eff6ff;color:#1d4ed8;font-weight:700;font-size:12px}.leadership-badge.founder{background:#fff7ed;color:#c2410c}.leadership-actions{display:flex;gap:8px}.leadership-action{width:36px;height:36px;border:0;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer}.leadership-action.edit{background:#eff6ff;color:#1d4ed8}.leadership-action.delete{background:#fef2f2;color:#dc2626}.leadership-empty{text-align:center;padding:48px 20px;color:#64748b}.leadership-empty i{display:block;font-size:28px;color:#94a3b8;margin-bottom:12px}@media(max-width:700px){.leadership-page{padding-top:4px}.leadership-heading{align-items:flex-start;flex-direction:column}.leadership-heading h1{font-size:24px}.leadership-add{width:100%;box-sizing:border-box}}
+  </style>
 </head>
-
 <body>
-
-<%- include("../common/header.ejs") %>
-<%- include("../common/sidebar.ejs") %>
-
-<main class="main-content">
-<div class="content">
-
-<div class="top-bar">
-
-<h2>Leadership Management</h2>
-
-<a href="/leadership/add" class="add-btn">
-<i class="fa-solid fa-plus"></i>
-Add Leadership
-</a>
-
-</div>
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>Photo</th>
-<th>Name</th>
-<th>Designation</th>
-<th>Category</th>
-<th>Action</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-<% if(leaders.length > 0){ %>
-
-<% leaders.forEach(item=>{ %>
-<tr>
-
-<td>
-
-<img src="<%= item.imageUrl %>">
-
-</td>
-
-<td>
-
-<%= item.name %>
-
-</td>
-
-<td>
-
-<%= item.designation %>
-
-</td>
-
-<td>
-
-<td>
-<%
-let badgeClass = "";
-let badgeText = "";
-
-if (item.category === "founder") {
-    badgeClass = "founder";
-    badgeText = "Founder";
-} else if (item.category === "leader") {
-    badgeClass = "leader";
-    badgeText = "MLA";
-} else if (item.category === "leaderss") {
-    badgeClass = "leader";
-    badgeText = "Leaders";
-} else {
-    badgeClass = "";
-    badgeText = item.category;
-}
-%>
-
-<span class="badge <%= badgeClass %>">
-    <%= badgeText %>
-</span>
-
-</td>
-
-<td>
-
-<a
-href="/leadership/edit/<%= item._id %>"
-class="edit"
->
-
-<i class="fa-solid fa-pen"></i>
-
-</a>
-
-<a
-href="#"
-class="delete"
-onclick="deleteLeadership('<%= item._id %>')"
->
-
-<i class="fa-solid fa-trash"></i>
-
-</a>
-
-</td>
-
-</tr>
-
-<% }) %>
-
-<% }else{ %>
-
-<tr>
-
-<td colspan="5" class="no-data">
-
-No Leadership Found
-
-</td>
-
-</tr>
-
-<% } %>
-
-</tbody>
-
-</table>
-
-</div>
-</main>
-
-<script>
-
-async function deleteLeadership(id){
-
-const confirmDelete=confirm("Delete this record?");
-
-if(!confirmDelete) return;
-
-try{
-
-const response=await fetch(`/leadership/delete/${id}`,{
-
-method:"DELETE"
-
-});
-
-const data=await response.json();
-
-if(data.success){
-
-alert("Deleted Successfully");
-
-location.reload();
-
-}else{
-
-alert(data.message);
-
-}
-
-}catch(error){
-
-console.log(error);
-
-alert("Something went wrong");
-
-}
-
-}
-
-</script>
-
+  <%- include("../common/header.ejs") %>
+  <%- include("../common/sidebar.ejs") %>
+  <main class="main-content">
+    <div class="leadership-page">
+      <header class="leadership-heading">
+        <div><h1>Leadership Management</h1><p>Party leadership profiles, photos, and designations manage karein.</p></div>
+        <a href="/leadership/add" class="leadership-add"><i class="fa-solid fa-plus"></i>Add Leadership</a>
+      </header>
+      <section class="leadership-panel">
+        <div class="leadership-panel-head"><h2>Leadership profiles</h2><span class="leadership-count"><%= leaders.length %> total</span></div>
+        <% if (leaders.length) { %>
+          <div class="leadership-table-wrap">
+            <table class="leadership-table">
+              <thead><tr><th>Photo</th><th>Name</th><th>Designation</th><th>Category</th><th>Actions</th></tr></thead>
+              <tbody>
+                <% leaders.forEach((item) => {
+                  const categoryLabels = { founder: "Founder", leader: "MLA", leaderss: "Leaders" };
+                  const categoryLabel = categoryLabels[item.category] || item.category || "Unassigned";
+                %>
+                  <tr>
+                    <td><img class="leadership-photo" src="<%= item.imageUrl %>" alt="<%= item.name %>" loading="lazy"></td>
+                    <td><span class="leadership-name"><%= item.name %></span></td>
+                    <td><span class="leadership-designation"><%= item.designation || "—" %></span></td>
+                    <td><span class="leadership-badge <%= item.category === 'founder' ? 'founder' : '' %>"><%= categoryLabel %></span></td>
+                    <td><div class="leadership-actions">
+                      <a href="/leadership/edit/<%= item._id %>" class="leadership-action edit" title="Edit <%= item.name %>" aria-label="Edit <%= item.name %>"><i class="fa-solid fa-pen"></i></a>
+                      <button type="button" class="leadership-action delete" title="Delete <%= item.name %>" aria-label="Delete <%= item.name %>" onclick="deleteLeadership('<%= item._id %>')"><i class="fa-solid fa-trash"></i></button>
+                    </div></td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        <% } else { %>
+          <div class="leadership-empty"><i class="fa-solid fa-user-tie"></i>No leadership profiles yet. Add the first profile to get started.</div>
+        <% } %>
+      </section>
+    </div>
+  </main>
+  <script>
+    async function deleteLeadership(id) {
+      if (!confirm("Delete this leadership profile?")) return;
+      try {
+        const response = await fetch(`/leadership/delete/${encodeURIComponent(id)}`, { method: "DELETE", headers: { Accept: "application/json" } });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || "Delete failed");
+        window.location.reload();
+      } catch (error) {
+        alert(error.message || "Could not delete this profile.");
+      }
+    }
+  </script>
 </body>
-
 </html>

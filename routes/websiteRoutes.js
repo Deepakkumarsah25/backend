@@ -24,8 +24,11 @@ import {
   publicTickerAnnouncements,
   saveTickerAnnouncement,
 } from "../controllers/tickerAnnouncementController.js";
+import inspirationRoutes from "./inspirationRoutes.js";
 
 const router = express.Router();
+
+router.use("/inspiration", inspirationRoutes);
 
 // Ticker Announcements
 router.get("/ticker-announcements/api", publicTickerAnnouncements);

@@ -6,7 +6,7 @@ const notificationCampaignSchema = new mongoose.Schema(
     message: { type: String, required: true, trim: true, maxlength: 5000 },
     type: {
       type: String,
-      enum: ["announcements", "events", "tracking", "membership", "general", "promotional", "wishes"],
+      enum: ["announcements", "events", "news", "updates", "general", "birthday", "wishes", "membership", "tracking", "promotional"],
       default: "general",
       index: true,
     },
@@ -17,7 +17,13 @@ const notificationCampaignSchema = new mongoose.Schema(
     actionUrl: { type: String, default: "", trim: true, maxlength: 2048 },
     metadata: { type: mongoose.Schema.Types.Mixed, default: {} },
     audience: {
-      type: { type: String, enum: ["all", "members", "agents", "users"], default: "all" },
+      type: {
+        type: String,
+        enum: ["all", "all_installed", "members", "state_wise", "district_wise", "agents", "users"],
+        default: "all_installed",
+      },
+      state: { type: String, default: "", trim: true },
+      district: { type: String, default: "", trim: true },
       userIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     },
     createdBy: { type: String, required: true },

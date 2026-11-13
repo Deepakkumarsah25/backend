@@ -75,6 +75,49 @@ export const registerDeviceToken = async (req, res) => {
   }
 };
 
+export const registerPublicDeviceToken = async (req, res) => {
+  const { deviceId, fcmToken, platform, state, district } = req.body || {};
+  if (
+    typeof deviceId !== "string" ||
+    !deviceId.trim() ||
+    deviceId.length > 160 ||
+    typeof fcmToken !== "string" ||
+    fcmToken.length < 20 ||
+    fcmToken.length > 4096
+  ) {
+    return res.status(400).json({ success: false, message: "Valid deviceId and FCM token are required." });
+  }
+  const validPlatforms = ["android", "ios", "web", "unknown"];
+  if (platform !== undefined && !validPlatforms.includes(platform)) {
+    return res.status(400).json({ success: false, message: "Invalid platform." });
+  }
+  try {
+    const now = new Date();
+    // A native push token belongs to one active device
+    await DeviceToken.deleteMany({ fcmToken, deviceId: { $ne: deviceId.trim() } });
+    const existing = await DeviceToken.findOneAndUpdate(
+      { deviceId: deviceId.trim() },
+      {
+        $set: {
+          fcmToken,
+          platform: platform || "unknown",
+          isGuest: true,
+          isActive: true,
+          lastSeenAt: now,
+          ...(state ? { state: String(state).trim() } : {}),
+          ...(district ? { district: String(district).trim() } : {}),
+        },
+        $setOnInsert: { deviceId: deviceId.trim(), userId: null },
+      },
+      { upsert: true, new: true, runValidators: true },
+    );
+    return res.json({ success: true, device: { id: String(existing._id), isActive: existing.isActive, isGuest: true } });
+  } catch (error) {
+    if (error?.code === 11000) return res.status(409).json({ success: false, message: "Device token registration conflicted; retry registration." });
+    return res.status(500).json({ success: false, message: "Could not register guest device token." });
+  }
+};
+
 export const unregisterDeviceToken = async (req, res) => {
   const { deviceId } = req.params;
   if (!deviceId || deviceId.length > 160) return res.status(400).json({ success: false, message: "Invalid device ID." });

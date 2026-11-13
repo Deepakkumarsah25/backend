@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Our Inspiration | Website Content</title>
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <style>
+    .inspiration-admin{max-width:1500px;margin:0 auto;padding:28px 32px 60px;color:#172033;background:#f5f7fb;min-height:100vh;box-sizing:border-box}.inspiration-admin h1{font-size:28px;margin:0 0 6px;font-weight:800}.inspiration-admin h2{font-size:19px;margin:0 0 16px}.inspiration-admin .hint{color:#64748b;margin:0 0 22px}.inspiration-card,.inspiration-entry{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:22px;margin:16px 0;box-shadow:0 4px 18px #0f172a0a}.inspiration-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.inspiration-admin label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}.inspiration-admin input:not([type=checkbox]),.inspiration-admin textarea{width:100%;padding:11px 12px;border:1px solid #cbd5e1;border-radius:8px;box-sizing:border-box;font:inherit}.inspiration-admin textarea{min-height:88px;resize:vertical}.inspiration-admin .checkline{display:flex;align-items:center;gap:8px;margin:14px 0}.inspiration-admin .checkline input{width:auto}.inspiration-admin button{border:0;background:#1d4ed8;color:white;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer}.inspiration-admin button.secondary{background:#475569}.inspiration-admin button.delete{background:#dc2626}.inspiration-admin .flash{color:#15803d;font-weight:700}.inspiration-admin .editor-head,.inspiration-admin .entry{display:flex;align-items:center;gap:14px}.inspiration-admin .editor-head{justify-content:space-between;margin-bottom:14px}.inspiration-admin .entry{justify-content:space-between}.inspiration-admin .entry-main{display:flex;align-items:center;gap:14px;min-width:0}.inspiration-admin .preview{height:58px;width:58px;flex:none;border-radius:10px;object-fit:cover;background:#e2e8f0}.inspiration-admin .entry h3{margin:0 0 4px;font-size:16px}.inspiration-admin .entry p{margin:0;color:#64748b;font-size:13px}.inspiration-admin .entry-actions{display:flex;gap:8px;flex:none}.inspiration-admin .status{font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;background:#dcfce7;color:#166534}.inspiration-admin .status.hidden{background:#f1f5f9;color:#475569}.inspiration-admin .empty{background:#fff;border:1px dashed #cbd5e1;border-radius:12px;padding:24px;text-align:center;color:#64748b}@media(max-width:700px){.inspiration-admin{padding:24px 16px}.inspiration-admin .entry{align-items:flex-start;flex-direction:column}.inspiration-admin .entry-actions{width:100%}}
+  </style>
+</head>
+<body>
+  <%- include('../common/header') %>
+  <%- include('../common/sidebar') %>
+  <main class="main-content inspiration-admin">
+    <h1>Our Inspiration</h1>
+    <p class="hint">Ek entry chun kar upar details edit karein. Photo upload Cloudinary par save hoga.</p>
+    <% if (query.saved === '1') { %><p class="flash">Inspiration updated successfully.</p><% } %>
+    <% if (query.deleted === '1') { %><p class="flash">Inspiration entry deleted.</p><% } %>
+
+    <form id="inspirationEditor" class="inspiration-card" method="POST" enctype="multipart/form-data" action="/admin/website/inspiration/new/save">
+      <input id="leaderId" type="hidden" value="new">
+      <div class="editor-head"><h2 id="editorTitle">Add inspiration</h2><button type="button" class="secondary" id="newEntryButton">New entry</button></div>
+      <div class="inspiration-grid">
+        <div><label for="leaderName">Name</label><input id="leaderName" name="name" required maxlength="140"></div>
+        <div><label for="leaderRole">Role / badge</label><input id="leaderRole" name="role" maxlength="180"></div>
+        <div><label for="leaderImage">Upload / replace photo</label><input id="leaderImage" name="image" type="file" accept="image/jpeg,image/png,image/webp"></div>
+        <div><label for="leaderImageUrl">Current photo URL</label><input id="leaderImageUrl" name="imageUrl" type="url" maxlength="1000" placeholder="Upload a photo or paste an HTTPS image URL"></div>
+        <div><label for="leaderIcon">Icon class</label><input id="leaderIcon" name="icon" value="fa-star" maxlength="80"></div>
+        <div><label for="leaderOrder">Display order</label><input id="leaderOrder" name="displayOrder" type="number" min="0" max="10000" value="0"></div>
+        <div><label for="leaderDescription">Description</label><textarea id="leaderDescription" name="description" maxlength="500"></textarea></div>
+      </div>
+      <label class="checkline"><input id="leaderPublished" type="checkbox" name="isPublished" checked> Published on website</label>
+      <button id="saveButton" type="submit">Add inspiration</button>
+    </form>
+
+    <h2>Inspiration list (<%= leaders.length %>)</h2>
+    <% if (!leaders.length) { %><div class="empty">Abhi koi inspiration entry nahi hai. Upar form se pehli entry add karein.</div><% } %>
+    <% leaders.forEach((leader, index) => { %>
+      <article class="inspiration-entry">
+        <div class="entry">
+          <div class="entry-main">
+            <img class="preview" src="<%= leader.imageUrl %>" alt="">
+            <div><h3><%= index + 1 %>. <%= leader.name %></h3><p><%= leader.role || leader.description || 'No description' %></p></div>
+          </div>
+          <div class="entry-actions">
+            <span class="status <%= leader.isPublished ? '' : 'hidden' %>"><%= leader.isPublished ? 'Published' : 'Hidden' %></span>
+            <button type="button" class="edit-entry" data-id="<%= leader._id %>" data-name="<%= leader.name %>" data-role="<%= leader.role || '' %>" data-description="<%= leader.description || '' %>" data-image="<%= leader.imageUrl %>" data-icon="<%= leader.icon || 'fa-star' %>" data-order="<%= leader.displayOrder || 0 %>" data-published="<%= leader.isPublished ? 'true' : 'false' %>">Edit</button>
+            <form method="POST" action="/admin/website/inspiration/<%= leader._id %>/delete" onsubmit="return confirm('Delete this inspiration entry?')"><button class="delete" type="submit">Delete</button></form>
+          </div>
+        </div>
+      </article>
+    <% }) %>
+  </main>
+  <script>
+    (() => {
+      const editor = document.getElementById('inspirationEditor');
+      const fields = {
+        id: document.getElementById('leaderId'), name: document.getElementById('leaderName'),
+        role: document.getElementById('leaderRole'), description: document.getElementById('leaderDescription'),
+        image: document.getElementById('leaderImageUrl'), icon: document.getElementById('leaderIcon'),
+        order: document.getElementById('leaderOrder'), published: document.getElementById('leaderPublished')
+      };
+      const title = document.getElementById('editorTitle');
+      const save = document.getElementById('saveButton');
+      const reset = () => {
+        editor.reset(); fields.id.value = 'new'; editor.action = '/admin/website/inspiration/new/save';
+        fields.icon.value = 'fa-star'; fields.order.value = '0'; fields.published.checked = true;
+        title.textContent = 'Add inspiration'; save.textContent = 'Add inspiration';
+      };
+      document.querySelectorAll('.edit-entry').forEach((button) => button.addEventListener('click', () => {
+        fields.id.value = button.dataset.id;
+        fields.name.value = button.dataset.name;
+        fields.role.value = button.dataset.role;
+        fields.description.value = button.dataset.description;
+        fields.image.value = button.dataset.image;
+        fields.icon.value = button.dataset.icon;
+        fields.order.value = button.dataset.order;
+        fields.published.checked = button.dataset.published === 'true';
+        editor.action = `/admin/website/inspiration/${button.dataset.id}/save`;
+        title.textContent = `Edit: ${button.dataset.name}`; save.textContent = 'Update inspiration';
+        editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }));
+      document.getElementById('newEntryButton').addEventListener('click', reset);
+    })();
+  </script>
+</body>
+</html>

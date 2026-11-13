@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  getBanners,
   getHeroBanners,
   getContact,
   getCmsPage,
@@ -9,7 +8,6 @@ import { submitWebsiteFeedbackApi } from "../controllers/websiteFeedbackControll
 
 const router = express.Router();
 
-router.get("/banners", getBanners);
 router.get("/hero-banners", getHeroBanners);
 router.get("/contact", getContact);
 
