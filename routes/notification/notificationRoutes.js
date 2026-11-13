@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getNotifications,
+  getPublicNotifications,
   getUnreadCount,
   markNotificationRead,
   markAllNotificationsRead,
@@ -11,13 +12,18 @@ import {
   getNotificationPreferences,
   updateNotificationPreferences,
   registerDeviceToken,
+  registerPublicDeviceToken,
   unregisterDeviceToken,
 } from "../../controllers/notification/notificationSettingsController.js";
 import { requireAuth } from "../../middlewar/firebaseAuth.js";
 
 const router = express.Router();
 
-// Every endpoint uses a verified Firebase token and derives ownership from req.user.
+// Public endpoints for non-logged-in guest devices
+router.post("/public/device", registerPublicDeviceToken);
+router.get("/public", getPublicNotifications);
+
+// Every authenticated endpoint uses a verified Firebase token and derives ownership from req.user.
 router.use(requireAuth);
 router.get("/", getNotifications);
 router.get("/unread-count", getUnreadCount);

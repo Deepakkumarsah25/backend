@@ -477,7 +477,7 @@ export const getLast10DaysActivities = async (filters = {}) => {
         secCount[a.section] = (secCount[a.section] || 0) + 1;
       }
     });
-    let topSection = "Live Updates Banners";
+    let topSection = "Admin Panel";
     let maxCount = 0;
     Object.entries(secCount).forEach(([sec, cnt]) => {
       if (cnt > maxCount) {
@@ -607,10 +607,10 @@ export const seedAdminsAndActivities = async () => {
           adminEmail: "editor@vipparty.com",
           adminName: "Vikram Sharma",
           adminRole: "Content Editor",
-          section: "Live Updates Banners",
-          sectionIcon: "fa-solid fa-house-flag",
-          action: "Updated Campaign Banners",
-          details: "Uploaded 2 new high-definition banners for upcoming Bihar rally",
+          section: "Website Content",
+          sectionIcon: "fa-solid fa-globe",
+          action: "Updated Website Content",
+          details: "Updated the website content sections",
           actionType: "update",
           createdAt: new Date(now - 25 * 60 * 1000),
           updatedAt: new Date(now - 25 * 60 * 1000),

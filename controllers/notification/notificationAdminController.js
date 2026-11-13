@@ -4,12 +4,51 @@ import UserNotification from "../../models/notification/UserNotification.js";
 import { publishCampaign } from "../../services/notificationCampaignService.js";
 import { repairLegacyNotificationText } from "../../services/notificationText.js";
 
-const CATEGORIES = ["announcements", "events", "tracking", "membership", "general", "promotional", "wishes"];
-const AUDIENCES = ["all", "members", "agents", "users"];
+const CATEGORIES = [
+  "announcements",
+  "events",
+  "news",
+  "updates",
+  "general",
+  "birthday",
+  "wishes",
+  "membership",
+  "tracking",
+  "promotional",
+];
+const AUDIENCES = ["all", "all_installed", "members", "state_wise", "district_wise", "agents", "users"];
 const ADMIN_SECTIONS = {
-  normal: { type: "general", title: "Normal Updates", description: "Important party and app updates for users." },
-  promotional: { type: "promotional", title: "Promotional Notifications", description: "Campaigns, outreach, and promotional messages." },
-  wishes: { type: "wishes", title: "Wishes & Greetings", description: "Send festival, birthday, and celebratory greetings." },
+  general: {
+    type: "announcements",
+    title: "General & Broadcast Updates",
+    description: "Send general announcements, events, meetings, news, and location-based updates to app users.",
+  },
+  wishes: {
+    type: "wishes",
+    title: "Wishes & Greetings",
+    description: "Send festival wishes, celebratory greetings, and personalized messages to members.",
+  },
+  // Backward compatibility aliases
+  personalized: {
+    type: "wishes",
+    title: "Wishes & Greetings",
+    description: "Send festival wishes, celebratory greetings, and personalized messages to members.",
+  },
+  normal: {
+    type: "announcements",
+    title: "General & Broadcast Updates",
+    description: "Send general announcements, events, meetings, news, and location-based updates to app users.",
+  },
+  promotional: {
+    type: "announcements",
+    title: "General & Broadcast Updates",
+    description: "Send general announcements, events, meetings, news, and location-based updates to app users.",
+  },
+  all: {
+    type: "announcements",
+    title: "General & Broadcast Updates",
+    description: "Send general announcements, events, meetings, news, and location-based updates to app users.",
+  },
 };
 
 export const renderNotificationAdminPage = (req, res) => {
@@ -30,6 +69,13 @@ const isSafeLink = (value, { allowRelative = true } = {}) => {
 };
 const normalizeCampaign = (body = {}) => {
   const { title, message, body: messageBody, type, image, imageUrl, deepLink, actionType, actionUrl, relatedId, metadata, audience, scheduledAt } = body;
+  const targetAudience = audience && typeof audience === "object" ? audience : { type: "all_installed" };
+  const normalizedAudience = {
+    type: targetAudience.type || "all_installed",
+    state: typeof targetAudience.state === "string" ? targetAudience.state.trim().slice(0, 100) : "",
+    district: typeof targetAudience.district === "string" ? targetAudience.district.trim().slice(0, 100) : "",
+    userIds: Array.isArray(targetAudience.userIds) ? targetAudience.userIds : [],
+  };
   const normalized = {
     title: typeof title === "string" ? repairLegacyNotificationText(title.trim()) : "",
     message: typeof (message ?? messageBody) === "string" ? repairLegacyNotificationText((message ?? messageBody).trim()) : "",
@@ -40,7 +86,7 @@ const normalizeCampaign = (body = {}) => {
     actionUrl: actionUrl || "",
     relatedId: relatedId || null,
     metadata: metadata && typeof metadata === "object" && !Array.isArray(metadata) ? metadata : {},
-    audience: audience || { type: "all", userIds: [] },
+    audience: normalizedAudience,
     scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
   };
   if (!normalized.title || normalized.title.length > 160 || !normalized.message || normalized.message.length > 5000) return { error: "Title and message are required and must be within their length limits." };
@@ -115,9 +161,13 @@ export const listCampaigns = async (req, res) => {
   try {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, Number.parseInt(req.query.limit, 10) || 25));
+    const filter = {};
+    if (req.query.type && req.query.type !== "all") {
+      filter.type = req.query.type;
+    }
     const [campaigns, total] = await Promise.all([
-      NotificationCampaign.find().sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
-      NotificationCampaign.countDocuments(),
+      NotificationCampaign.find(filter).sort({ createdAt: -1, _id: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+      NotificationCampaign.countDocuments(filter),
     ]);
     const campaignIds = campaigns.map((campaign) => campaign._id);
     const progressRows = campaignIds.length ? await UserNotification.aggregate([
@@ -176,5 +226,44 @@ export const cancelScheduledCampaign = async (req, res) => {
     return res.json({ success: true, campaign });
   } catch {
     return res.status(500).json({ success: false, message: "Could not cancel campaign." });
+  }
+};
+
+export const deleteCampaignAdmin = async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ success: false, message: "Invalid campaign ID." });
+  }
+  try {
+    const campaignId = req.params.id;
+    const campaign = await NotificationCampaign.findByIdAndDelete(campaignId);
+    if (!campaign) {
+      return res.status(404).json({ success: false, message: "Campaign not found." });
+    }
+    await UserNotification.deleteMany({ campaignId });
+    return res.json({ success: true, message: "Notification deleted successfully." });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Could not delete notification." });
+  }
+};
+
+export const deleteMultipleCampaignsAdmin = async (req, res) => {
+  const { ids } = req.body || {};
+  if (!Array.isArray(ids) || !ids.length) {
+    return res.status(400).json({ success: false, message: "No notification IDs provided." });
+  }
+  const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+  if (!validIds.length) {
+    return res.status(400).json({ success: false, message: "No valid notification IDs provided." });
+  }
+  try {
+    const result = await NotificationCampaign.deleteMany({ _id: { $in: validIds } });
+    await UserNotification.deleteMany({ campaignId: { $in: validIds } });
+    return res.json({
+      success: true,
+      message: `${result.deletedCount} notifications deleted successfully.`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: "Could not delete selected notifications." });
   }
 };

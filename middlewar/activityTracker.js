@@ -40,11 +40,7 @@ export const activityTrackerMiddleware = (req, res, next) => {
       const lowerUrl = url.toLowerCase();
 
       // Section mapping
-      if (lowerUrl.includes("bainar") || lowerUrl.includes("banner")) {
-        section = "Live Updates Banners";
-        action = req.method === "DELETE" || lowerUrl.includes("delete") ? "Deleted a Banner" : "Uploaded Banner(s)";
-        actionType = req.method === "DELETE" || lowerUrl.includes("delete") ? "delete" : "update";
-      } else if (lowerUrl.includes("worker") || lowerUrl.includes("member")) {
+      if (lowerUrl.includes("worker") || lowerUrl.includes("member")) {
         section = "People & Organisation";
         action = req.method === "DELETE" || lowerUrl.includes("delete") ? "Removed Member / Worker" : "Added / Modified Member";
         actionType = req.method === "DELETE" || lowerUrl.includes("delete") ? "delete" : "create";

@@ -1,7 +1,6 @@
 import cmsRoutes from "./cmsRoutes.js";
 import express from "express";
 import rateLimit from "express-rate-limit";
-import upload from "../middlewar/upload.js";
 
 import {
   loginAdmin,
@@ -9,8 +8,6 @@ import {
   createAdmin,
   dashboard,
   quickUpdateActivity,
-  addBanner,
-  deleteBanner,
   getActivityLogsPage,
   getActivityLogsApi,
 } from "../controllers/adminController.js";
@@ -36,6 +33,8 @@ import {
   listCampaigns,
   getCampaignStats,
   cancelScheduledCampaign,
+  deleteCampaignAdmin,
+  deleteMultipleCampaignsAdmin,
   renderNotificationAdminPage,
 } from "../controllers/notification/notificationAdminController.js";
 
@@ -66,6 +65,8 @@ router.patch("/api/admin/notifications/campaigns/:id", requireAdmin, updateCampa
 router.post("/api/admin/notifications/campaigns/:id/publish", requireAdmin, publishCampaignAdmin);
 router.get("/api/admin/notifications/campaigns/:id/stats", requireAdmin, getCampaignStats);
 router.post("/api/admin/notifications/campaigns/:id/cancel", requireAdmin, cancelScheduledCampaign);
+router.delete("/api/admin/notifications/campaigns/:id", requireAdmin, deleteCampaignAdmin);
+router.post("/api/admin/notifications/campaigns/delete-multiple", requireAdmin, deleteMultipleCampaignsAdmin);
 
 /* =========================================
    HOME
@@ -239,23 +240,6 @@ router.delete(
   "/joinmember/:id",
   requireAdmin,
   deleteJoinApplication
-);
-
-/* =========================================
-   BANNER
-========================================= */
-
-router.post(
-  "/banner/add",
-  requireAdmin,
-  upload.array("banner", 20),
-  addBanner
-);
-
-router.delete(
-  "/banner/delete/:id",
-  requireAdmin,
-  deleteBanner
 );
 
 /* =========================================

@@ -33,7 +33,6 @@ import leadershipRoutes from "./routes/leadershipRoutes.js";
 import adminUserRoutes from "./routes/adminUserRoutes.js";
 import cmsRoutes from "./routes/cmsRoutes.js";
 import journeyRoutes from "./routes/journeyRoutes.js";
-import bainarliveupdate from "./routes/sections/banners.js";
 import workerRoutes from "./routes/sections/worker.js";
 import routeRoutes from "./routes/route/routeRoutes.js";
 import scrollerRoutes from "./routes/scrollerRoutes.js";
@@ -55,6 +54,7 @@ import mediaRoutes from "./routes/mediaversion/mediaversionRoutes.js";
 import adminFormsRoutes from "./routes/adminFormsRoutes.js";
 import websiteRoutes from "./routes/websiteRoutes.js";
 import downloadRoutes from "./routes/downloadRoutes.js";
+import homepageRoutes from "./routes/homepageRoutes.js";
 import { seedInitialDownloads } from "./controllers/downloadController.js";
 import { startNotificationScheduler } from "./services/notificationCampaignService.js";
 import {
@@ -340,11 +340,6 @@ app.use("/", mediaGalleryRoutes);
 app.use("/api", mediaGalleryRoutes);
 
 /*
-  BANNER
-*/
-app.use("/", bainarliveupdate);
-
-/*
   GRIEVANCE
 */
 app.use(
@@ -420,6 +415,7 @@ app.use(
   "/",
   eventRoutes
 );
+app.use("/", homepageRoutes);
 
 /* =========================================================
    TRACKING HEALTH CHECK

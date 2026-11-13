@@ -1,11 +1,71 @@
 import mongoose from "mongoose";
 import UserNotification from "../../models/notification/UserNotification.js";
+import NotificationCampaign from "../../models/notification/NotificationCampaign.js";
+import { repairLegacyNotificationText } from "../../services/notificationText.js";
 import {
   getUserNotificationPage,
 } from "../../services/notificationCampaignService.js";
 import { ownedNotificationFilter } from "../../services/notificationPolicy.js";
 
 const getVerifiedUserId = (req) => req.user?._id;
+
+export const getPublicNotifications = async (req, res) => {
+  try {
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+    const { state, district } = req.query;
+
+    const filter = {
+      status: "published",
+      type: { $in: ["announcements", "events", "news", "updates", "general"] },
+      "audience.type": { $in: ["all", "all_installed", "state_wise", "district_wise"] },
+    };
+
+    if (state && typeof state === "string") {
+      filter.$or = [
+        { "audience.type": { $in: ["all", "all_installed"] } },
+        { "audience.type": "state_wise", "audience.state": new RegExp(`^${state.trim()}$`, "i") },
+        { "audience.type": "district_wise", "audience.state": new RegExp(`^${state.trim()}$`, "i") },
+      ];
+      delete filter["audience.type"];
+    }
+
+    const campaigns = await NotificationCampaign.find(filter)
+      .sort({ publishedAt: -1, createdAt: -1 })
+      .limit(limit)
+      .lean();
+
+    const notifications = campaigns.map((c) => ({
+      _id: String(c._id),
+      campaignId: String(c._id),
+      title: repairLegacyNotificationText(c.title),
+      message: repairLegacyNotificationText(c.message),
+      type: c.type,
+      imageUrl: c.image || "",
+      deepLink: c.deepLink || "",
+      isRead: false,
+      createdAt: c.publishedAt || c.createdAt,
+      readAt: null,
+      relatedId: c.relatedId ? String(c.relatedId) : null,
+      actionType: c.actionType || "none",
+      actionUrl: c.actionUrl || "",
+      metadata: c.metadata || {},
+    }));
+
+    return res.json({
+      success: true,
+      notifications,
+      pagination: {
+        limit,
+        hasMore: false,
+        nextCursor: null,
+      },
+      unreadCount: notifications.length,
+    });
+  } catch (error) {
+    console.error("GET PUBLIC NOTIFICATIONS ERROR:", error);
+    return res.status(500).json({ success: false, message: "Could not load public notifications." });
+  }
+};
 
 export const getNotifications = async (req, res) => {
   try {

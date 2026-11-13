@@ -1,6 +1,4 @@
 import Admin from "../models/Admin.js";
-import Banner from "../models/Banner.js";
-import cloudinary from "../config/cloudinary.js";
 import {
   hashAdminPassword,
   verifyAdminPassword,
@@ -117,13 +115,11 @@ export const logoutAdmin = async (req, res) => {
 
 export const dashboard = async (req, res) => {
   try {
-    const banners = await Banner.find().sort({ createdAt: -1 });
     const lastTwoEditors = await getLastTwoEditors();
     const recentActivities = await getRecentActivities(10);
     const allAdmins = await Admin.find().select("-password");
 
     res.render("dashboard", {
-      banners,
       lastTwoEditors,
       recentActivities,
       allAdmins,
@@ -131,7 +127,6 @@ export const dashboard = async (req, res) => {
   } catch (error) {
     console.error("Dashboard render error:", error);
     res.render("dashboard", {
-      banners: [],
       lastTwoEditors: [],
       recentActivities: [],
       allAdmins: [],
@@ -171,68 +166,6 @@ export const quickUpdateActivity = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to log activity",
-    });
-  }
-};
-
-export const addBanner = async (req, res) => {
-  try {
-    const count = req.files ? req.files.length : 0;
-
-    if (count === 0) {
-      return res.status(400).send("Please select at least one banner image.");
-    }
-
-    for (const file of req.files || []) {
-      const result = await cloudinary.uploader.upload(file.path || file.buffer, {
-        folder: "banners",
-        resource_type: "image",
-      });
-
-      await Banner.create({
-        imageUrl: result.secure_url,
-      });
-    }
-
-    // Log the update
-    await logAdminActivity(req, {
-      section: "Live Updates Banners",
-      action: "Uploaded New Banner(s)",
-      details: `Uploaded ${count} campaign/promotional banner image(s)`,
-      actionType: "create",
-      sectionIcon: "fa-solid fa-house-flag",
-    });
-
-    res.redirect("/bainar");
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Upload Failed");
-  }
-};
-
-export const deleteBanner = async (req, res) => {
-  try {
-    await Banner.findByIdAndDelete(req.params.id);
-
-    // Log the delete action
-    await logAdminActivity(req, {
-      section: "Live Updates Banners",
-      action: "Deleted a Banner",
-      details: `Removed banner ID ${req.params.id}`,
-      actionType: "delete",
-      sectionIcon: "fa-solid fa-house-flag",
-    });
-
-    res.json({
-      success: true,
-      message: "Banner deleted",
-    });
-  } catch (error) {
-    console.log(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Delete failed",
     });
   }
 };

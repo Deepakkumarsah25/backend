@@ -1,11 +1,36 @@
 import mongoose from "mongoose";
 
+const escapeRegex = (string = "") => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const notificationAudienceFilter = (audience = {}) => {
   switch (audience.type) {
-    case "members": return { deletionRequested: { $ne: true }, membershipId: { $exists: true, $nin: [null, ""] } };
-    case "agents": return { deletionRequested: { $ne: true }, isAgent: true };
-    case "users": return { _id: { $in: audience.userIds || [] }, deletionRequested: { $ne: true } };
-    default: return { deletionRequested: { $ne: true } };
+    case "members": 
+      return { deletionRequested: { $ne: true }, membershipId: { $exists: true, $nin: [null, ""] } };
+    case "agents": 
+      return { deletionRequested: { $ne: true }, isAgent: true };
+    case "users": 
+      return { _id: { $in: audience.userIds || [] }, deletionRequested: { $ne: true } };
+    case "state_wise": {
+      const filter = { deletionRequested: { $ne: true } };
+      if (audience.state && audience.state.trim()) {
+        filter.state = new RegExp(`^${escapeRegex(audience.state.trim())}$`, "i");
+      }
+      return filter;
+    }
+    case "district_wise": {
+      const filter = { deletionRequested: { $ne: true } };
+      if (audience.district && audience.district.trim()) {
+        filter.district = new RegExp(`^${escapeRegex(audience.district.trim())}$`, "i");
+      }
+      if (audience.state && audience.state.trim()) {
+        filter.state = new RegExp(`^${escapeRegex(audience.state.trim())}$`, "i");
+      }
+      return filter;
+    }
+    case "all_installed":
+    case "all":
+    default: 
+      return { deletionRequested: { $ne: true } };
   }
 };
 

@@ -113,6 +113,17 @@ const newsSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    isHighlighted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    highlightedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

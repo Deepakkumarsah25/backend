@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Page Management - Latest Updates | VIP Admin</title>
+  <link rel="stylesheet" href="/css/header.css">
+  <link rel="stylesheet" href="/css/sidebar.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      --primary: #0b4ea2;
+      --primary-hover: #083c7d;
+      --primary-light: #e0edff;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+    body { background: #f1f5f9; color: var(--text-main); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; }
+    .main-content { padding: 24px 30px; min-height: 100vh; }
+    .page-wrap { max-width: 1200px; margin: 0 auto; }
+    
+    /* Header & Navigation Tabs */
+    .page-head { margin-bottom: 20px; }
+    .page-head h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 10px; }
+    .page-head p { margin: 0; color: var(--text-muted); font-size: 13.5px; line-height: 1.5; }
+    
+    .section-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; background: #ffffff; padding: 5px; border-radius: 10px; border: 1px solid var(--border-color); width: fit-content; }
+    .section-tabs a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 8px; color: #475569; text-decoration: none; font-weight: 700; font-size: 13px; transition: all 0.16s ease; }
+    .section-tabs a:hover { background: #f8fafc; color: var(--primary); }
+    .section-tabs a.active { background: var(--primary); color: #ffffff; box-shadow: 0 2px 6px rgba(11, 78, 162, 0.22); }
+
+    /* Stats Overview Row */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+    .stat-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.025); }
+    .stat-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+    .stat-sub { font-size: 11.5px; color: #64748b; margin-top: 4px; }
+
+    /* Notice Card */
+    .notice-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.025); }
+    .card-header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+    .card-header-row h2 { margin: 0; font-size: 16.5px; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+    
+    /* Toolbar */
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .toolbar-left { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .search-input { padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 13px; width: 240px; }
+    .filter-btn { border: 1px solid #cbd5e1; background: #fff; border-radius: 7px; padding: 7px 13px; font-size: 12.5px; font-weight: 700; cursor: pointer; color: #475569; }
+    .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    
+    .btn-add-video { background: var(--primary); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+    .btn-add-video:hover { background: var(--primary-hover); }
+
+    /* Add Video Box (Toggleable) */
+    .add-form-box { display: none; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+    .add-form-box.show { display: block; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; }
+    .form-field.full { grid-column: 1 / -1; }
+    .form-field label { font-size: 12.5px; font-weight: 700; color: #334155; }
+    .form-field input, .form-field select, .form-field textarea { width: 100%; box-sizing: border-box; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; font: inherit; font-size: 13px; background: #fff; }
+    .form-field textarea { min-height: 60px; resize: vertical; }
+
+    /* Media Items Grid */
+    .media-grid { display: grid; gap: 10px; }
+    .media-card { display: flex; gap: 14px; align-items: center; border: 1px solid #e2e8f0; border-radius: 11px; padding: 12px 14px; background: #ffffff; transition: all 0.15s ease; }
+    .media-card:hover { border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.035); }
+    .media-card.is-highlighted { border-left: 4px solid #f59e0b; background: #fffdfa; }
+
+    .thumb-wrap { width: 115px; height: 68px; border-radius: 8px; overflow: hidden; position: relative; flex-shrink: 0; background: #000; }
+    .thumb-img { width: 100%; height: 100%; object-fit: cover; }
+    .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #ff0000; font-size: 22px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+
+    .media-content { flex: 1; min-width: 0; }
+    .media-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+    
+    .badge { font-size: 10.5px; font-weight: 800; padding: 2px 7px; border-radius: 5px; text-transform: uppercase; }
+    .badge-video { background: #e0f2fe; color: #0284c7; }
+    .badge-news { background: #f3e8ff; color: #7e22ce; }
+    .badge-highlight { background: #fef3c7; color: #b45309; display: inline-flex; align-items: center; gap: 4px; }
+
+    .media-title { margin: 0 0 3px; font-size: 14.5px; font-weight: 700; color: #0f172a; word-break: break-word; }
+    .media-desc { margin: 0; color: #64748b; font-size: 12.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+    .media-date { font-size: 11.5px; color: #94a3b8; }
+
+    .media-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    
+    .btn-highlight { border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; border-radius: 7px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s ease; }
+    .btn-highlight:hover { border-color: #f59e0b; color: #d97706; background: #fefce8; }
+    .btn-highlight.active { border-color: #f59e0b; background: #fef3c7; color: #b45309; }
+    
+    .btn-watch { border: 1px solid #e2e8f0; background: #f8fafc; color: #0f172a; border-radius: 7px; padding: 7px 10px; font-size: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-watch:hover { background: #e2e8f0; }
+
+    .empty-state { text-align: center; color: var(--text-muted); padding: 40px 16px; font-size: 14px; }
+    .empty-state i { font-size: 32px; color: #cbd5e1; margin-bottom: 8px; display: block; }
+    
+    .toast-msg { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #ffffff; padding: 12px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600; box-shadow: 0 4px 16px rgba(0,0,0,0.18); display: none; z-index: 9999; }
+    .toast-msg.show { display: block; }
+
+    @media(max-width: 768px) {
+      .main-content { padding: 16px 12px; }
+      .media-card { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .thumb-wrap { width: 100%; height: 160px; }
+      .media-actions { width: 100%; justify-content: flex-end; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <%- include('../common/header.ejs') %>
+  <%- include('../common/sidebar.ejs') %>
+  <main class="main-content">
+    <div class="page-wrap">
+      
+      <!-- Top Title & Navigation Tabs -->
+      <header class="page-head">
+        <h1><i class="fa-solid fa-house-laptop" style="color: #0b4ea2;"></i> Home Page Management</h1>
+        <p>Manage the hero banner, scrollers, and select videos/interviews/news for the mobile app's <strong>Latest Updates</strong> slider.</p>
+      </header>
+      
+      <nav class="section-tabs" aria-label="Home page sections">
+        <a class="active" href="/admin/homepage/latest-updates">
+          <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Latest Updates (App Section)
+        </a>
+        <a href="/scroller">
+          <i class="fa-solid fa-images" style="color: #38bdf8;"></i> Top Hero Scroller
+        </a>
+      </nav>
+
+      <!-- Stats Overview Row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-title">Highlighted For App Slider</div>
+          <div class="stat-value" style="color: #d97706;">
+            <i class="fa-solid fa-star"></i> <span id="highlightCount"><%= highlightedCount %></span>
+          </div>
+          <div class="stat-sub">Videos appearing in app's Latest Updates</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Automatic Fallback</div>
+          <div class="stat-value" style="color: #16a34a; font-size: 17px;">
+            <i class="fa-solid fa-circle-check"></i> Active
+          </div>
+          <div class="stat-sub">If none highlighted, latest posts are auto-displayed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Total Available Media</div>
+          <div class="stat-value">
+            <i class="fa-solid fa-film"></i> <%= mediaItems.length %>
+          </div>
+          <div class="stat-sub">Videos & news ready to feature</div>
+        </div>
+      </div>
+
+      <!-- Main Latest Updates Management Card -->
+      <section class="notice-card">
+        <div class="card-header-row">
+          <h2><i class="fa-solid fa-list-check" style="color: #0b4ea2;"></i> Select Media for App's Latest Updates</h2>
+          <button type="button" class="btn-add-video" onclick="toggleAddForm()">
+            <i class="fa-solid fa-plus"></i> Add New Video
+          </button>
+        </div>
+
+        <!-- Add Video Form Box (collapsible) -->
+        <div class="add-form-box" id="addFormBox">
+          <form id="createVideoForm" onsubmit="handleCreateVideo(event)">
+            <h3 style="margin: 0 0 12px; font-size: 15px; color: #0f172a;"><i class="fa-brands fa-youtube" style="color: #ff0000;"></i> Add Video to Gallery & Highlight</h3>
+            <div class="form-grid">
+              <div class="form-field full">
+                <label>Video Title *</label>
+                <input type="text" name="title" required placeholder="e.g. Mukesh Sahani's Exclusive Press Conference">
+              </div>
+              <div class="form-field">
+                <label>YouTube Video URL or Video ID *</label>
+                <input type="text" name="youtubeUrl" required placeholder="https://www.youtube.com/watch?v=... or ID">
+              </div>
+              <div class="form-field">
+                <label>Category</label>
+                <select name="category">
+                  <option value="Events">Events</option>
+                  <option value="Interview">Interview</option>
+                  <option value="Speech">Speech</option>
+                  <option value="Campaign">Campaign</option>
+                  <option value="Live">Live</option>
+                </select>
+              </div>
+              <div class="form-field full">
+                <label>Short Description (Optional)</label>
+                <textarea name="description" placeholder="Brief summary of the video..."></textarea>
+              </div>
+              <div class="form-field full" style="flex-direction: row; align-items: center; gap: 8px;">
+                <input type="checkbox" id="chkHighlight" name="isHighlighted" value="true" checked style="width: 18px; height: 18px;">
+                <label for="chkHighlight" style="margin: 0; cursor: pointer; font-size: 13.5px; font-weight: 700; color: #b45309;">
+                  ★ Highlight immediately in App's Latest Updates section
+                </label>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+              <button type="button" class="btn-highlight" onclick="toggleAddForm()">Cancel</button>
+              <button type="submit" class="btn-add-video"><i class="fa-solid fa-check"></i> Save & Highlight</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button type="button" class="filter-btn active" data-filter="all" onclick="applyFilter('all', this)">All Media (<%= mediaItems.length %>)</button>
+            <button type="button" class="filter-btn" data-filter="highlighted" onclick="applyFilter('highlighted', this)">★ Highlighted Only (<span id="btnHighlightCount"><%= highlightedCount %></span>)</button>
+            <button type="button" class="filter-btn" data-filter="video" onclick="applyFilter('video', this)">Videos</button>
+            <button type="button" class="filter-btn" data-filter="news" onclick="applyFilter('news', this)">News</button>
+          </div>
+          <div>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by title..." oninput="handleSearch()">
+          </div>
+        </div>
+
+        <!-- Media Items List -->
+        <div class="media-grid" id="mediaList">
+          <% if (!mediaItems || !mediaItems.length) { %>
+            <div class="empty-state">
+              <i class="fa-regular fa-folder-open"></i>
+              <div>No media items found. Add a video above to get started.</div>
+            </div>
+          <% } else { %>
+            <% mediaItems.forEach(item => { %>
+              <div class="media-card <%= item.isHighlighted ? 'is-highlighted' : '' %>" id="card-<%= item.source %>-<%= item._id %>" data-source="<%= item.source %>" data-highlighted="<%= item.isHighlighted %>" data-title="<%= item.title.toLowerCase() %>">
+                <div class="thumb-wrap">
+                  <img src="<%= item.thumbnail %>" alt="" class="thumb-img" onerror="this.src='https://img.youtube.com/vi/<%= item.youtubeId %>/hqdefault.jpg'">
+                  <i class="fa-brands fa-youtube play-icon"></i>
+                </div>
+                
+                <div class="media-content">
+                  <div class="media-meta-row">
+                    <span class="badge badge-<%= item.source %>"><%= item.source %></span>
+                    <span class="badge" style="background:#f1f5f9;color:#475569;"><%= item.category %></span>
+                    <% if (item.isHighlighted) { %>
+                      <span class="badge badge-highlight" id="badge-<%= item.source %>-<%= item._id %>">
+                        <i class="fa-solid fa-star"></i> In App Slider
+                      </span>
+                    <% } else { %>
+                      <span class="badge badge-highlight" id="badge-<%= item.source %>-<%= item._id %>" style="display:none;">
+                        <i class="fa-solid fa-star"></i> In App Slider
+                      </span>
+                    <% } %>
+                    <span class="media-date"><%= item.date ? new Date(item.date).toLocaleDateString('en-IN') : '' %></span>
+                  </div>
+                  
+                  <div class="media-title"><%= item.title %></div>
+                  <% if (item.description) { %>
+                    <div class="media-desc"><%= item.description %></div>
+                  <% } %>
+                </div>
+
+                <div class="media-actions">
+                  <a href="https://youtu.be/<%= item.youtubeId %>" target="_blank" class="btn-watch" title="Watch on YouTube">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  </a>
+                  
+                  <button type="button" 
+                    id="btn-<%= item.source %>-<%= item._id %>" 
+                    class="btn-highlight <%= item.isHighlighted ? 'active' : '' %>" 
+                    onclick="toggleHighlight('<%= item.source %>', '<%= item._id %>')">
+                    <% if (item.isHighlighted) { %>
+                      <i class="fa-solid fa-star"></i> Highlighted
+                    <% } else { %>
+                      <i class="fa-regular fa-star"></i> Highlight
+                    <% } %>
+                  </button>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast-msg"></div>
+
+  <script>
+    let currentFilter = 'all';
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3000);
+    }
+
+    function toggleAddForm() {
+      const box = document.getElementById('addFormBox');
+      box.classList.toggle('show');
+    }
+
+    async function toggleHighlight(type, id) {
+      const btn = document.getElementById(`btn-${type}-${id}`);
+      const card = document.getElementById(`card-${type}-${id}`);
+      const badge = document.getElementById(`badge-${type}-${id}`);
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/admin/homepage/latest-updates/toggle/${type}/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const data = await res.json();
+        if (data.success) {
+          const isHigh = data.isHighlighted;
+          card.setAttribute('data-highlighted', isHigh ? 'true' : 'false');
+          card.classList.toggle('is-highlighted', isHigh);
+          
+          if (isHigh) {
+            btn.classList.add('active');
+            btn.innerHTML = '<i class="fa-solid fa-star"></i> Highlighted';
+            if (badge) badge.style.display = 'inline-flex';
+          } else {
+            btn.classList.remove('active');
+            btn.innerHTML = '<i class="fa-regular fa-star"></i> Highlight';
+            if (badge) badge.style.display = 'none';
+          }
+
+          // Update counts
+          const highlightedElements = document.querySelectorAll('.media-card[data-highlighted="true"]');
+          const count = highlightedElements.length;
+          const countEl = document.getElementById('highlightCount');
+          const btnCountEl = document.getElementById('btnHighlightCount');
+          if (countEl) countEl.textContent = count;
+          if (btnCountEl) btnCountEl.textContent = count;
+
+          showToast(data.message || (isHigh ? 'Highlighted for mobile app!' : 'Highlight removed.'));
+          if (currentFilter === 'highlighted' && !isHigh) {
+            card.style.display = 'none';
+          }
+        } else {
+          showToast(data.message || 'Error updating highlight');
+        }
+      } catch (err) {
+        showToast('Network error updating highlight');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleCreateVideo(e) {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      const payload = {
+        title: formData.get('title'),
+        youtubeUrl: formData.get('youtubeUrl'),
+        category: formData.get('category'),
+        description: formData.get('description'),
+        isHighlighted: formData.get('isHighlighted') === 'true',
+      };
+
+      try {
+        const res = await fetch('/admin/homepage/latest-updates/create-video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('Video added and highlighted successfully!');
+          setTimeout(() => { window.location.reload(); }, 600);
+        } else {
+          showToast(data.message || 'Failed to add video');
+        }
+      } catch (err) {
+        showToast('Error adding video');
+      }
+    }
+
+    function applyFilter(filter, el) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      el.classList.add('active');
+      filterMediaCards();
+    }
+
+    function handleSearch() {
+      filterMediaCards();
+    }
+
+    function filterMediaCards() {
+      const query = document.getElementById('searchInput').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.media-card');
+
+      cards.forEach(card => {
+        const source = card.getAttribute('data-source');
+        const isHighlighted = card.getAttribute('data-highlighted') === 'true';
+        const title = card.getAttribute('data-title');
+
+        let matchFilter = true;
+        if (currentFilter === 'highlighted') {
+          matchFilter = isHighlighted;
+        } else if (currentFilter === 'video') {
+          matchFilter = source === 'video';
+        } else if (currentFilter === 'news') {
+          matchFilter = source === 'news';
+        }
+
+        const matchSearch = !query || title.includes(query);
+
+        if (matchFilter && matchSearch) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

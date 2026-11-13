@@ -273,6 +273,58 @@ export const fanoutCampaign = async (campaignId, lease) => {
     }
   }
   await processBatch(batch);
+
+  // Broadcast to active guest devices (installed apps without user login)
+  let guestPushSent = 0;
+  let guestPushFailed = 0;
+  let guestCount = 0;
+  const isGuestAudience = ["all", "all_installed", "state_wise", "district_wise"].includes(campaign.audience?.type || "all_installed");
+  if (isGuestAudience) {
+    const guestFilter = { isGuest: true, isActive: true };
+    if (campaign.audience?.type === "state_wise" && campaign.audience?.state) {
+      guestFilter.state = new RegExp(`^${campaign.audience.state.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+    }
+    if (campaign.audience?.type === "district_wise") {
+      if (campaign.audience?.district) {
+        guestFilter.district = new RegExp(`^${campaign.audience.district.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+      }
+      if (campaign.audience?.state) {
+        guestFilter.state = new RegExp(`^${campaign.audience.state.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
+      }
+    }
+    const guestDevices = await DeviceToken.find(guestFilter).select("fcmToken").lean();
+    guestCount = guestDevices.length;
+    if (guestDevices.length) {
+      for (let offset = 0; offset < guestDevices.length; offset += FCM_BATCH_SIZE) {
+        await renewCampaignLease(campaign._id, lease);
+        const currentBatch = guestDevices.slice(offset, offset + FCM_BATCH_SIZE);
+        const tokens = currentBatch.map((d) => d.fcmToken).filter(Boolean);
+        if (!tokens.length) continue;
+        const invalidTokens = [];
+        try {
+          const response = await sendOneBatch(tokens, campaign);
+          for (let index = 0; index < tokens.length; index += 1) {
+            const resItem = response?.responses?.[index];
+            if (resItem?.success) {
+              guestPushSent += 1;
+            } else {
+              guestPushFailed += 1;
+              const code = String(resItem?.error?.code || "");
+              if (INVALID_FCM_CODES.has(code)) {
+                invalidTokens.push(tokens[index]);
+              }
+            }
+          }
+        } catch {
+          guestPushFailed += tokens.length;
+        }
+        if (invalidTokens.length) {
+          await DeviceToken.updateMany({ fcmToken: { $in: invalidTokens } }, { $set: { isActive: false } });
+        }
+      }
+    }
+  }
+
   const aggregate = await UserNotification.aggregate([
     { $match: { campaignId: campaign._id } },
     {
@@ -286,10 +338,10 @@ export const fanoutCampaign = async (campaignId, lease) => {
     },
   ]);
   const totals = aggregate[0] || { assigned: 0, pushSent: 0, pushFailed: 0, pushSkipped: 0 };
-  stats.eligible = totals.assigned;
+  stats.eligible = totals.assigned + guestCount;
   stats.inAppCreated = totals.assigned;
-  stats.pushSent = totals.pushSent;
-  stats.pushFailed = totals.pushFailed;
+  stats.pushSent = totals.pushSent + guestPushSent;
+  stats.pushFailed = totals.pushFailed + guestPushFailed;
   stats.pushSkipped = totals.pushSkipped;
   const completed = await NotificationCampaign.updateOne(
     { _id: campaign._id, status: "publishing", fanoutLeaseOwner: lease.owner, fanoutLeaseGeneration: lease.generation },

@@ -9,7 +9,7 @@ const userNotificationSchema = new mongoose.Schema(
     message: { type: String, required: true, trim: true, maxlength: 5000 },
     type: {
       type: String,
-      enum: ["announcements", "events", "tracking", "membership", "general", "promotional", "wishes"],
+      enum: ["announcements", "events", "news", "updates", "general", "birthday", "wishes", "membership", "tracking", "promotional"],
       default: "general",
     },
     image: { type: String, default: "" },
